@@ -1,0 +1,96 @@
+= Spring Data CDO
+
+*inofficial release*
+
+The primary goal of the https://projects.spring.io/spring-data[Spring Data] project is to make it easier to build Spring-powered applications that use new data access technologies such as non-relational databases, map-reduce frameworks, and cloud based data services.
+
+This module provides infrastructure components to build repository abstractions for stores dealing with the *Connected Data Objects (CDO) model repository*.
+
+== Getting Started
+
+Normal use case is to store and read pure CDOObjects and EObjects or user-defined classes that implement these interface directly.
+
+On the other hand, non-explicit CDO classes must have a distinct member attribute referring to the EObject instance in question.
+
+=== Details
+
+So, these two types of classes are handled a bit differently.
+There are separated in:
+- explicit CDOObject classes Are classes which are sub classes of the class CDOObject.
+Either they extend or implement EObject/CDOObject directly.
+Legacy mode is also supported.
+That means, models that are not converted for CDO support.
+See also [Preparing EMF Models](https://wiki.eclipse.org/CDO/Preparing_EMF_Models)
+- non-explicit CDOObject classes
+
+- They differ just in the way classes must be annotated.
+- Classes, regardless of the above types, must be annotated with @CDO at minimum.
+
+Three types of EObject "models/data" are supported:
+
+- Meta models (EPackage)
+- Instance models (Generated classes or dynamically created objects)
+
+Regarding the EObjectModel annotation, the classFor attribute is necessary for the following cases:
+- instance models Not relevant for EPackage objects, but:
+- nsUri
+- packageName
+- nsUri, packageName wichtig für querying and removing objects. mind. jedoch nsUri. fehlt eins, wird ggfs. mehr gelöscht.
+
+für dynamic wird class.getSimpleName verglichen.
+Ansonsten the canonical class name (inclusive the package)
+
+Fallback:
+- packageName: class name uncapitalized, set to "" if this should be taking into account
+
+=== Events
+
+One can listen to specific events thrown by repository actions for adding additional logic, if needed.
+Events are implemented for Delete, Save and Insert operations, including "after" and "before" notions for fine-grained control.
+
+=== Maven configuration
+
+Add the Maven dependency:
+
+[source,xml]
+----
+<dependency>
+  <groupId>org.springframework.data</groupId>
+  <artifactId>spring-data-cdo</artifactId>
+  <version>${revision}.RELEASE</version>
+</dependency>
+----
+
+== Building from Source
+
+You don’t need to build from source to use Spring Data (binaries in https://repo.spring.io[repo.spring.io]), but if you want to
+try out the latest and greatest, Spring Data can be easily built with the https://github.com/takari/maven-wrapper[maven wrapper].
+You also need JDK 1.8.
+
+[source,bash]
+----
+ $ ./mvnw clean install
+----
+
+If you want to build with the regular `mvn` command, you will need https://maven.apache.org/run-maven/index.html[Maven v3.5.0 or above].
+
+=== Building reference documentation
+
+Building the documentation builds also the project without running tests.
+
+[source,bash]
+----
+ $ ./mvnw clean install -Pdistribute
+----
+
+The generated documentation is available from `target/site/reference/html/index.html`.
+The Maven profile `distribute` is provided by `spring-data-parent`. For more information
+see link:https://github.com/spring-projects/spring-data-build[https://github.com/spring-projects/spring-data-build] on
+how to set up the Asciidoc documentation.
+
+
+== Code of Conduct
+
+This project is governed by the link:CODE_OF_CONDUCT.adoc[Spring Code of Conduct].
+By participating, you are expected to uphold this code of conduct.
+Please report unacceptable behavior to dominik.grzelak@tu-dresden.de.

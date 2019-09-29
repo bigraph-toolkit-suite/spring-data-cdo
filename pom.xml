@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.data.build</groupId>
+        <artifactId>spring-data-parent</artifactId>
+        <version>2.2.0.BUILD-SNAPSHOT</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+
+    <groupId>org.springframework.data</groupId>
+    <artifactId>spring-data-cdo-parent</artifactId>
+    <version>${revision}</version>
+    <packaging>pom</packaging>
+
+    <name>Spring Data CDO</name>
+    <description>Eclipse CDO support for Spring Data</description>
+    <url>https://git-st.inf.tu-dresden.de/bft-bigrafogtecture/spring-data-cdo</url>
+
+    <modules>
+        <module>spring-data-cdo</module>
+        <module>spring-data-cdo-distribution</module>
+    </modules>
+
+    <properties>
+        <project.type>multi</project.type>
+        <java.version>1.8</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <dist.id>spring-data-cdo</dist.id>
+        <springdata.commons>2.2.0.BUILD-SNAPSHOT</springdata.commons>
+        <guava.version>28.0-jre</guava.version>
+        <!-- EMF -->
+        <emf.version>2.16.0</emf.version>
+        <emf.ecore.version>2.18.0</emf.ecore.version>
+        <emf.codegen.version>2.16.0</emf.codegen.version>
+        <emf.cdo.version>4.7.0</emf.cdo.version>
+        <eclipse.mirror>http://download.eclipse.org/</eclipse.mirror>
+        <junit-jupiter.version>5.4.0</junit-jupiter.version>
+        <bintray.organization>st-tu-dresden</bintray.organization>
+        <bintray.repo>maven-repository</bintray.repo>
+        <bintray.package>${project.artifactId}</bintray.package>
+    </properties>
+
+    <developers>
+        <developer>
+            <id>dgrzelak</id>
+            <name>Dominik Grzelak</name>
+            <email>dominik.grzelak@tu-dresden.de</email>
+            <organization>Technische Universität Dresden</organization>
+            <organizationUrl>https://tu-dresden.de/ing/informatik/smt/st</organizationUrl>
+            <roles>
+                <role>Developer</role>
+            </roles>
+            <timezone>+2</timezone>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:https://git-st.inf.tu-dresden.de/bft-bigrafogtecture/spring-data-cdo.git</connection>
+        <developerConnection>scm:git@git-st.inf.tu-dresden.de:bft-bigrafogtecture/spring-data-cdo.git
+        </developerConnection>
+        <url>https://git-st.inf.tu-dresden.de/bft-bigrafogtecture/spring-data-cdo</url>
+        <tag>HEAD</tag>
+    </scm>
+
+    <repositories>
+        <repository>
+            <id>Eclipse</id>
+            <layout>p2</layout>
+            <url>${eclipse.mirror}/releases/photon/</url>
+        </repository>
+        <!-- add TMF repository for latest Xtend -->
+        <repository>
+            <id>TMF Repo</id>
+            <layout>p2</layout>
+            <url>${eclipse.mirror}/modeling/tmf/xtext/updates/releases/</url>
+        </repository>
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+        <!-- for ipfs daemon-->
+        <!--        <repository>-->
+        <!--            <id>rhazdev</id>-->
+        <!--            <url>https://mymavenrepo.com/repo/NIp3fBk55f5oF6VI1Wso/</url>-->
+        <!--        </repository>-->
+        <!--        <repository>-->
+        <!--            <id>ghillairet</id>-->
+        <!--            <name>emfjson</name>-->
+        <!--            <url>http://ghillairet.github.io/p2</url>-->
+        <!--            <layout>p2</layout>-->
+        <!--        </repository>-->
+        <repository>
+            <id>spring-libs-snapshot</id>
+            <url>https://repo.spring.io/libs-snapshot</url>
+        </repository>
+    </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>spring-plugins-release</id>
+            <url>https://repo.spring.io/plugins-release</url>
+        </pluginRepository>
+        <pluginRepository>
+            <id>spring-libs-milestone</id>
+            <url>https://repo.spring.io/libs-milestone</url>
+        </pluginRepository>
+    </pluginRepositories>
+
+    <distributionManagement>
+        <repository>
+            <id>bintray-st-tu-dresden-maven-repository</id>
+            <name>st-tu-dresden-maven-repository</name>
+            <url>
+                https://api.bintray.com/maven/${bintray.organization}/${bintray.repo}/${bintray.package}/;publish=1
+            </url>
+        </repository>
+    </distributionManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <version>2.8.2</version>
+                    <configuration>
+                        <!-- disable the default existing mapping -->
+                        <skip>true</skip>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <configuration>
+                                <url>
+                                    https://api.bintray.com/maven/${bintray.organization}/${bintray.repo}/${bintray.package}/;publish=1
+                                </url>
+                                <repositoryId>bintray-st-tu-dresden-maven-repository</repositoryId>
+                                <file>${project.build.directory}/${project.build.finalName}.jar</file>
+                                <artifactId>${project.artifactId}</artifactId>
+                                <groupId>${project.groupId}</groupId>
+                                <version>${project.version}</version>
+                                <packaging>jar</packaging>
+                            </configuration>
+                            <phase>deploy</phase>
+                            <id>bintray-deploy</id>
+                            <goals>
+                                <goal>deploy-file</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+</project>
