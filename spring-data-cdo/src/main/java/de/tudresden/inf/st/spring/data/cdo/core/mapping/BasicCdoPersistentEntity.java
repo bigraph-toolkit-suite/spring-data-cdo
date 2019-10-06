@@ -8,6 +8,7 @@ import de.tudresden.inf.st.spring.data.cdo.repository.CdoPersistentProperty;
 import org.eclipse.emf.spi.cdo.InternalCDOObject;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
 import org.springframework.data.util.TypeInformation;
+import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
 import org.springframework.expression.ParserContext;
 import org.springframework.expression.common.LiteralExpression;
@@ -39,7 +40,7 @@ public class BasicCdoPersistentEntity<T> extends BasicPersistentEntity<T, CdoPer
     private MappingCdoConverter cdoConverter;
     private boolean isExplicitCdoObject = false;
     private final String nsUri;
-    private final String eObjectModel;
+    private final String packageNameValue;
 
     public BasicCdoPersistentEntity(TypeInformation<T> typeInformation, MappingCdoConverter cdoConverter) {
         this(typeInformation, cdoConverter, null); //(o1, o2) -> o1.equals(o2) ? 0 : -1);
@@ -66,11 +67,11 @@ public class BasicCdoPersistentEntity<T> extends BasicPersistentEntity<T, CdoPer
             this.expressionNsUri = detectExpression(document.nsUri());
             this.expressionEPackageName = detectExpression(document.packageName());
             this.nsUri = StringUtils.hasText(document.nsUri()) ? document.nsUri() : fallbackNsUri;
-            this.eObjectModel = StringUtils.hasText(document.packageName()) ? document.packageName() : fallbackEPackageName;
+            this.packageNameValue = StringUtils.hasText(document.packageName()) ? document.packageName() : fallbackEPackageName;
         } else {
             this.resourcePath = fallback;
             this.nsUri = fallbackNsUri;
-            this.eObjectModel = fallbackEPackageName;
+            this.packageNameValue = fallbackEPackageName;
             this.expression = null;
             this.expressionNsUri = null;
             this.expressionEPackageName = null;
@@ -121,6 +122,15 @@ public class BasicCdoPersistentEntity<T> extends BasicPersistentEntity<T, CdoPer
                 : expression.getValue(getEvaluationContext(null), String.class);
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.springframework.data.mapping.model.BasicPersistentEntity#getEvaluationContext(java.lang.Object)
+     */
+    @Override
+    public EvaluationContext getEvaluationContext(Object rootObject) {
+        return super.getEvaluationContext(rootObject);
+    }
+
     @Override
     public String getNsUri() {
         return expressionNsUri == null //
@@ -131,7 +141,7 @@ public class BasicCdoPersistentEntity<T> extends BasicPersistentEntity<T, CdoPer
     @Override
     public String getPackageName() {
         return expressionEPackageName == null //
-                ? eObjectModel //
+                ? packageNameValue //
                 : expressionEPackageName.getValue(getEvaluationContext(null), String.class);
     }
 

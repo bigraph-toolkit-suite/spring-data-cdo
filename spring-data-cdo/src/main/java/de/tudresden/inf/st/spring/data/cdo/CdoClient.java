@@ -69,6 +69,14 @@ public class CdoClient {
         CDONet4jServerUtil.prepareContainer(IPluginContainer.INSTANCE); // Prepare the CDO server
     }
 
+    /**
+     * Creates an instance based on a CDO server on localhost and default port.
+     * Relies on the empty constructor of {@link CdoServerAddress}.
+     */
+    public CdoClient() {
+        this(new CdoServerAddress());
+    }
+
     public CdoClient(String host, int port) {
         this(new CdoServerAddress(
                         CdoServerAddress.builder()

@@ -11,9 +11,9 @@ public interface CdoPersistentEntity<T> extends PersistentEntity<T, CdoPersisten
 
     @Nullable
     String getResourcePath();
-
+    @Nullable
     String getNsUri();
-
+    @Nullable
     String getPackageName();
 
     @Nullable

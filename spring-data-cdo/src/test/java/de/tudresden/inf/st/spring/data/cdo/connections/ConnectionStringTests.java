@@ -1,7 +1,9 @@
-package de.tudresden.inf.st.spring.data.cdo;
+package de.tudresden.inf.st.spring.data.cdo.connections;
 
+import de.tudresden.inf.st.spring.data.cdo.CdoServerConnectionString;
+import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
+
 
 /**
  * Parsing tests for the {@link CdoServerConnectionString} class.

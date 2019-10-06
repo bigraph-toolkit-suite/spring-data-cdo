@@ -41,6 +41,15 @@ public interface CdoOperations extends DisposableBean {
                 .orElse(entityClass.getSimpleName());
     }
 
+    default String getPackageNameFrom(@Nullable Class<?> entityClass) {
+        if (Objects.isNull(entityClass)) {
+            throw new InvalidDataAccessApiUsageException(
+                    "No class parameter provided, entity path can't be determined!");
+        }
+        return Optional.ofNullable(getMappingContext().getRequiredPersistentEntity(entityClass).getPackageName())
+                .orElse(entityClass.getSimpleName());
+    }
+
     CdoOperations withSession(CdoClientSession session);
 
     <T> T insert(T objectToSave);
