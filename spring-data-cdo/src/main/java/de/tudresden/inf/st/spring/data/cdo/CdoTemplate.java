@@ -11,7 +11,11 @@ import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.CDOCommonSession;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
 import org.eclipse.emf.cdo.common.id.CDOID;
+import org.eclipse.emf.cdo.common.util.CDOException;
+import org.eclipse.emf.cdo.common.util.CDOResourceNodeNotFoundException;
 import org.eclipse.emf.cdo.eresource.CDOResource;
+import org.eclipse.emf.cdo.eresource.CDOResourceFolder;
+import org.eclipse.emf.cdo.eresource.CDOResourceNode;
 import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevision;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.*;
@@ -20,6 +24,8 @@ import org.eclipse.emf.ecore.*;
 import org.eclipse.emf.ecore.impl.BasicEObjectImpl;
 import org.eclipse.emf.ecore.impl.DynamicEObjectImpl;
 import org.eclipse.emf.ecore.impl.EObjectImpl;
+import org.eclipse.emf.ecore.resource.ResourceSet;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.internal.cdo.object.CDOLegacyAdapter;
 import org.eclipse.emf.internal.cdo.object.CDOLegacyWrapper;
 import org.eclipse.emf.internal.cdo.object.DynamicCDOObjectImpl;
@@ -46,6 +52,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
@@ -453,7 +460,7 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
                     System.out.println("Create new resource: " + resource);
                 }
 
-                resource.getResourceSet().getPackageRegistry().put(null, internalValue);
+//                resource.getResourceSet().getPackageRegistry().put(null, internalValue);
 
 //                System.out.println("resource.cdoRevision().getID(): " + resource.cdoRevision().getID());
 
@@ -523,6 +530,67 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
 //        return object;
 //    }
 
+
+    @Override
+    public void createResourcePath(String resourcePath) {
+        Assert.hasText(resourcePath, "resourcePath name must not be null or empty!");
+        execute(session -> {
+            try {
+                CDOTransaction cdoTransaction = openTransaction(session);
+                CDOResource orCreateResource = cdoTransaction.getOrCreateResource(resourcePath);
+                cdoTransaction.commit();
+//                CDOResource resource = cdoTransaction.getResource(resourcePath);
+//                resource.delete(Collections.emptyMap());
+            } catch (InvalidURIException e) {
+                throw new EmptyResultDataAccessException("Resource path couldn't be created.", 1, e);
+            } catch (ConcurrentAccessException e) {
+                e.printStackTrace();
+            } catch (CommitException e) {
+                e.printStackTrace();
+            } catch (CDOException e) {
+                throw new CreateResourceFailedException("CDO resource path=" + resourcePath + " couldn't be created." +
+                        "Maybe some folder in the resource path already is a node in the repository.");
+            }
+            return null;
+        });
+    }
+
+    @Override
+    public void removeResourcePath(String resourcePath, boolean recursive) {
+        Assert.hasText(resourcePath, "resourcePath name must not be null or empty!");
+        execute(session -> {
+            try {
+                CDOTransaction cdoTransaction = openTransaction(session);
+//                CDOResourceFolder resourceFolder = cdoTransaction.getResourceFolder(resourcePath);
+                CDOResource resourceFolder = cdoTransaction.getResource(resourcePath);
+                if (recursive) {
+                    CDOResourceFolder parent = resourceFolder.getFolder();
+                    while (Objects.nonNull(parent)) {
+                        CDOResourceFolder folder = parent.getFolder();
+                        parent.delete(Collections.emptyMap());
+                        parent = folder;
+                    }
+                }
+                resourceFolder.delete(Collections.emptyMap());
+                cdoTransaction.commit();
+            } catch (InvalidURIException e) {
+                throw new EmptyResultDataAccessException(e.getMessage(), 1, e);
+            } catch (IOException e) {
+                e.printStackTrace();
+                throw new RuntimeException("Couldn't delete resource path=" + resourcePath, e);
+            } catch (ConcurrentAccessException e) {
+                e.printStackTrace();
+            } catch (CommitException e) {
+                e.printStackTrace();
+            }
+            return null;
+        });
+    }
+
+    @Override
+    public void removeResourcePath(final String resourcePath) {
+        removeResourcePath(resourcePath, false);
+    }
 
     @Override
     public <T> CdoDeleteResult remove(T entity, String resourcePath) {
@@ -637,9 +705,11 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
             CDOResource resource;
             CDOID cdoid = null;
             try {
+
                 resource = transaction.getResource(resourcePath);
                 EObject oldDBObject;
                 if (persistentEntity.isExplicitCDOObject()) {
+                    //entity shall be equal to oldDBObject
                     cdoid = ((CDOObject) entity).cdoID();
                     oldDBObject = transaction.getObject(cdoid);
                 } else {
@@ -653,20 +723,32 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
                 if (Objects.isNull(oldDBObject))
                     throw new DataNotFoundException("Object with ID=" + cdoid + " not found.");
                 CDOUtil.getCDOObject(oldDBObject).cdoWriteLock().lock(delegate.getOptions().getWriteLockoutTimeout());
+                EcoreUtil.delete(oldDBObject, true);
                 resource.getContents().remove(oldDBObject);
                 CDOCommitInfo commit = transaction.commit();
+
                 // "Whenever an object is detached from the graph it looses all its CDO-specific properties: id, state, view and revision."
                 // However, for non-explicit CDO objects we have to unset the ID property manually
                 if (!persistentEntity.isExplicitCDOObject()) {
                     persistentEntity.getPropertyAccessor(entity).setProperty(persistentEntity.getRequiredIdProperty(), null);
+                    // override the "resetted" model property from the entity with the CDO one
+                    // the CDO-specific stuff is unsetted already
+                    if (ClassUtils.isAssignable(CDOLegacyAdapter.class, oldDBObject.getClass())) {
+                        oldDBObject = CDOUtil.getEObject(oldDBObject);
+                    } else {
+                        oldDBObject = CDOUtil.getCDOObject(oldDBObject);
+                    }
+                    persistentEntity.getPropertyAccessor(entity).setProperty(persistentEntity.getRequiredEObjectModelProperty(), oldDBObject);
                 }
-                deleteResult = CdoDeleteResult.acknowledged(1);
 
+                deleteResult = CdoDeleteResult.acknowledged(1);
             } catch (InvalidURIException e) {
                 deleteResult = CdoDeleteResult.unacknowledged();
             } catch (CommitException e) {
                 e.printStackTrace();
                 deleteResult = CdoDeleteResult.unacknowledged();
+            } catch (ObjectNotFoundException e) {
+                throw new DataNotFoundException(e.toString());
             } catch (TimeoutException e) {
                 throw new OptimisticLockingFailureException(
                         String.format("Cannot save entity with ID %s to repository %s. Has it been modified meanwhile?",

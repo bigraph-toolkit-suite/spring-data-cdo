@@ -1,6 +1,7 @@
 package de.tudresden.inf.st.spring.data.cdo;
 
 import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DataRetrievalFailureException;
 
 /**
  * This exception is thrown if certain expected data could not be retrieved in the storage, e.g.
@@ -11,7 +12,7 @@ import org.springframework.dao.DataAccessException;
  *
  * @author Dominik Grzelak
  */
-public class DataNotFoundException extends DataAccessException {
+public class DataNotFoundException extends DataRetrievalFailureException {
 
     public DataNotFoundException(String msg) {
         super(msg);

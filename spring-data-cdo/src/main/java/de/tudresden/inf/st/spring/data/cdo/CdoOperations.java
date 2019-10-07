@@ -89,6 +89,33 @@ public interface CdoOperations extends DisposableBean {
     <T> CdoDeleteResult remove(T entity, final String resourcePath);
 
     /**
+     * Deletes the given resource path from the configured repository.
+     * Only the final node or folder will be removed keeping the parent folders intact.
+     *
+     * @param resourcePath the resource path to remove. Must not be {@code null}.
+     */
+    void removeResourcePath(final String resourcePath);
+
+    /**
+     * Deletes the whole resource path from the configured repository.
+     *
+     * @param resourcePath the resource path to remove. Must not be {@code null}.
+     * @param recursive    flag if all parent folders in the path shall be deleted recursively also.
+     */
+    void removeResourcePath(final String resourcePath, boolean recursive);
+
+
+    /**
+     * Will create the given resource path if it doesn't already exists.
+     *
+     * @param resourcePath the resource path to create. Must not be {@code null}.
+     * @throws CreateResourceFailedException This exception is thrown when the resource path couldn't be created.
+     *                                       For example, when some part of the path represents a folder which is
+     *                                       however already a resource node in CDO with the same name.
+     */
+    void createResourcePath(final String resourcePath);
+
+    /**
      * Drop the resource path with the path value indicated by the entity class.
      *
      * @param javaType class that determines the resource path to delete. Must not be {@code null}.

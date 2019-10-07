@@ -2,46 +2,19 @@
 
 ## Eclipse CDO
 
-Transaction are like parallel shared subsession over a unique distinct session
-    only after commit things gets merged
-    one can lock objects (w/o committing) and the other transaction gets aware of it automatically
-
-- that approach would be nice: https://stackoverflow.com/questions/20161437/custom-spring-data-repository-backend
-    - but takes to much time to implement correctly
-
 - provides means to store and load bigraphical models from a CDO server
 
 Hint: net4j version of CDO Server must match with the maven dependency.
 Otherwise an exception is thrown ala 
 `org.eclipse.net4j.channel.ChannelException: Failed to register channel with peer: Protocol version 37 does not match expected version 34`
 
-What works: 
-- emf.cdo.version 4.5.0 and CDO Server Eclipse Neon
-- emf.cdo.version + net4j + hibernate 4.5.0 with CDO Server Eclipse Neon
-- emf.cdo.version + net4j + hibernate 4.7.0 with CDO Server Eclipse Oxygen
+- What works: 
+    - emf.cdo.version 4.5.0 and CDO Server Eclipse Neon
+    - emf.cdo.version + net4j + hibernate 4.5.0 with CDO Server Eclipse Neon
+    - emf.cdo.version + net4j + hibernate 4.7.0 with CDO Server Eclipse Oxygen
 
-### Converters:
-
-
-- For none EObject classes we need to store some additional properties. 
-- One cannot add new attributes dynamically to an existing instance
-- temp. extending meta-model?? is to cumbersome
-
-- Not many suitable ways exists:
-    - "No, there's no such thing as a custom property. What's described in the Ecore model is all there is available. 
-    Of course you can add adapters to eAdapters() and those could carry additional data. Or you can
-    maintain such data externally via a map. Or maybe http://eclipse.org/facet/ helps." 
-    https://www.eclipse.org/forums/index.php/m/1595102/?srch=emf+facet#msg_1595102
-    
-- facets maybe suitable 
-    - (see Java extension for JPA example: https://www.slideshare.net/fmadiot/emf-facet-eclipsecon-2011-audition-6175334)
-    - but cannot serialized? https://www.eclipse.org/forums/index.php/m/1233819/?srch=emf+facet#msg_1233819
-        - only dynamic recomputation
-    - Doc: https://help.eclipse.org/kepler/index.jsp?topic=%2Forg.eclipse.emf.facet.efacet.doc%2Fmediawiki%2Fuser.html
-
-
-
-
+- Approaches on how to implement support for spring data repositories: https://stackoverflow.com/questions/20161437/custom-spring-data-repository-backend
+    - but takes to much time to implement correctly
 
 ### CDO Server
 
@@ -95,11 +68,60 @@ Both can be used to retrieve an object from a resource.
 > Whenever an object is detached from the graph it looses all its
 > CDO-specific properties: id, state, view and revision.
 
-#### Conflicts
+
+### Converters:
+
+- For none EObject classes we need to store some additional properties. 
+- One cannot add new attributes dynamically to an existing instance
+- temp. extending meta-model?? is to cumbersome
+
+- Not many suitable ways exists:
+    - "No, there's no such thing as a custom property. What's described in the Ecore model is all there is available. 
+    Of course you can add adapters to eAdapters() and those could carry additional data. Or you can
+    maintain such data externally via a map. Or maybe http://eclipse.org/facet/ helps." 
+    https://www.eclipse.org/forums/index.php/m/1595102/?srch=emf+facet#msg_1595102
+    
+- facets maybe suitable 
+    - (see Java extension for JPA example: https://www.slideshare.net/fmadiot/emf-facet-eclipsecon-2011-audition-6175334)
+    - but cannot serialized? https://www.eclipse.org/forums/index.php/m/1233819/?srch=emf+facet#msg_1233819
+        - only dynamic re-computation
+    - Doc: https://help.eclipse.org/kepler/index.jsp?topic=%2Forg.eclipse.emf.facet.efacet.doc%2Fmediawiki%2Fuser.html
+
+
+
+### Conflicts
 
 from: https://www.eclipse.org/forums/index.php/t/452339/
 
 - just provide user-defined handlers... if not set throw an exception.
+
+### Further Context
+
+#### Transactions and Views
+
+- Transaction are like parallel shared subsession over a unique distinct session
+    only after commit things gets merged
+    one can lock objects (w/o committing) and the other transaction gets aware of it automatically
+    
+- from: https://www.eclipse.org/forums/index.php/t/450110/
+    A CDOView or CDOTransaction provides *consistent* access to the CDOObject *graph* at a certain point in time in a
+    certain branch (e.g. the MAIN branch). You can navigate this graph through EMF API and will never leave this
+    time/branch. A CDOTransaction always "looks" at the latest time in its branch, while a pure CDOView can "wind back
+    time". Views and transactions are *revision selectors* , where a revision is the state of a *single* object for a
+    certain period of time in a certain branch.
+    
+    With a transaction you can modify the object graph atomically. The transitions between two consecutive commits are
+    described by CDOCommitInfos. They're returned from transaction.commit() and can later be recreated, e.g., through
+    session.getCommitInfoManager() methods. It's often more convenient to use the newer CDOCommitHistory or CDOObjectHistory
+    APIs as returned by implementations of CDOCommitHistory.Provider. A commit history is an ordered collection of
+    CDOCommitInfos (also used by our CDOHistoryPage contribution to the Eclipse "History" view part). The availablity of
+    historical commit infos and the cost to recreate them may depend on the used IStore.
+    
+    CDOCommitInfos contain/provide the *deltas* between two consecutive sets of CDORevisions (the *states* of relevant
+    objects before and after a commit). They know nothing about CDOViews, CDOTransactions or CDOObjects (other than their
+    CDOIDs). But you can always turn a CDOID into a CDOObject (and the associated object graph) by opening a CDOView at the
+    time and branch that's associated with the CDOCommitInfo (and all its deltas and resulting revisions). That's what we do
+    in our EMF Compare integration as you can see by double clicking a commit info in the CDOHistoryPage.
 
 #### Revisions
 
@@ -112,33 +134,11 @@ the same session and set the (target) timestamp. You can do that when opening th
 A CDOView has a getObject(T) method that you can use to directly jump to an object from another view (your transaction
 in this case).
 
-CDOView: Think of a CDOView as a read-only transaction, it has most of the
+CDOView: "Think of a CDOView as a read-only transaction, it has most of the
          (same) methods for accessing models. In fact a CDOTransaction is a
-         sub type of a CDOView
+         sub type of a CDOView"
 
-### Further Context
-
-from: https://www.eclipse.org/forums/index.php/t/450110/
-A CDOView or CDOTransaction provides *consistent* access to the CDOObject *graph* at a certain point in time in a
-certain branch (e.g. the MAIN branch). You can navigate this graph through EMF API and will never leave this
-time/branch. A CDOTransaction always "looks" at the latest time in its branch, while a pure CDOView can "wind back
-time". Views and transactions are *revision selectors* , where a revision is the state of a *single* object for a
-certain period of time in a certain branch.
-
-With a transaction you can modify the object graph atomically. The transitions between two consecutive commits are
-described by CDOCommitInfos. They're returned from transaction.commit() and can later be recreated, e.g., through
-session.getCommitInfoManager() methods. It's often more convenient to use the newer CDOCommitHistory or CDOObjectHistory
-APIs as returned by implementations of CDOCommitHistory.Provider. A commit history is an ordered collection of
-CDOCommitInfos (also used by our CDOHistoryPage contribution to the Eclipse "History" view part). The availablity of
-historical commit infos and the cost to recreate them may depend on the used IStore.
-
-CDOCommitInfos contain/provide the *deltas* between two consecutive sets of CDORevisions (the *states* of relevant
-objects before and after a commit). They know nothing about CDOViews, CDOTransactions or CDOObjects (other than their
-CDOIDs). But you can always turn a CDOID into a CDOObject (and the associated object graph) by opening a CDOView at the
-time and branch that's associated with the CDOCommitInfo (and all its deltas and resulting revisions). That's what we do
-in our EMF Compare integration as you can see by double clicking a commit info in the CDOHistoryPage.
-
-
+## Spring
 
 ### Reference Documentation
 For further reference, please consider the following sections:
