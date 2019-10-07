@@ -241,15 +241,24 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
             CDOResource resource = trans.getOrCreateResource(repoResourcePath);
             EObject internalValue;
             EObject oldDBObject;
+            CDOID cdoid;
             if (persistentEntity.isExplicitCDOObject()) {
                 internalValue = (EObject) entity;
+                cdoid = CDOUtil.getCDOObject(internalValue).cdoID();
+                Optional.ofNullable(cdoid).<IllegalStateException>orElseThrow(() -> {
+                    throw new IllegalStateException("Could not obtain identifier!");
+                });
 //                InternalCDORevision internalCDORevision1 = readRevision((InternalCDOObject) internalValue);
             } else {
                 internalValue = (EObject) cdoConverter.getInternalValue(persistentEntity, entity, EObjectModel.class);
 //                String uriFragment = EcoreUtil.getURI(internalValue).fragment(); //resource.getURIFragment(internalValue);
+                cdoid = (CDOID) persistentEntity.getIdentifierAccessor(entity).getRequiredIdentifier();
             }
+            Optional.ofNullable(internalValue).<IllegalStateException>orElseThrow(() -> {
+                throw new IllegalStateException("The persistent entity model of the class was null. Maybe it was not properly annotated? Null values cannot be saved.");
+            });
+
             resource.getResourceSet().getPackageRegistry().put(null, internalValue);
-            CDOID cdoid = CDOUtil.getCDOObject(internalValue).cdoID();
             try {
                 oldDBObject = cdoView.getObject(cdoid);
                 if (Objects.isNull(oldDBObject))
@@ -259,7 +268,7 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
                 resource.getContents().add(internalValue);
                 resource.getContents().remove(oldDBObject);
                 // not necessary, automatic unlock after commit
-//                CDOUtil.getCDOObject(oldDBObject).cdoWriteLock().unlock();
+                CDOUtil.getCDOObject(oldDBObject).cdoWriteLock().unlock();
                 trans.commit();
             } catch (CommitException e) {
                 throw new DataIntegrityViolationException(e.toString());
@@ -317,7 +326,7 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
                     throw new DataNotFoundException("Data couldn't be retrieved with id=" + cdoid);
 //                final CdoPersistentEntity<?> persistentEntity = mappingContext.getPersistentEntity(javaClassType);
 
-                session.getDelegate().getPackageRegistry().getSubTypes();
+//                session.getDelegate().getPackageRegistry().getSubTypes();
                 if (explicitCDOObject) {
                     Assert.isTrue(ClassUtils.isAssignable(ClassUtils.getUserClass(object), javaClassType), "Domain class type cannot be assigned to class type of the corresponding CDO object ");
 //                    if (ClassUtils.isAssignable(ClassUtils.getUserClass(object), javaClassType)) { //TODO make this part of a Query
@@ -523,8 +532,34 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
     }
 
     @Override
+    public <T> CdoDeleteResult removeAll(Class<T> javaType) {
+        Assert.notNull(javaType, "Class must not be null!");
+        return doRemove(javaType, getResourcePathFrom(javaType));
+    }
+
+    @Override
     public <T> CdoDeleteResult removeAll(final Class<T> javaType, final String resourcePath) {
         return doRemove(javaType, resourcePath);
+    }
+
+
+    @Override
+    public CdoDeleteResult removeAll(String resourcePath) {
+        Assert.notNull(resourcePath, "resourcePath must not be null!");
+        return execute(session -> {
+            try {
+                CDOTransaction cdoTransaction = openTransaction(session);
+                CDOResource resource = cdoTransaction.getResource(resourcePath);
+                resource.getContents().clear();
+                CDOCommitInfo commit = cdoTransaction.commit();
+                if (resource.getContents().size() == 0) {
+                    return CdoDeleteResult.acknowledged(commit.getDetachedObjects().size());
+                }
+            } catch (CommitException e) {
+                e.printStackTrace();
+            }
+            return CdoDeleteResult.unacknowledged();
+        });
     }
 
     //TODO: this is also a query-typed action
@@ -608,17 +643,25 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
                     cdoid = ((CDOObject) entity).cdoID();
                     oldDBObject = transaction.getObject(cdoid);
                 } else {
-                    EObject internalValue = (EObject) cdoConverter.getInternalValue(persistentEntity, entity, EObjectModel.class);
+//                    EObject internalValue = (EObject) cdoConverter.getInternalValue(persistentEntity, entity, EObjectModel.class);
 //                    String uriFragment = EcoreUtil.getURI(internalValue).fragment();
-                    cdoid = CDOUtil.getCDOObject(internalValue).cdoID();
-                    oldDBObject = transaction.getObject(cdoid); //transaction.getResource(resourcePath).getEObject(uriFragment);
+//                    cdoid = CDOUtil.getCDOObject(internalValue).cdoID(); // this is not working!
+                    //transaction.getResource(resourcePath).getEObject(uriFragment);
+                    cdoid = (CDOID) persistentEntity.getIdentifierAccessor(entity).getRequiredIdentifier();
+                    oldDBObject = transaction.getObject(cdoid);
                 }
                 if (Objects.isNull(oldDBObject))
                     throw new DataNotFoundException("Object with ID=" + cdoid + " not found.");
                 CDOUtil.getCDOObject(oldDBObject).cdoWriteLock().lock(delegate.getOptions().getWriteLockoutTimeout());
                 resource.getContents().remove(oldDBObject);
-                transaction.commit();
+                CDOCommitInfo commit = transaction.commit();
+                // "Whenever an object is detached from the graph it looses all its CDO-specific properties: id, state, view and revision."
+                // However, for non-explicit CDO objects we have to unset the ID property manually
+                if (!persistentEntity.isExplicitCDOObject()) {
+                    persistentEntity.getPropertyAccessor(entity).setProperty(persistentEntity.getRequiredIdProperty(), null);
+                }
                 deleteResult = CdoDeleteResult.acknowledged(1);
+
             } catch (InvalidURIException e) {
                 deleteResult = CdoDeleteResult.unacknowledged();
             } catch (CommitException e) {
@@ -735,6 +778,10 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
         return hasMatch;
     }
 
+    @Override
+    public CdoConverter getConverter() {
+        return this.cdoConverter;
+    }
 
     @Nullable
     protected <T> T postProcessResult(@Nullable T result, CdoClientSession session, boolean existingSession) {

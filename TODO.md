@@ -10,7 +10,10 @@ TODO:
     
     Allow definition of replica sets in CdoClient, CdoClientFactoryBean, etc...
     
-    Test expression in annotations
+    [CLOSED] Test expression in annotations
+    
+    change listener for cdo model
+        - via adapter of eobject? or is there a CDO feature?
     
     CdoServerConnectionString parser and tests
     

@@ -1,7 +1,6 @@
 package de.tudresden.inf.st.spring.data.cdo.repository;
 
 import de.tudresden.inf.st.spring.data.cdo.annotation.EObjectModel;
-import org.eclipse.emf.ecore.EPackage;
 import org.springframework.data.mapping.PersistentProperty;
 import org.springframework.lang.Nullable;
 
@@ -33,6 +32,4 @@ public interface CdoPersistentProperty extends PersistentProperty<CdoPersistentP
      * @return
      */
     Class<?> getEPackageType();
-
-    EPackage getEPackageValue();
 }

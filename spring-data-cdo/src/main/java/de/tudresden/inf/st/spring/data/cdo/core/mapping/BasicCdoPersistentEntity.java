@@ -105,6 +105,8 @@ public class BasicCdoPersistentEntity<T> extends BasicPersistentEntity<T, CdoPer
         return super.getIdProperty();
     }
 
+
+
     @Nullable
     private static Expression detectExpression(@Nullable String potentialExpression) {
         if (!StringUtils.hasText(potentialExpression)) {

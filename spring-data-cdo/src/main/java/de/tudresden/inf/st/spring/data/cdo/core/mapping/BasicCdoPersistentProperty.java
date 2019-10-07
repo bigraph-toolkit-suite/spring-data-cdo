@@ -3,6 +3,7 @@ package de.tudresden.inf.st.spring.data.cdo.core.mapping;
 import de.tudresden.inf.st.spring.data.cdo.annotation.EObjectModel;
 import de.tudresden.inf.st.spring.data.cdo.repository.CdoPersistentEntity;
 import de.tudresden.inf.st.spring.data.cdo.repository.CdoPersistentProperty;
+import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.ecore.EPackage;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.MappingException;
@@ -76,7 +77,7 @@ public class BasicCdoPersistentProperty extends AnnotationBasedPersistentPropert
     }
 
     //    /**
-//     * Returns the key to be used to store the value of the property inside a Mongo {@link org.bson.Document}.
+//     * Returns the key to be used to store the value of the property inside a CDO instance.
 //     *
 //     * @return
 //     */
@@ -128,14 +129,6 @@ public class BasicCdoPersistentProperty extends AnnotationBasedPersistentPropert
     public EObjectModel getEPackageField() {
         //TODO use resolver
         return findAnnotation(EObjectModel.class);
-    }
-
-    @Override
-    public EPackage getEPackageValue() {
-        EObjectModel requiredAnnotation = getRequiredAnnotation(EObjectModel.class);
-        //TODO
-
-        return null;
     }
 
     @Override

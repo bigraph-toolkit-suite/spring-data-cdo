@@ -89,6 +89,12 @@ CDOUtil.getCDOObject(eObject).cdoID();
 
 Both can be used to retrieve an object from a resource.
 
+
+[https://www.eclipse.org/forums/index.php/t/136782/](https://www.eclipse.org/forums/index.php/t/136782/):
+> 2) detach/reattach an object
+> Whenever an object is detached from the graph it looses all its
+> CDO-specific properties: id, state, view and revision.
+
 #### Conflicts
 
 from: https://www.eclipse.org/forums/index.php/t/452339/

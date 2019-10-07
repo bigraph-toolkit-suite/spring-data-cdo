@@ -76,8 +76,6 @@ public interface CdoOperations extends DisposableBean {
 
     <T> List<T> findAll(Class<T> javaClassType, final String pathValue);
 
-    <T> CdoDeleteResult remove(T entity, final String resourcePath);
-
     /**
      * The resource path name is automatically retrieved from the annotated property. If not available
      * a fallback is used.
@@ -88,6 +86,33 @@ public interface CdoOperations extends DisposableBean {
      */
     <T> CdoDeleteResult remove(T entity);
 
+    <T> CdoDeleteResult remove(T entity, final String resourcePath);
+
+    /**
+     * Drop the resource path with the path value indicated by the entity class.
+     *
+     * @param javaType class that determines the resource path to delete. Must not be {@code null}.
+     * @param <T>      the type of the class
+     * @return
+     */
+    <T> CdoDeleteResult removeAll(final Class<T> javaType);
+
+    /**
+     * Remove all objects under the given resource path.
+     *
+     * @param resourcePath name of the resource path to remove
+     * @return
+     */
+    CdoDeleteResult removeAll(final String resourcePath);
+
     <T> CdoDeleteResult removeAll(final Class<T> javaType, final String resourcePath);
+
+
+    /**
+     * Returns the default {@link CdoConverter}.
+     *
+     * @return the default converter
+     */
+    CdoConverter getConverter();
 
 }
