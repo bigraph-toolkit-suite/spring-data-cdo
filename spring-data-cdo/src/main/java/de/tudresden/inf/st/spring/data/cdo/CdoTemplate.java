@@ -359,13 +359,14 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
         final CdoPersistentEntity<?> persistentEntity = mappingContext.getPersistentEntity(javaClassType);
         Assert.notNull(persistentEntity, "CdoPersistentEntity must not be null.");
         final boolean explicitCDOObject = persistentEntity.isExplicitCDOObject();
+        final boolean isLegacy = persistentEntity.isLegacyObject();
 
         return execute(session -> {
             List<T> collection = new LinkedList<>();
             CDOView cdoView = session.getDelegate().openView();
             CdoPersistentProperty persistentProperty;
             Class classFor;
-            if (!explicitCDOObject) {
+            if (!explicitCDOObject && !isLegacy) {
                 persistentProperty = persistentEntity.getRequiredEObjectModelProperty();
                 if (Objects.nonNull(persistentProperty.getClassFor())) {
                     classFor = persistentProperty.getClassFor();
@@ -381,7 +382,7 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
                 resource.getContents()
                         .forEach(eachObject -> {
 
-                            if (explicitCDOObject) {
+                            if (explicitCDOObject || isLegacy) {
                                 if (ClassUtils.isAssignable(ClassUtils.getUserClass(eachObject), javaClassType)) { //TODO make this part of a Query
                                     collection.add((T) javaClassType.cast(eachObject));
 //                                    return javaClassType.cast(eachObject);
@@ -423,13 +424,13 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
     protected <T> T doInsert(String repoResourcePath, T objectToSave, CdoWriter<T> writer) {
 
         Class<?> rawType = ClassUtils.getUserClass(objectToSave);
-//        TypeInformation<? extends Object> type = ClassTypeInformation.from(rawType);
         CdoPersistentEntity<?> persistentEntity = mappingContext.getRequiredPersistentEntity(rawType);
 
 //        objectToSave = maybeCallBeforeSave(objectToSave);
         EObject internalValue;
 
-        if (persistentEntity.isExplicitCDOObject()) {
+        // decide between explicit CDOObjects or custom user-defined objects
+        if (persistentEntity.isExplicitCDOObject() || persistentEntity.isLegacyObject()) {
             internalValue = (EObject) objectToSave;
         } else {
             internalValue = (EObject) cdoConverter.getInternalValue(persistentEntity, objectToSave, EObjectModel.class);
@@ -442,15 +443,15 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
         T executedResult = execute(session -> {
             CDOID identifier = null;
             try {
-                CDOUtil.getCDOObject(internalValue);
+                CDOObject cdoObject = CDOUtil.getCDOObject(internalValue);
 //                URI uri = EcoreUtil.getURI(internalValue);
 //                System.out.println("ecoreURI to save: " + uri);
-//                session.getDelegate().getPackageRegistry().putEPackage(internalValue);
+//                session.getDelegate().getPackageRegistry().putEPackage(cdoObject);
                 System.out.println("Session is = " + session);
                 CDOTransaction transaction = openTransaction(session);
                 System.out.println("CDOTransaction is = " + transaction);
-                CDOResource resource = null;
                 boolean repoPathExists = true;
+                CDOResource resource;
                 try {
                     resource = transaction.getResource(repoResourcePath, true);
                     System.out.println("Get resource: " + resource);
@@ -463,44 +464,39 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
 //                resource.getResourceSet().getPackageRegistry().put(null, internalValue);
 
 //                System.out.println("resource.cdoRevision().getID(): " + resource.cdoRevision().getID());
-
-                GeneratingIdAccessor generatingIdAccessor = new GeneratingIdAccessor(
-                        objectToSave,
-                        persistentEntity,
-                        DefaultIdentifierGenerator.INSTANCE,
-                        cdoConverter
-                );
-                Object identifier0 = generatingIdAccessor.getIdentifier();
-                if (Objects.nonNull(identifier0)) {
-                    if (ClassUtils.isAssignable(InternalCDORevision.class, identifier0.getClass())) {
-                        identifier = ((InternalCDORevision) identifier0).getID();
-                    }
-                    if (ClassUtils.isAssignable(CDOID.class, identifier0.getClass()) && Objects.nonNull(transaction.getObject((CDOID) identifier0))) {
-                        throw new CommitException();
-                    }
+                GeneratingIdAccessor generatingIdAccessor;
+                if (persistentEntity.isLegacyObject()) {
+                    generatingIdAccessor = new GeneratingIdAccessor(
+                            cdoObject,
+                            mappingContext.getRequiredPersistentEntity(ClassUtils.getUserClass(cdoObject)),
+                            DefaultIdentifierGenerator.INSTANCE,
+                            cdoConverter
+                    );
+                } else {
+                    generatingIdAccessor = new GeneratingIdAccessor(
+                            objectToSave,
+                            persistentEntity,
+                            DefaultIdentifierGenerator.INSTANCE,
+                            cdoConverter
+                    );
                 }
 
                 resource.getContents().add(internalValue); //internalValue);
                 CDOCommitInfo commit = transaction.commit();
 
-                // only for non-explicit CDOObjects: set the CDOID manually for the custom class' ID attribute
-                if (!persistentEntity.isExplicitCDOObject()) {
+                // only for non-explicit CDOObjects or LegacyCDOObjects: set the CDOID manually for the custom class' ID attribute
+                if (!persistentEntity.isExplicitCDOObject() && !persistentEntity.isLegacyObject()) {
+                    Object identifier0 = generatingIdAccessor.getIdentifier();
+                    if (Objects.nonNull(identifier0)) {
+                        if (ClassUtils.isAssignable(InternalCDORevision.class, identifier0.getClass())) {
+                            identifier = ((InternalCDORevision) identifier0).getID();
+                        }
+                        if (ClassUtils.isAssignable(CDOID.class, identifier0.getClass()) && Objects.nonNull(transaction.getObject((CDOID) identifier0))) {
+                            throw new CommitException();
+                        }
+                    }
                     identifier = CDOUtil.getCDOObject(internalValue).cdoID();
                     generatingIdAccessor.getOrSetProvidedIdentifier(identifier);
-
-                    // old approach:
-//                    if (checkIfDynamicEmfClass_NonLegacyClass(eObject.getClass())) {
-//                    if (!cdoConverter.checkIfLegacyEObject(ClassUtils.getUserClass(eObject))) {
-//                        identifier = ((CDOObject) eObject).cdoID();
-//                        generatingIdAccessor.getOrSetProvidedIdentifier(identifier);
-//                    } else {
-//                    TODO: check what method is better to retrieve the cdoID
-//                        identifier = commit.getNewObjects().get(0).getID(); // 1
-//                        String uf = uriFragment.replaceAll("\\D+", ""); // 2
-//                        identifier = CDOIDUtil.createLong(Long.valueOf(uf)); // 2
-                    // CDOID string = createCDOID(uriFragment); // 2
-//                        generatingIdAccessor.getOrSetProvidedIdentifier(identifier);
-//                    }
                 }
                 return objectToSave;
             } catch (CommitException e) {

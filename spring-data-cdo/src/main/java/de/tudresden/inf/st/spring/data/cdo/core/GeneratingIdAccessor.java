@@ -51,7 +51,7 @@ public class GeneratingIdAccessor implements IdentifierAccessor {
                                 IdentifierGenerator generator, CdoConverter cdoConverter) {
         Assert.notNull(source, "source object must not be null!");
         this.identifierProperty = persistentEntity.getIdProperty();
-        if (!persistentEntity.isExplicitCDOObject())
+        if (!persistentEntity.isExplicitCDOObject() && !persistentEntity.isLegacyObject())
             Assert.notNull(identifierProperty, "Identifier property must not be null!");
         this.source = source;
         this.cdoConverter = cdoConverter;

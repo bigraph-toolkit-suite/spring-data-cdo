@@ -30,6 +30,8 @@ public interface CdoPersistentEntity<T> extends PersistentEntity<T, CdoPersisten
      */
     boolean isExplicitCDOObject();
 
+    boolean isLegacyObject();
+
     boolean hasEObjectModelProperty();
 
     @Override

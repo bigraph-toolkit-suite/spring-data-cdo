@@ -28,6 +28,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.util.UUID;
 
 /**
+ * Requirements: CDO server must be running on localhost:2036
+ * <p>
  * Integration test for {@link de.tudresden.inf.st.spring.data.cdo.CdoTemplate}.
  * <p>
  * The required beans are configured using XML. See {@literal infrastructure.xml} inside the resource folder.

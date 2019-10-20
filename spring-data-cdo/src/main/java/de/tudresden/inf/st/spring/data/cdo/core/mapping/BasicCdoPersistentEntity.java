@@ -5,6 +5,8 @@ import de.tudresden.inf.st.spring.data.cdo.annotation.CDO;
 import de.tudresden.inf.st.spring.data.cdo.annotation.EObjectModel;
 import de.tudresden.inf.st.spring.data.cdo.repository.CdoPersistentEntity;
 import de.tudresden.inf.st.spring.data.cdo.repository.CdoPersistentProperty;
+import org.eclipse.emf.ecore.InternalEObject;
+import org.eclipse.emf.internal.cdo.object.CDOLegacyAdapter;
 import org.eclipse.emf.spi.cdo.InternalCDOObject;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
 import org.springframework.data.util.TypeInformation;
@@ -39,6 +41,7 @@ public class BasicCdoPersistentEntity<T> extends BasicPersistentEntity<T, CdoPer
 
     private MappingCdoConverter cdoConverter;
     private boolean isExplicitCdoObject = false;
+    private boolean isLegacyObject = false;
     private final String nsUri;
     private final String packageNameValue;
 
@@ -75,6 +78,9 @@ public class BasicCdoPersistentEntity<T> extends BasicPersistentEntity<T, CdoPer
             this.expression = null;
             this.expressionNsUri = null;
             this.expressionEPackageName = null;
+            if (!isExplicitCDOObject() && (ClassUtils.isAssignable(InternalEObject.class, rawType) || ClassUtils.isAssignable(CDOLegacyAdapter.class, rawType))) {
+                this.isLegacyObject = true;
+            }
         }
     }
 
@@ -82,7 +88,7 @@ public class BasicCdoPersistentEntity<T> extends BasicPersistentEntity<T, CdoPer
         Class<?>[] allInterfacesForClass = ClassUtils.getAllInterfacesForClass(rawType);
         if (allInterfacesForClass.length > 0) {
             for (Class<?> each : allInterfacesForClass) {
-                if (each.equals(InternalCDOObject.class)) {
+                if (each.equals(InternalCDOObject.class) && !ClassUtils.isAssignable(CDOLegacyAdapter.class, rawType)) {
                     isExplicitCdoObject = true;
                     break;
                 }
@@ -100,11 +106,14 @@ public class BasicCdoPersistentEntity<T> extends BasicPersistentEntity<T, CdoPer
 
     @Override
     public CdoPersistentProperty getIdProperty() {
-        if (isExplicitCDOObject())
+        if (isExplicitCDOObject()) {
             return getPersistentProperty("revision"); //TODO string!
-        return super.getIdProperty();
+        } else if (isLegacyObject()) {
+            return getPersistentProperty("idOrRevision"); //TODO string!
+        } else {
+            return super.getIdProperty();
+        }
     }
-
 
 
     @Nullable
@@ -170,6 +179,10 @@ public class BasicCdoPersistentEntity<T> extends BasicPersistentEntity<T, CdoPer
         return isExplicitCdoObject;
     }
 
+    @Override
+    public boolean isLegacyObject() {
+        return isLegacyObject;
+    }
 
     @Override
     public boolean hasEObjectModelProperty() {
