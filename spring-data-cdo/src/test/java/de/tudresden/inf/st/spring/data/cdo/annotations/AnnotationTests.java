@@ -25,7 +25,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
  * <p>
  * Java configuration is used to create the necessary beans (e.g., {@link CdoOperations}). Then, the beans are registered
  * manually via {@link AnnotationConfigApplicationContext}.
- * The required bean is then acquired by the current context via the {@link GenericApplicationContext#getBean(Class)} method.
+ * The required beans are then acquired by the current context via the {@link GenericApplicationContext#getBean(Class)} method.
  *
  * @author Dominik Grzelak
  */
@@ -33,9 +33,9 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 @TestPropertySource(locations = "classpath:test.properties") // load test properties
 public class AnnotationTests {
 
-    static GenericApplicationContext context;
-    CdoOperations operations;
-    TestCdoService cdoService;
+    private static GenericApplicationContext context;
+    private CdoOperations operations;
+    private TestCdoService cdoService;
 
     @Value("${path}")
     private String pathProperty;

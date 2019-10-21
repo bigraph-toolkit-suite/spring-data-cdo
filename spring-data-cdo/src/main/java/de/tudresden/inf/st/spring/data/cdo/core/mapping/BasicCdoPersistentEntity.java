@@ -40,7 +40,7 @@ public class BasicCdoPersistentEntity<T> extends BasicPersistentEntity<T, CdoPer
     private final Expression expressionEPackageName;
 
     private MappingCdoConverter cdoConverter;
-    private boolean isExplicitCdoObject = false;
+    private boolean isInheritedCdoObject = false;
     private boolean isLegacyObject = false;
     private final String nsUri;
     private final String packageNameValue;
@@ -56,14 +56,17 @@ public class BasicCdoPersistentEntity<T> extends BasicPersistentEntity<T, CdoPer
 //        ePackageResolver = AnnotationBasedEPackageResolver.INSTANCE;
         Class<?> rawType = typeInformation.getType();
         String fallback = StringUtils.uncapitalize(rawType.getSimpleName());
-        String fallbackNsUri = StringUtils.uncapitalize(rawType.getSimpleName());
+        String fallbackNsUri = ""; // empty string fallback 'cause this is rather an optional element
         String fallbackEPackageName = ""; // empty string fallback 'cause this is rather an optional element
-        determineIfCdoObject(rawType);
 
+        determineIfCdoObject(rawType);
+        if (!isInheritedCDOObject() && (ClassUtils.isAssignable(InternalEObject.class, rawType) || ClassUtils.isAssignable(CDOLegacyAdapter.class, rawType))) {
+            this.isLegacyObject = true;
+        }
         //TODO valid resourcepath also: cdo://repo1/sample
         //add also a boolean hasRepoInPath() to be checked from cdotemplate later: hat vorrang!
         //find the resource path of the object
-        if (this.isAnnotationPresent(CDO.class)) {
+        if (this.hasCDOAnnotation()) {
             CDO document = this.getRequiredAnnotation(CDO.class);
             this.resourcePath = StringUtils.hasText(document.path()) ? document.path() : fallback;
             this.expression = detectExpression(document.path());
@@ -78,10 +81,12 @@ public class BasicCdoPersistentEntity<T> extends BasicPersistentEntity<T, CdoPer
             this.expression = null;
             this.expressionNsUri = null;
             this.expressionEPackageName = null;
-            if (!isExplicitCDOObject() && (ClassUtils.isAssignable(InternalEObject.class, rawType) || ClassUtils.isAssignable(CDOLegacyAdapter.class, rawType))) {
-                this.isLegacyObject = true;
-            }
         }
+    }
+
+    @Override
+    public boolean hasCDOAnnotation() {
+        return isAnnotationPresent(CDO.class);
     }
 
     private void determineIfCdoObject(Class<?> rawType) {
@@ -89,7 +94,7 @@ public class BasicCdoPersistentEntity<T> extends BasicPersistentEntity<T, CdoPer
         if (allInterfacesForClass.length > 0) {
             for (Class<?> each : allInterfacesForClass) {
                 if (each.equals(InternalCDOObject.class) && !ClassUtils.isAssignable(CDOLegacyAdapter.class, rawType)) {
-                    isExplicitCdoObject = true;
+                    isInheritedCdoObject = true;
                     break;
                 }
             }
@@ -98,7 +103,7 @@ public class BasicCdoPersistentEntity<T> extends BasicPersistentEntity<T, CdoPer
 
     @Override
     public boolean hasIdProperty() {
-        if (isExplicitCDOObject() && getPersistentProperty("revision") != null) {//TODO string!
+        if (isInheritedCDOObject() && getPersistentProperty("revision") != null) {//TODO string!
             return true;
         }
         return super.hasIdProperty();
@@ -106,9 +111,9 @@ public class BasicCdoPersistentEntity<T> extends BasicPersistentEntity<T, CdoPer
 
     @Override
     public CdoPersistentProperty getIdProperty() {
-        if (isExplicitCDOObject()) {
+        if (isInheritedCDOObject()) {
             return getPersistentProperty("revision"); //TODO string!
-        } else if (isLegacyObject()) {
+        } else if (isInheritedLegacyObject()) {
             return getPersistentProperty("idOrRevision"); //TODO string!
         } else {
             return super.getIdProperty();
@@ -175,12 +180,12 @@ public class BasicCdoPersistentEntity<T> extends BasicPersistentEntity<T, CdoPer
     }
 
     @Override
-    public boolean isExplicitCDOObject() {
-        return isExplicitCdoObject;
+    public boolean isInheritedCDOObject() {
+        return isInheritedCdoObject;
     }
 
     @Override
-    public boolean isLegacyObject() {
+    public boolean isInheritedLegacyObject() {
         return isLegacyObject;
     }
 

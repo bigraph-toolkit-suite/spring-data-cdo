@@ -4,6 +4,9 @@ import de.tudresden.inf.st.spring.data.cdo.CdoOperations;
 import de.tudresden.inf.st.spring.data.cdo.core.CdoDeleteResult;
 import de.tudresden.inf.st.spring.data.cdo.repository.CdoEntityInformation;
 import de.tudresden.inf.st.spring.data.cdo.repository.CdoRepository;
+import org.eclipse.emf.cdo.util.InvalidURIException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.util.Assert;
 
@@ -17,7 +20,7 @@ import java.util.Optional;
  * @author Dominik Grzelak
  */
 public class SimpleCdoRepository<T, ID> implements CdoRepository<T, ID> {
-
+    private static final Logger LOG = LoggerFactory.getLogger(SimpleCdoRepository.class);
     private final CdoOperations cdoOperations;
     private final CdoEntityInformation<T, ID> entityInformation;
 
@@ -43,7 +46,7 @@ public class SimpleCdoRepository<T, ID> implements CdoRepository<T, ID> {
 
     @Override
     public <S extends T> Iterable<S> saveAll(Iterable<S> iterable) {
-        return null;
+        return null; //TODO
     }
 
     @Override
@@ -106,6 +109,13 @@ public class SimpleCdoRepository<T, ID> implements CdoRepository<T, ID> {
     public void deleteAll() {
         CdoDeleteResult cdoDeleteResult = cdoOperations.removeAll(entityInformation.getJavaType(), entityInformation.getPathValue());
         if (!cdoDeleteResult.wasAcknowledged()) {
+            if (cdoDeleteResult instanceof CdoDeleteResult.UnacknowledgedCdoDeleteResult) {
+                Throwable reason = ((CdoDeleteResult.UnacknowledgedCdoDeleteResult) cdoDeleteResult).getReason();
+                if (reason instanceof InvalidURIException && LOG.isDebugEnabled()) {
+                    LOG.debug("Couldn't delete: " + reason.getLocalizedMessage());
+                    return;
+                }
+            }
             throw new OptimisticLockingFailureException("Delete all exception: maybe resource path doesn't exist: " + entityInformation.getPathValue());
         }
     }

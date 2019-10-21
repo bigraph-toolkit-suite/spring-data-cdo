@@ -8,6 +8,7 @@ import de.tudresden.inf.st.ecore.models.bookstoreDomainModel.impl.BookImpl;
 import de.tudresden.inf.st.ecore.models.bookstoreDomainModel.impl.BookStoreImpl;
 import de.tudresden.inf.st.spring.data.cdo.CdoDbFactory;
 import de.tudresden.inf.st.spring.data.cdo.CdoTemplate;
+import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.util.CDOUtil;
 import org.eclipse.emf.cdo.util.InvalidURIException;
 import org.junit.After;
@@ -108,7 +109,29 @@ public class CdoTemplateBookStoreIntegrationTest {
         List<BookStoreImpl> all = template.findAll(BookStoreImpl.class, FALLBACK_RESOURCE_PATH);
         Assertions.assertNotNull(all);
         Assertions.assertTrue(all.size() > 0);
-//        System.out.println(all);
+    }
+
+    @Test
+    public void find_bookstore_by_id() {
+        CdoTemplate template = new CdoTemplate(factory);
+        BookstoreDomainModelFactory factory = BookstoreDomainModelFactory.eINSTANCE;
+        Book book = factory.createBook();
+        book.setIsbn("9781234567897");
+        book.setName("Haidee Aladdin Book");
+
+        BookStore bookStore = factory.createBookStore();
+        bookStore.setLocation("Berlin");
+        bookStore.setOwner("Wenonah Bede");
+        bookStore.getBooks().add(book);
+
+        Assertions.assertEquals(template.getResourcePathFrom(bookStore.getClass()), FALLBACK_RESOURCE_PATH);
+        BookStore insert = template.insert(bookStore);
+        System.out.println("Inserted=" + insert);
+
+        CDOID idToSearch = CDOUtil.getCDOObject(insert).cdoID();
+        BookStoreImpl bookStore1 = template.find(idToSearch, BookStoreImpl.class, FALLBACK_RESOURCE_PATH);
+        Assertions.assertNotNull(bookStore1);
+        Assertions.assertEquals(idToSearch, CDOUtil.getCDOObject(bookStore1).cdoID());
     }
 
     @Test

@@ -55,7 +55,7 @@ public class MappingCdoEntityInformation<T, ID> extends PersistentEntityInformat
 
     @Override
     public boolean isNew(T entity) {
-        if (persistentEntityMetadata.isExplicitCDOObject()) {
+        if (persistentEntityMetadata.isInheritedCDOObject() || persistentEntityMetadata.isInheritedLegacyObject()) {
 
             Object value = valueLookup.apply(entity);
             if (value == null) {

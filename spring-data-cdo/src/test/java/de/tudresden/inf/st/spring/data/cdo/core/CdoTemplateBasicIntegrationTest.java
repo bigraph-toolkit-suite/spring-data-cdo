@@ -38,7 +38,7 @@ import java.util.UUID;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration("classpath:infrastructure.xml")
-public class CdoTemplateIntegrationTest {
+public class CdoTemplateBasicIntegrationTest {
     @Autowired
     CdoTemplate template;
     @Autowired
@@ -129,7 +129,7 @@ public class CdoTemplateIntegrationTest {
 
         Assertions.assertAll(() -> template.removeResourcePath(folder));
 
-        //TODO: test: will leave test2 folder intact
+        //TODO test: will leave test2 folder intact
     }
 
     @Test
@@ -173,11 +173,6 @@ public class CdoTemplateIntegrationTest {
 //        Assertions.assertTrue(removed1.wasAcknowledged());
 //        Assertions.assertNull(person.id); // cdo-specific properties must be null
 //
-        Person insert = template.insert(person);
-//        CdoDeleteResult removed2 = template.remove(person);
-//        Assertions.assertEquals(1, removed2.getDeletedCount());
-//        Assertions.assertTrue(removed2.wasAcknowledged());
-
     }
 
     // *****

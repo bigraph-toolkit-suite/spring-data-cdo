@@ -3,8 +3,6 @@ package de.tudresden.inf.st.spring.data.cdo.core.mapping;
 import de.tudresden.inf.st.spring.data.cdo.annotation.EObjectModel;
 import de.tudresden.inf.st.spring.data.cdo.repository.CdoPersistentEntity;
 import de.tudresden.inf.st.spring.data.cdo.repository.CdoPersistentProperty;
-import org.eclipse.emf.cdo.common.id.CDOID;
-import org.eclipse.emf.ecore.EPackage;
 import org.springframework.data.mapping.Association;
 import org.springframework.data.mapping.MappingException;
 import org.springframework.data.mapping.model.*;
@@ -51,7 +49,7 @@ public class BasicCdoPersistentProperty extends AnnotationBasedPersistentPropert
         this.fieldNamingStrategy = fieldNamingStrategy == null ? PropertyNameFieldNamingStrategy.INSTANCE
                 : fieldNamingStrategy;
 
-        if (!owner.isExplicitCDOObject()) {
+        if (!owner.isInheritedCDOObject()) {
 
             EObjectModel field = findAnnotation(EObjectModel.class);
             if (Objects.nonNull(field)) {

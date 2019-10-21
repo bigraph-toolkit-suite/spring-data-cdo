@@ -118,7 +118,7 @@ public class MappingCdoConverter implements CdoConverter, ApplicationContextAwar
     public <S extends Object> S read(@NonNull Class<S> javaClassType, EObject cdoObject) {
         final CdoPersistentEntity<?> persistentEntity = mappingContext.getPersistentEntity(javaClassType);
         Assert.notNull(persistentEntity, "CdoPersistentEntity must not be null");
-        final boolean explicitCDOObject = persistentEntity.isExplicitCDOObject();
+        final boolean explicitCDOObject = persistentEntity.isInheritedCDOObject();
         final CdoPersistentProperty ePackageFieldProperty = !explicitCDOObject ? persistentEntity.getRequiredEObjectModelProperty() : null;
         final CdoPersistentProperty requiredIdProperty = persistentEntity.getRequiredIdProperty();
 

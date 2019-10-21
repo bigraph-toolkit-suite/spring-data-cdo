@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Assertions;
 public class ConnectionStringTests {
 
     @Test
-    void parse_connection_string_tests_without_credentials() {
+    public void parse_connection_string_tests_without_credentials() {
         String connection = "cdo://localhost:2036/repo1/sample/repo/path";
         CdoServerConnectionString cdoConnectionStr = new CdoServerConnectionString(connection);
 
@@ -23,7 +23,7 @@ public class ConnectionStringTests {
     }
 
     @Test
-    void parse_connection_string_tests_with_credentials() {
+    public void parse_connection_string_tests_with_credentials() {
         String connection = "cdo://user:pass@localhost:2036/repo1";
         CdoServerConnectionString cdoConnectionStr = new CdoServerConnectionString(connection);
 
@@ -35,7 +35,7 @@ public class ConnectionStringTests {
     }
 
     @Test
-    void parse_connection_string_tests_multiple_hosts() {
+    public void parse_connection_string_tests_multiple_hosts() {
         String connection = "cdo://user:pass@localhost:2036,localhost:2037,127.0.0.1:2038/repo1";
         CdoServerConnectionString cdoConnectionStr = new CdoServerConnectionString(connection);
 
@@ -47,7 +47,7 @@ public class ConnectionStringTests {
     }
 
     @Test
-    void parse_malformed_connection_string_tests() {
+    public void parse_malformed_connection_string_tests() {
         String connection = "cdo:/user:pass@localhost:2036,localhost:2037,127.0.0.1:2038/repo1";
         Assertions.assertThrows(IllegalArgumentException.class, () -> new CdoServerConnectionString(connection));
         String connection2 = "//user:pass@localhost:2036,localhost:2037,127.0.0.1:2038/repo1";

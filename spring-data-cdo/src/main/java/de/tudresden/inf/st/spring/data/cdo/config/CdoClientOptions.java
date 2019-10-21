@@ -3,12 +3,12 @@ package de.tudresden.inf.st.spring.data.cdo.config;
 import de.tudresden.inf.st.spring.data.cdo.CdoServerAddress;
 import de.tudresden.inf.st.spring.data.cdo.CdoServerConnectionString;
 
+import java.util.Objects;
+
 /**
  * @author Dominik Grzelak
  */
 public class CdoClientOptions {
-
-    private final String description;
 
     private CdoServerAddress addr;
 
@@ -18,16 +18,12 @@ public class CdoClientOptions {
         this("0.0.0.0");
     }
 
-    public CdoClientOptions(String description) {
-        this.description = description;
+    public CdoClientOptions(String server) {
+        addr = new CdoServerAddress(CdoServerAddress.builder().setDescription(server));
     }
 
     public static CdoClientOptions.Builder builder() {
         return new CdoClientOptions.Builder();
-    }
-
-    public String getDescription() {
-        return description;
     }
 
     public CdoServerAddress getAddr() {
@@ -39,27 +35,34 @@ public class CdoClientOptions {
     }
 
     public static class Builder {
-        private String description = "tcp";
+        private String description = "localhost";
+        private CdoServerAddress addr;
+        private CdoCredentials cdoCredentials;
 
         public Builder() {
         }
 
-        public Builder setDescription(String description) {
+        public Builder setServer(String description) {
             this.description = description;
             return this;
         }
 
         public Builder applyConnectionString(CdoServerConnectionString connectionString) {
-            //TODO ....
+            this.description = connectionString.getServer();
+            this.addr = new CdoServerAddress(
+                    CdoServerAddress.builder()
+                            .setDescription(connectionString.getServer())
+                            .setPort(connectionString.getPort())
+            );
+            this.cdoCredentials = connectionString.getCredential();
             return this;
         }
 
         public CdoClientOptions build() {
-            return new CdoClientOptions(description);
+            CdoClientOptions cdoClientOptions = new CdoClientOptions(description);
+            cdoClientOptions.addr = this.addr;
+            cdoClientOptions.cdoCredentials = this.cdoCredentials;
+            return cdoClientOptions;
         }
     }
-
-//    public static MongoClientOptions.Builder builder(MongoClientOptions options) {
-//        return new MongoClientOptions.Builder(options);
-//    }
 }

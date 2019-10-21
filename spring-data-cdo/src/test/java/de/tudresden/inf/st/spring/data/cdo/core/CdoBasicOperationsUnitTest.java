@@ -56,7 +56,7 @@ public class CdoBasicOperationsUnitTest {
         });
 
         TestCdo test = new TestCdo();
-        Assertions.assertThrows(DataNotFoundException.class, () -> {
+        Assertions.assertThrows(IllegalStateException.class, () -> {
             operations.save(test);
         });
 

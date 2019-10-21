@@ -28,11 +28,13 @@ public interface CdoPersistentEntity<T> extends PersistentEntity<T, CdoPersisten
      *
      * @return
      */
-    boolean isExplicitCDOObject();
+    boolean isInheritedCDOObject();
 
-    boolean isLegacyObject();
+    boolean isInheritedLegacyObject();
 
     boolean hasEObjectModelProperty();
+
+    boolean hasCDOAnnotation();
 
     @Override
     CdoPersistentProperty getIdProperty();
