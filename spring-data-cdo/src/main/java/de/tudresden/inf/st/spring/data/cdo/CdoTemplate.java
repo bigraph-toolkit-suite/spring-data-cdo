@@ -632,13 +632,15 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
 
         CdoPersistentEntity<?> persistentEntity = mappingContext.getPersistentEntity(classType);
         Assert.notNull(persistentEntity, "CdoPersistentEntity must not be null.");
-
         boolean explicitCDOObject = persistentEntity.isExplicitCDOObject();
-        CdoPersistentProperty persistentProperty;
+        boolean isLegacyObject = persistentEntity.isLegacyObject();
+
         Class<?> classFor;
+        CdoPersistentProperty persistentProperty;
         String nsUri = persistentEntity.getNsUri();
         String packageName = persistentEntity.getPackageName();
-        if (!explicitCDOObject) {
+
+        if (!explicitCDOObject && !isLegacyObject) {
             persistentProperty = persistentEntity.getRequiredEObjectModelProperty(); //(EObjectModel.class);
 //            Assert.isTrue(Objects.nonNull(persistentProperty) && Objects.nonNull(persistentProperty.getClassFor()));
             if (Objects.nonNull(persistentProperty.getClassFor())) {
@@ -658,7 +660,7 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
                 resource = cdoTransaction.getResource(resourcePath);
                 Collection<EObject> toRemove = new LinkedList<>();
                 for (EObject each : resource.getContents()) {
-                    if (explicitCDOObject) {
+                    if (explicitCDOObject || isLegacyObject) {
                         if (ClassUtils.isAssignable(ClassUtils.getUserClass(each), classType)) { //TODO make this part of a Query
                             toRemove.add(each);
                         }
@@ -675,7 +677,8 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
                 cdoTransaction.commit();
                 return CdoDeleteResult.acknowledged(toRemove.size());
             } catch (InvalidURIException e) { // when the resource path doesn't exists
-                return CdoDeleteResult.acknowledged(0);
+//                potentiallyConvertRuntimeException(e, exceptionTranslator);
+                return CdoDeleteResult.unacknowledged(e);
             } catch (CommitException | InterruptedException e) {
                 // when the lock failed  or when commiting e.g., because of concurrent access
                 return CdoDeleteResult.unacknowledged(e);
@@ -701,40 +704,40 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
             CDOResource resource;
             CDOID cdoid = null;
             try {
-
                 resource = transaction.getResource(resourcePath);
-                EObject oldDBObject;
+                EObject remoteCdoObject;
                 if (persistentEntity.isExplicitCDOObject()) {
-                    //entity shall be equal to oldDBObject
+                    //entity shall be equal to remoteCdoObject
                     cdoid = ((CDOObject) entity).cdoID();
-                    oldDBObject = transaction.getObject(cdoid);
+                } else if (persistentEntity.isLegacyObject()) {
+                    cdoid = CDOUtil.getCDOObject((EObject) entity).cdoID();
                 } else {
-//                    EObject internalValue = (EObject) cdoConverter.getInternalValue(persistentEntity, entity, EObjectModel.class);
-//                    String uriFragment = EcoreUtil.getURI(internalValue).fragment();
-//                    cdoid = CDOUtil.getCDOObject(internalValue).cdoID(); // this is not working!
-                    //transaction.getResource(resourcePath).getEObject(uriFragment);
                     cdoid = (CDOID) persistentEntity.getIdentifierAccessor(entity).getRequiredIdentifier();
-                    oldDBObject = transaction.getObject(cdoid);
                 }
-                if (Objects.isNull(oldDBObject))
+                remoteCdoObject = transaction.getObject(cdoid);
+                if (Objects.isNull(remoteCdoObject))
                     throw new DataNotFoundException("Object with ID=" + cdoid + " not found.");
-                CDOUtil.getCDOObject(oldDBObject).cdoWriteLock().lock(delegate.getOptions().getWriteLockoutTimeout());
-                EcoreUtil.delete(oldDBObject, true);
-                resource.getContents().remove(oldDBObject);
+                CDOUtil.getCDOObject(remoteCdoObject).cdoWriteLock().lock(delegate.getOptions().getWriteLockoutTimeout());
+                EcoreUtil.delete(remoteCdoObject, true);
+                resource.getContents().remove(remoteCdoObject);
                 CDOCommitInfo commit = transaction.commit();
 
                 // "Whenever an object is detached from the graph it looses all its CDO-specific properties: id, state, view and revision."
                 // However, for non-explicit CDO objects we have to unset the ID property manually
-                if (!persistentEntity.isExplicitCDOObject()) {
+                if (!persistentEntity.isExplicitCDOObject() && !persistentEntity.isLegacyObject()) {
                     persistentEntity.getPropertyAccessor(entity).setProperty(persistentEntity.getRequiredIdProperty(), null);
                     // override the "resetted" model property from the entity with the CDO one
                     // the CDO-specific stuff is unsetted already
-                    if (ClassUtils.isAssignable(CDOLegacyAdapter.class, oldDBObject.getClass())) {
-                        oldDBObject = CDOUtil.getEObject(oldDBObject);
+                    if (ClassUtils.isAssignable(CDOLegacyAdapter.class, remoteCdoObject.getClass())) {
+                        remoteCdoObject = CDOUtil.getEObject(remoteCdoObject);
                     } else {
-                        oldDBObject = CDOUtil.getCDOObject(oldDBObject);
+                        remoteCdoObject = CDOUtil.getCDOObject(remoteCdoObject);
                     }
-                    persistentEntity.getPropertyAccessor(entity).setProperty(persistentEntity.getRequiredEObjectModelProperty(), oldDBObject);
+                    persistentEntity.getPropertyAccessor(entity).setProperty(persistentEntity.getRequiredEObjectModelProperty(), remoteCdoObject);
+                } else if (persistentEntity.isLegacyObject()) {
+                    CdoPersistentEntity<?> persistentEntity0 = mappingContext.getPersistentEntity(CDOUtil.getCDOObject((EObject) entity).getClass());
+                    Assert.notNull(persistentEntity0, "Persistent entity of a object in legacy mode must not be null.");
+                    persistentEntity0.getPropertyAccessor(CDOUtil.getCDOObject((EObject) entity)).setProperty(persistentEntity0.getRequiredIdProperty(), null);
                 }
 
                 deleteResult = CdoDeleteResult.acknowledged(1);
