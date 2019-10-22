@@ -1,9 +1,10 @@
-package de.tudresden.inf.st.spring.data.cdo;
+    package de.tudresden.inf.st.spring.data.cdo;
 
 import de.tudresden.inf.st.spring.data.cdo.config.CdoClientSessionOptions;
 import de.tudresden.inf.st.spring.data.cdo.core.CdoExceptionTranslator;
 import de.tudresden.inf.st.spring.data.cdo.repository.CdoDatabase;
 import org.eclipse.emf.cdo.server.IRepository;
+import org.eclipse.net4j.util.lifecycle.LifecycleException;
 import org.springframework.beans.factory.DisposableBean;
 
 /**
@@ -35,7 +36,7 @@ public class SimpleCdoDbFactory extends CdoDbFactorySupport<CdoClient> implement
         return getCdoClient().getRepository(getRepositoryName());
     }
 
-    public CdoClientSession getSession(CdoClientSessionOptions options) {
+    public CdoClientSession getSession(CdoClientSessionOptions options) throws LifecycleException {
         return getCdoClient().startSession(options);
     }
 

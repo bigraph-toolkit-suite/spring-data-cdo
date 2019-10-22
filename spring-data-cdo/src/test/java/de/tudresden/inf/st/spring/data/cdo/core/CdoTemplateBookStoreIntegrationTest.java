@@ -44,6 +44,7 @@ public class CdoTemplateBookStoreIntegrationTest {
     private CdoDbFactory factory;
 
     private ConfigurableApplicationContext context;
+    BookstoreDomainModelFactory bookStorefactory = BookstoreDomainModelFactory.eINSTANCE;
 
     private static final String TEST_RESOURCE_PATH = "/junit/bookstore/";
     private static final String BOOK_TEST_RESOURCE_PATH = "/junit/books/";
@@ -74,12 +75,12 @@ public class CdoTemplateBookStoreIntegrationTest {
     public void add_single_bookstore_entity() {
 
         CdoTemplate template = new CdoTemplate(factory);
-        BookstoreDomainModelFactory factory = BookstoreDomainModelFactory.eINSTANCE;
-        Book book = factory.createBook();
+//        BookstoreDomainModelFactory factory = BookstoreDomainModelFactory.eINSTANCE;
+        Book book = bookStorefactory.createBook();
         book.setIsbn("9781234567897");
         book.setName("Spring Data CDO - Book");
 
-        BookStore bookStore = factory.createBookStore();
+        BookStore bookStore = bookStorefactory.createBookStore();
         bookStore.setLocation("Dresden");
         bookStore.setOwner("Bleda Isolda");
         bookStore.getBooks().add(book);
@@ -90,14 +91,28 @@ public class CdoTemplateBookStoreIntegrationTest {
     }
 
     @Test
+    public void save_same_entity_not_possible() {
+        Book book = generateRandomBook(bookStorefactory);
+
+        System.out.println("Save entity the first time throws exception because the ID cannot be obtained.");
+        Assertions.assertThrows(IllegalStateException.class, () -> {
+            template.save(book, TEST_RESOURCE_PATH);
+        });
+
+        System.out.println("Insert entity first, then update entity using save operation should not fail");
+        template.insert(book, TEST_RESOURCE_PATH);
+        template.save(book, TEST_RESOURCE_PATH);
+    }
+
+    @Test
     public void add_single_bookstore_entity_use_fallback_resourcePath() {
         CdoTemplate template = new CdoTemplate(factory);
-        BookstoreDomainModelFactory factory = BookstoreDomainModelFactory.eINSTANCE;
-        Book book = factory.createBook();
+//        BookstoreDomainModelFactory factory = BookstoreDomainModelFactory.eINSTANCE;
+        Book book = bookStorefactory.createBook();
         book.setIsbn("9781234567897");
         book.setName("Haidee Aladdin Book");
 
-        BookStore bookStore = factory.createBookStore();
+        BookStore bookStore = bookStorefactory.createBookStore();
         bookStore.setLocation("Berlin");
         bookStore.setOwner("Wenonah Bede");
         bookStore.getBooks().add(book);
@@ -114,12 +129,12 @@ public class CdoTemplateBookStoreIntegrationTest {
     @Test
     public void find_bookstore_by_id() {
         CdoTemplate template = new CdoTemplate(factory);
-        BookstoreDomainModelFactory factory = BookstoreDomainModelFactory.eINSTANCE;
-        Book book = factory.createBook();
+//        BookstoreDomainModelFactory factory = BookstoreDomainModelFactory.eINSTANCE;
+        Book book = bookStorefactory.createBook();
         book.setIsbn("9781234567897");
         book.setName("Haidee Aladdin Book");
 
-        BookStore bookStore = factory.createBookStore();
+        BookStore bookStore = bookStorefactory.createBookStore();
         bookStore.setLocation("Berlin");
         bookStore.setOwner("Wenonah Bede");
         bookStore.getBooks().add(book);
@@ -137,15 +152,15 @@ public class CdoTemplateBookStoreIntegrationTest {
     @Test
     public void remove_bookstore_entity_by_id() {
         CdoTemplate template = new CdoTemplate(factory);
-        BookstoreDomainModelFactory factory = BookstoreDomainModelFactory.eINSTANCE;
-        Book book = factory.createBook();
+//        BookstoreDomainModelFactory factory = BookstoreDomainModelFactory.eINSTANCE;
+        Book book = bookStorefactory.createBook();
         book.setIsbn("9781234567897");
         book.setName("Lucasta Mariamne");
-        Book book2 = factory.createBook();
+        Book book2 = bookStorefactory.createBook();
         book2.setIsbn("1711131517191");
         book2.setName("Mignon Geraint");
 
-        BookStore bookStore = factory.createBookStore();
+        BookStore bookStore = bookStorefactory.createBookStore();
         bookStore.setLocation("France");
         bookStore.setOwner("Morgen Hasdrubal");
         bookStore.getBooks().add(book);
@@ -167,10 +182,10 @@ public class CdoTemplateBookStoreIntegrationTest {
 
         int bookCount = 10;
 
-        BookstoreDomainModelFactory factory = BookstoreDomainModelFactory.eINSTANCE;
+//        BookstoreDomainModelFactory factory = BookstoreDomainModelFactory.eINSTANCE;
 
         IntStream.range(0, bookCount)
-                .mapToObj(ix -> generateRandomBook(factory))
+                .mapToObj(ix -> generateRandomBook(bookStorefactory))
                 .forEach(eachBook -> template.insert(eachBook, BOOK_TEST_RESOURCE_PATH));
 
         System.out.println("Removing entities from the default computed resource path that doesn't exist should fail");

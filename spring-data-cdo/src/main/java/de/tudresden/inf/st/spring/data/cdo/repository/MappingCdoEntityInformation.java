@@ -2,8 +2,10 @@ package de.tudresden.inf.st.spring.data.cdo.repository;
 
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevision;
+import org.eclipse.emf.ecore.EPackage;
 import org.springframework.data.repository.core.support.PersistentEntityInformation;
 import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
 import java.util.Objects;
@@ -55,8 +57,8 @@ public class MappingCdoEntityInformation<T, ID> extends PersistentEntityInformat
 
     @Override
     public boolean isNew(T entity) {
-        if (persistentEntityMetadata.isInheritedCDOObject() || persistentEntityMetadata.isInheritedLegacyObject()) {
-
+        if (!persistentEntityMetadata.hasCDOAnnotation()) { // && (persistentEntityMetadata.isInheritedCDOObject() || persistentEntityMetadata.isInheritedLegacyObject())) {
+            Assert.isTrue(persistentEntityMetadata.isInheritedCDOObject() || persistentEntityMetadata.isInheritedLegacyObject(), "Invalid CDO entity.");
             Object value = valueLookup.apply(entity);
             if (value == null) {
                 return true;
@@ -77,6 +79,11 @@ public class MappingCdoEntityInformation<T, ID> extends PersistentEntityInformat
         return super.isNew(entity);
     }
 
+    @Override
+    public EPackage getContext() {
+        return persistentEntityMetadata.getContext();
+    }
+
     public String getPathValue() {
         return customResourcePath == null ? persistentEntityMetadata.getResourcePath() : customResourcePath;
     }
@@ -84,11 +91,6 @@ public class MappingCdoEntityInformation<T, ID> extends PersistentEntityInformat
     public String getIdAttribute() {
         return persistentEntityMetadata.getRequiredIdProperty().getName();
     }
-
-//    @Override
-//    public EPackage getEPackage() {
-//        return persistentEntityMetadata.getRequiredEPackageValue();
-//    }
 
     @Override
     public Class<ID> getIdType() {

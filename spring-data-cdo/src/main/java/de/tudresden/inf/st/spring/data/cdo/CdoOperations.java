@@ -3,6 +3,7 @@ package de.tudresden.inf.st.spring.data.cdo;
 import de.tudresden.inf.st.spring.data.cdo.core.CdoDeleteResult;
 import de.tudresden.inf.st.spring.data.cdo.repository.CdoPersistentEntity;
 import de.tudresden.inf.st.spring.data.cdo.repository.CdoPersistentProperty;
+import org.eclipse.emf.ecore.EPackage;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.mapping.context.MappingContext;
@@ -142,4 +143,15 @@ public interface CdoOperations extends DisposableBean {
      */
     CdoConverter getConverter();
 
+    /**
+     * The context of the current class type is automatically inferred by using the provided
+     * {@link EPackage} of the entity as context.
+     *
+     * @param <T>          type of the class
+     * @param javaType     the class of the entity
+     * @param context      the context of the query which is the EPackage of the entity
+     * @param resourcePath the resource path
+     * @return
+     */
+    <T> long countAll(final Class<T> javaType, final EPackage context, final String resourcePath);
 }

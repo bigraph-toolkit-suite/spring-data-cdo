@@ -13,6 +13,8 @@ public interface CdoEntityInformation<T, ID> extends EntityInformation<T, ID> {
     @Override
     boolean isNew(T entity);
 
+    EPackage getContext();
+
     /**
      * Returns whether the entity uses optimistic locking.
      *

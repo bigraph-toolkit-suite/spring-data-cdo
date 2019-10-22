@@ -2,6 +2,7 @@ package de.tudresden.inf.st.spring.data.cdo;
 
 import de.tudresden.inf.st.spring.data.cdo.config.CdoClientSessionOptions;
 import de.tudresden.inf.st.spring.data.cdo.repository.CdoDatabase;
+import org.eclipse.net4j.util.lifecycle.LifecycleException;
 import org.springframework.dao.support.PersistenceExceptionTranslator;
 
 /**
@@ -34,7 +35,7 @@ public abstract class CdoDbFactorySupport<C> implements CdoDbFactory {
     }
 
     @Override
-    public abstract CdoClientSession getSession(CdoClientSessionOptions options);
+    public abstract CdoClientSession getSession(CdoClientSessionOptions options) throws LifecycleException;
 
     /**
      * @return the CDO client object.

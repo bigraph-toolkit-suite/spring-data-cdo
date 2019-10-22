@@ -6,11 +6,21 @@ import org.springframework.data.repository.NoRepositoryBean;
 import java.util.Optional;
 
 /**
+ * Generic interface of a CDO repository.
+ *
  * @author Dominik Grzelak
  */
 @NoRepositoryBean
 public interface CdoRepository<T, ID> extends CrudRepository<T, ID> {
 
+    /**
+     * Inserts or updates and entity.
+     * If the entity is <i>new</i> it will be inserted. Otherwise, the entity is updated.
+     *
+     * @param s   the entity to save
+     * @param <S> the type of the entity
+     * @return the saved entity
+     */
     @Override
     <S extends T> S save(S s);
 

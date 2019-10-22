@@ -5,6 +5,7 @@ import de.tudresden.inf.st.spring.data.cdo.annotation.CDO;
 import de.tudresden.inf.st.spring.data.cdo.annotation.EObjectModel;
 import de.tudresden.inf.st.spring.data.cdo.repository.CdoPersistentEntity;
 import de.tudresden.inf.st.spring.data.cdo.repository.CdoPersistentProperty;
+import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.InternalEObject;
 import org.eclipse.emf.internal.cdo.object.CDOLegacyAdapter;
 import org.eclipse.emf.spi.cdo.InternalCDOObject;
@@ -17,9 +18,14 @@ import org.springframework.expression.common.LiteralExpression;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
+import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 
+import java.lang.invoke.MethodHandles;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Proxy;
 import java.util.Comparator;
 import java.util.Objects;
 
@@ -38,6 +44,8 @@ public class BasicCdoPersistentEntity<T> extends BasicPersistentEntity<T, CdoPer
     private final Expression expressionNsUri;
     @Nullable
     private final Expression expressionEPackageName;
+
+    private EPackage ePackage;
 
     private MappingCdoConverter cdoConverter;
     private boolean isInheritedCdoObject = false;
@@ -72,8 +80,10 @@ public class BasicCdoPersistentEntity<T> extends BasicPersistentEntity<T, CdoPer
             this.expression = detectExpression(document.path());
             this.expressionNsUri = detectExpression(document.nsUri());
             this.expressionEPackageName = detectExpression(document.packageName());
-            this.nsUri = StringUtils.hasText(document.nsUri()) ? document.nsUri() : fallbackNsUri;
             this.packageNameValue = StringUtils.hasText(document.packageName()) ? document.packageName() : fallbackEPackageName;
+            this.nsUri = StringUtils.hasText(document.nsUri()) ? document.nsUri() : fallbackNsUri;
+            Class aClass = document.ePackage();
+            this.tryFindEPackage(aClass);
         } else {
             this.resourcePath = fallback;
             this.nsUri = fallbackNsUri;
@@ -82,11 +92,6 @@ public class BasicCdoPersistentEntity<T> extends BasicPersistentEntity<T, CdoPer
             this.expressionNsUri = null;
             this.expressionEPackageName = null;
         }
-    }
-
-    @Override
-    public boolean hasCDOAnnotation() {
-        return isAnnotationPresent(CDO.class);
     }
 
     private void determineIfCdoObject(Class<?> rawType) {
@@ -100,6 +105,46 @@ public class BasicCdoPersistentEntity<T> extends BasicPersistentEntity<T, CdoPer
             }
         }
     }
+
+    //Source: https://stackoverflow.com/a/49532492
+    private void tryFindEPackage(Class ePackageClass) {
+        ePackage = EPackage.Registry.INSTANCE.getEPackage(this.nsUri);
+        if (Objects.isNull(ePackage)) {
+            try {
+                //TODO: works only with Java 8
+                Object o = Proxy.newProxyInstance(
+                        Thread.currentThread().getContextClassLoader(),
+                        new Class[]{ePackageClass},
+                        (proxy, method, args) -> {
+                            Constructor<MethodHandles.Lookup> constructor = MethodHandles.Lookup.class
+                                    .getDeclaredConstructor(Class.class);
+                            constructor.setAccessible(true);
+                            constructor.newInstance(ePackageClass)
+                                    .in(ePackageClass)
+                                    .unreflectSpecial(method, ePackageClass)
+                                    .bindTo(proxy)
+                                    .invokeWithArguments();
+                            return null;
+                        }
+                );
+                ReflectionUtils.getField(ePackageClass.getField("eINSTANCE"), o);
+            } catch (NoSuchFieldException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        Assert.notNull(ePackage, "Package with nsURI=" + nsUri + " couldn't be found in the EPackage Registry.");
+    }
+
+    @Override
+    public EPackage getContext() {
+        return ePackage;
+    }
+
+    @Override
+    public boolean hasCDOAnnotation() {
+        return isAnnotationPresent(CDO.class);
+    }
+
 
     @Override
     public boolean hasIdProperty() {

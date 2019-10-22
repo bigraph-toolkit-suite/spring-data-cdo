@@ -1,5 +1,8 @@
 package de.tudresden.inf.st.spring.data.cdo.annotation;
 
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.emf.ecore.EcorePackage;
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.data.annotation.Persistent;
 
@@ -13,7 +16,7 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 @Documented
-public @interface CDO { //TODO
+public @interface CDO {
 
     @AliasFor("path")
     String value() default "";
@@ -29,7 +32,11 @@ public @interface CDO { //TODO
 
     String packageName() default "";
 
-//    @AliasFor("nsUri")
     String nsUri() default "";
 
+    String nsPrefix() default "";
+
+    Class ePackage() default Class.class; //sd default EcorePackage.eINSTANCE.getEPackage();
+
+    String ePackageBaseClass() default "";
 }

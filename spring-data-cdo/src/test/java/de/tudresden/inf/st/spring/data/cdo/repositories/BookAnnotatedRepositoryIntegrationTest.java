@@ -1,12 +1,15 @@
 package de.tudresden.inf.st.spring.data.cdo.repositories;
 
 import de.tudresden.inf.st.ecore.models.bookstoreDomainModel.Book;
+import de.tudresden.inf.st.ecore.models.bookstoreDomainModel.BookstoreDomainModelPackage;
+import de.tudresden.inf.st.ecore.models.bookstoreDomainModel.impl.BookstoreDomainModelPackageImpl;
 import de.tudresden.inf.st.spring.data.cdo.CdoOperations;
 import de.tudresden.inf.st.spring.data.cdo.CdoServerConnectionString;
 import de.tudresden.inf.st.spring.data.cdo.CdoTemplate;
 import de.tudresden.inf.st.spring.data.cdo.SimpleCdoDbFactory;
 import de.tudresden.inf.st.spring.data.cdo.repository.config.EnableCdoRepositories;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
@@ -14,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.event.annotation.BeforeTestClass;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.Arrays;
@@ -44,8 +48,16 @@ public class BookAnnotatedRepositoryIntegrationTest {
     @Autowired
     CdoOperations operations;
 
+    @BeforeClass
+    public static void setU2p() throws Exception {
+        System.out.println("Register EPackage");
+        // The package must be registered as it is later retrieved. Necessary for the CDO query.
+        BookstoreDomainModelPackage eINSTANCE = BookstoreDomainModelPackage.eINSTANCE;
+    }
+
     @Before
     public void setUp() throws Exception {
+
         bookRepository.deleteAll();
 
         bookA = new BookAnnotated("EMF");
@@ -69,7 +81,13 @@ public class BookAnnotatedRepositoryIntegrationTest {
     }
 
     @Test
-    public void name() {
+    public void save_multiple_times_has_no_effect() {
+        bookRepository.save(bookA);
+        bookRepository.save(bookA);
+    }
+
+    @Test
+    public void count_entities() {
         //TODO
         bookRepository.count();
     }

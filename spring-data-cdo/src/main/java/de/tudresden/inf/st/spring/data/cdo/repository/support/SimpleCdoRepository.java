@@ -5,6 +5,7 @@ import de.tudresden.inf.st.spring.data.cdo.core.CdoDeleteResult;
 import de.tudresden.inf.st.spring.data.cdo.repository.CdoEntityInformation;
 import de.tudresden.inf.st.spring.data.cdo.repository.CdoRepository;
 import org.eclipse.emf.cdo.util.InvalidURIException;
+import org.eclipse.emf.ecore.EPackage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.OptimisticLockingFailureException;
@@ -53,8 +54,6 @@ public class SimpleCdoRepository<T, ID> implements CdoRepository<T, ID> {
     public Optional<T> findById(ID id) {
         Class<T> javaType = entityInformation.getJavaType();
         T objectFound = cdoOperations.find(id, javaType, entityInformation.getPathValue());
-//        T t = new ObjenesisStd(true).newInstance(javaType);
-//        System.out.println(objectFound);
         return Optional.ofNullable(objectFound);
     }
 
@@ -78,6 +77,10 @@ public class SimpleCdoRepository<T, ID> implements CdoRepository<T, ID> {
 
     @Override
     public long count() {
+        Class<T> javaType = entityInformation.getJavaType();
+        EPackage context = entityInformation.getContext();
+        String resourcePath = entityInformation.getPathValue();
+        cdoOperations.countAll(javaType, context, resourcePath);
         return 0;
     }
 
