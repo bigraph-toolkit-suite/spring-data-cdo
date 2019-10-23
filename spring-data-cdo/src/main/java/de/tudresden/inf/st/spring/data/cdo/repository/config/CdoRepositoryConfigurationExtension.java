@@ -62,7 +62,7 @@ public class CdoRepositoryConfigurationExtension extends RepositoryConfiguration
         AnnotationAttributes attributes = config.getAttributes();
 
         builder.addPropertyReference("cdoOperations", attributes.getString("cdoTemplateRef"));
-//        builder.addPropertyReference(BeanNames.MONGO_TEMPLATE_BEAN_NAME, attributes.getString("cdoTemplateRef"));
+//        builder.addPropertyReference(BeanNames.CDO_TEMPLATE_BEAN_NAME, attributes.getString("cdoTemplateRef"));
     }
 
     @Override

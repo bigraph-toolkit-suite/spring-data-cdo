@@ -16,6 +16,11 @@ Otherwise an exception is thrown ala
 - Approaches on how to implement support for spring data repositories: https://stackoverflow.com/questions/20161437/custom-spring-data-repository-backend
     - but takes to much time to implement correctly
 
+FAQ: https://wiki.eclipse.org/FAQ_for_CDO_and_Net4j
+    - How can I react to remote changes to my objects?
+    - What happens in case of a conflict (two transactions changing the same object)?
+        -  transaction.options.addConflictResolver
+    
 ### CDO Server
 
 - Architecture of a Repository: http://download.eclipse.org/modeling/emf/cdo/drops/I20190517-0100/help/org.eclipse.emf.cdo.doc/html/programmers/server/Architecture.html
@@ -26,6 +31,25 @@ Otherwise an exception is thrown ala
 - Or with the eclipse cdo-server workbench. But does not work because of derby error
     - derby installation: https://medium.com/ctrl-alt-kaveet/tutorial-installing-apache-derby-4cbf03c4aaba
 
+#### Performance Issue 
+
+- Things to consider when evaluating the performance
+    - https://www.eclipse.org/forums/index.php/t/1074305/
+
+Tweaking:
+- https://wiki.eclipse.org/CDO/Tweaking_Performance
+
+### OCL
+pure:
+https://help.eclipse.org/kepler/index.jsp?topic=%2Forg.eclipse.ocl.doc%2Fhelp%2FCustomizingtheEnvironment.html
+
+CDO-OCL Queries: we need the eclass of the entity in question
+(working examples)
+createQuery(cdoTransaction, "Book.allInstances()->size()", ((BookstoreDomainModelPackage)context).getBook()).getResult()
+createQuery(cdoTransaction, "Book.allInstances()->size()", ((BookstoreDomainModelPackage)EPackage.Registry.INSTANCE.getEPackage(persistentEntity.getNsUri())).getBook()).getResult()
+CDOQuery query = createQuery(cdoTransaction, "EObject.allInstances()", EcorePackage.eINSTANCE.getEObject());
+CDOQuery query2 = createQuery(cdoTransaction, "EObject.allInstances()->size()", EcorePackage.eINSTANCE.getEObject());
+cdoTransaction.createQuery("ocl", "bookstoreDomainModel::Book.allInstances()->size()").getResultValue() // not supported exception
 
 ### CDO Client
 
@@ -38,6 +62,13 @@ Client examples:
 http://www.rcp-vision.com/cdo-connected-data-objects/
 https://wiki.eclipse.org/CDO/Hibernate_Store/Tutorial
 
+### CDO Queries
+
+- OCL, SQL, or CDO-like
+
+https://wiki.eclipse.org/CDOQuery_OCL
+https://www.eclipse.org/forums/index.php/t/760318/
+https://bugs.eclipse.org/bugs/show_bug.cgi?id=435807
 
 ### CDOID
 

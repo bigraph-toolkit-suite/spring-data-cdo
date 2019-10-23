@@ -14,8 +14,12 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * Interface that specified a basic set of CDO operations, implemented by {@link CdoTemplate}.
+ * Interface that specifies a basic set of CDO operations, implemented by {@link CdoTemplate}.
  * Not often used but a useful option for extensibility and testability (as it can be easily mocked or stubbed).
+ * <p>
+ * All methods may throw a {@link org.eclipse.emf.cdo.util.OptimisticLockingException} if something is blocking the access
+ * to some objects within the repository. The time to lock objects within {@literal n} milliseconds can be adjusted
+ * in the {@link de.tudresden.inf.st.spring.data.cdo.config.CdoClientSessionOptions}.
  *
  * @author Dominik Grzelak
  */
@@ -51,11 +55,38 @@ public interface CdoOperations extends DisposableBean {
                 .orElse(entityClass.getSimpleName());
     }
 
+    /**
+     * Use an existing session to create a new {@link CdoOperations} instance to work with.
+     * <p>
+     * The difference here is that the session object will be connected to the current {@link CdoOperations} instance
+     * and can be re-used throughout the lifecycle (without starting a new session).
+     *
+     * @param session an existing session
+     * @return
+     */
     CdoOperations withSession(CdoClientSession session);
 
+    /**
+     * Inserts an entity of type {@code T}.
+     * <p>
+     * The resource path under which the object is stored is automatically inferred using several strategies.
+     * Annotate the class correctly to avoid unwanted side effects.
+     *
+     * @param objectToSave the entity in question
+     * @param <T>          the type of the entity
+     * @return
+     */
     <T> T insert(T objectToSave);
 
-    <T> T insert(T objectToSave, String pathName);
+    /**
+     * Inserts an entity of type {@code T} under the given resource path {@code resourcePath}.
+     *
+     * @param objectToSave the entity in question
+     * @param resourcePath the resource path where the entity should be inserted
+     * @param <T>          the type of the entity
+     * @return
+     */
+    <T> T insert(T objectToSave, String resourcePath);
 
     <T> T save(T entity);
 
@@ -126,13 +157,22 @@ public interface CdoOperations extends DisposableBean {
     <T> CdoDeleteResult removeAll(final Class<T> javaType);
 
     /**
-     * Remove all objects under the given resource path.
+     * This method removes all objects under the given resource path regardless of the entity type
      *
      * @param resourcePath name of the resource path to remove
      * @return
      */
     CdoDeleteResult removeAll(final String resourcePath);
 
+    /**
+     * This method removes all entities under the given resource path with respect to the provided class type of the
+     * entity.
+     *
+     * @param javaType     the class of the entity to remove under the resource path
+     * @param resourcePath resource path in question
+     * @param <T>          the type of the entity
+     * @return
+     */
     <T> CdoDeleteResult removeAll(final Class<T> javaType, final String resourcePath);
 
 
@@ -144,12 +184,13 @@ public interface CdoOperations extends DisposableBean {
     CdoConverter getConverter();
 
     /**
-     * The context of the current class type is automatically inferred by using the provided
-     * {@link EPackage} of the entity as context.
+     * The current class type (i.e., normally an {@link org.eclipse.emf.ecore.EClass}) is automatically inferred by
+     * using the provided {@link EPackage} of the entity as context.
      *
      * @param <T>          type of the class
-     * @param javaType     the class of the entity
-     * @param context      the context of the query which is the EPackage of the entity
+     * @param javaType     the class of the entity. There must be an EClass representative belonging to the context
+     *                     (i.e., EPackage) argument
+     * @param context      the context of the query which is the EPackage of the entity itself
      * @param resourcePath the resource path
      * @return
      */

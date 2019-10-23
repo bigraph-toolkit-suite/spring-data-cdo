@@ -32,11 +32,19 @@ public @interface CDO {
 
     String packageName() default "";
 
-    String nsUri() default "";
+    String nsUri() default "http://www.eclipse.org/emf/2002/Ecore";
 
     String nsPrefix() default "";
 
-    Class ePackage() default Class.class; //sd default EcorePackage.eINSTANCE.getEPackage();
+    /**
+     * Default setting suited for dynamic generated Ecore objects
+     * @return
+     */
+    Class ePackage() default EcorePackage.class;
 
-    String ePackageBaseClass() default "";
+    /**
+     * Default setting suited for dynamic generated Ecore objects
+     * @return
+     */
+    String ePackageBaseClass() default "org.eclipse.emf.ecore.EcorePackage";
 }

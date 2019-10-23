@@ -27,8 +27,8 @@ public class SimpleCdoRepository<T, ID> implements CdoRepository<T, ID> {
 
     public SimpleCdoRepository(CdoEntityInformation<T, ID> metadata, CdoOperations cdoOperations) {
 
-        Assert.notNull(metadata, "MongoEntityInformation must not be null!");
-        Assert.notNull(cdoOperations, "MongoOperations must not be null!");
+        Assert.notNull(metadata, "CdoEntityInformation must not be null!");
+        Assert.notNull(cdoOperations, "CdoOperations must not be null!");
 
         this.entityInformation = metadata;
         this.cdoOperations = cdoOperations;

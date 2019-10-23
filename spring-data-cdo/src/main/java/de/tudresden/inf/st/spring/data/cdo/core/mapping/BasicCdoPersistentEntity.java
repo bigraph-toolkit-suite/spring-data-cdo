@@ -5,7 +5,9 @@ import de.tudresden.inf.st.spring.data.cdo.annotation.CDO;
 import de.tudresden.inf.st.spring.data.cdo.annotation.EObjectModel;
 import de.tudresden.inf.st.spring.data.cdo.repository.CdoPersistentEntity;
 import de.tudresden.inf.st.spring.data.cdo.repository.CdoPersistentProperty;
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.emf.ecore.EcorePackage;
 import org.eclipse.emf.ecore.InternalEObject;
 import org.eclipse.emf.internal.cdo.object.CDOLegacyAdapter;
 import org.eclipse.emf.spi.cdo.InternalCDOObject;
@@ -68,7 +70,7 @@ public class BasicCdoPersistentEntity<T> extends BasicPersistentEntity<T, CdoPer
         String fallbackEPackageName = ""; // empty string fallback 'cause this is rather an optional element
 
         determineIfCdoObject(rawType);
-        if (!isInheritedCDOObject() && (ClassUtils.isAssignable(InternalEObject.class, rawType) || ClassUtils.isAssignable(CDOLegacyAdapter.class, rawType))) {
+        if (!isInheritedCDOObject() && (ClassUtils.isAssignable(EObject.class, rawType) || ClassUtils.isAssignable(CDOLegacyAdapter.class, rawType))) {
             this.isLegacyObject = true;
         }
         //TODO valid resourcepath also: cdo://repo1/sample
@@ -95,6 +97,12 @@ public class BasicCdoPersistentEntity<T> extends BasicPersistentEntity<T, CdoPer
     }
 
     private void determineIfCdoObject(Class<?> rawType) {
+        //Check class itself
+        if (rawType.equals(InternalCDOObject.class) && !ClassUtils.isAssignable(CDOLegacyAdapter.class, rawType)) {
+            isInheritedCdoObject = true;
+            return;
+        }
+        // check all interfaces
         Class<?>[] allInterfacesForClass = ClassUtils.getAllInterfacesForClass(rawType);
         if (allInterfacesForClass.length > 0) {
             for (Class<?> each : allInterfacesForClass) {
@@ -108,28 +116,32 @@ public class BasicCdoPersistentEntity<T> extends BasicPersistentEntity<T, CdoPer
 
     //Source: https://stackoverflow.com/a/49532492
     private void tryFindEPackage(Class ePackageClass) {
-        ePackage = EPackage.Registry.INSTANCE.getEPackage(this.nsUri);
-        if (Objects.isNull(ePackage)) {
-            try {
-                //TODO: works only with Java 8
-                Object o = Proxy.newProxyInstance(
-                        Thread.currentThread().getContextClassLoader(),
-                        new Class[]{ePackageClass},
-                        (proxy, method, args) -> {
-                            Constructor<MethodHandles.Lookup> constructor = MethodHandles.Lookup.class
-                                    .getDeclaredConstructor(Class.class);
-                            constructor.setAccessible(true);
-                            constructor.newInstance(ePackageClass)
-                                    .in(ePackageClass)
-                                    .unreflectSpecial(method, ePackageClass)
-                                    .bindTo(proxy)
-                                    .invokeWithArguments();
-                            return null;
-                        }
-                );
-                ReflectionUtils.getField(ePackageClass.getField("eINSTANCE"), o);
-            } catch (NoSuchFieldException e) {
-                throw new RuntimeException(e);
+        if (ePackageClass.equals(EcorePackage.class)) {
+            ePackage = EcorePackage.eINSTANCE;
+        } else if (!ePackageClass.equals(Class.class)) {
+            ePackage = EPackage.Registry.INSTANCE.getEPackage(this.nsUri);
+            if (Objects.isNull(ePackage)) {
+                try {
+                    //TODO: works only with Java 8
+                    Object o = Proxy.newProxyInstance(
+                            Thread.currentThread().getContextClassLoader(),
+                            new Class[]{ePackageClass},
+                            (proxy, method, args) -> {
+                                Constructor<MethodHandles.Lookup> constructor = MethodHandles.Lookup.class
+                                        .getDeclaredConstructor(Class.class);
+                                constructor.setAccessible(true);
+                                constructor.newInstance(ePackageClass)
+                                        .in(ePackageClass)
+                                        .unreflectSpecial(method, ePackageClass)
+                                        .bindTo(proxy)
+                                        .invokeWithArguments();
+                                return null;
+                            }
+                    );
+                    ReflectionUtils.getField(ePackageClass.getField("eINSTANCE"), o);
+                } catch (NoSuchFieldException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
         Assert.notNull(ePackage, "Package with nsURI=" + nsUri + " couldn't be found in the EPackage Registry.");
@@ -209,7 +221,7 @@ public class BasicCdoPersistentEntity<T> extends BasicPersistentEntity<T, CdoPer
     @Nullable
     @Override
     public CdoPersistentProperty getEObjectModelProperty() {
-        getRequiredAnnotation(CDO.class); //the annotation @EObjectModel should only be used with @CDO
+//        getRequiredAnnotation(CDO.class); //the annotation @EObjectModel should only be used with @CDO, //TODO
         return getPersistentProperty(EObjectModel.class);
     }
 

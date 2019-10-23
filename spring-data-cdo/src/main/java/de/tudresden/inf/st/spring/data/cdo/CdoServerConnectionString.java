@@ -13,8 +13,8 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableList;
 
 /**
- * Source code is mostly adapted from com.mongodb.ConnectionString of the mongo-java-driver library
- * (<a href="https://mongodb.github.io/mongo-java-driver/3.8/javadoc/com/mongodb/ConnectionString.html">https://mongodb.github.io/mongo-java-driver/3.8/javadoc/com/mongodb/ConnectionString.html</a>).
+ * Source code is mostly adapted from {@code com.mongodb.ConnectionString} of the
+ * <a href="https://mongodb.github.io/mongo-java-driver/3.8/javadoc/com/mongodb/ConnectionString.html">mongo-java-driver library</a>.
  *
  * @author Dominik Grzelak
  * @see <a href="https://mongodb.github.io/mongo-java-driver/3.8/javadoc/com/mongodb/ConnectionString.html">https://mongodb.github.io/mongo-java-driver/3.8/javadoc/com/mongodb/ConnectionString.html</a>

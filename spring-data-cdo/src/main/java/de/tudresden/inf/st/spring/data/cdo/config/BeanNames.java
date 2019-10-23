@@ -28,11 +28,10 @@ public abstract class BeanNames {
     public static final String MAPPING_CONTEXT_BEAN_NAME = "cdoMappingContext";
 
     //	static final String INDEX_HELPER_BEAN_NAME = "indexCreationHelper";
-    static final String MONGO_BEAN_NAME = "cdoClient";
+    static final String CDO_BEAN_NAME = "cdoClient";
     static final String DB_FACTORY_BEAN_NAME = "cdoDbFactory";
-    //	static final String VALIDATING_EVENT_LISTENER_BEAN_NAME = "validatingMongoEventListener";
 //	static final String IS_NEW_STRATEGY_FACTORY_BEAN_NAME = "isNewStrategyFactory";
 //	static final String DEFAULT_CONVERTER_BEAN_NAME = "mappingConverter";
-    public static final String MONGO_TEMPLATE_BEAN_NAME = "cdoTemplate";
+    public static final String CDO_TEMPLATE_BEAN_NAME = "cdoTemplate";
 //	static final String GRID_FS_TEMPLATE_BEAN_NAME = "gridFsTemplate";
 }

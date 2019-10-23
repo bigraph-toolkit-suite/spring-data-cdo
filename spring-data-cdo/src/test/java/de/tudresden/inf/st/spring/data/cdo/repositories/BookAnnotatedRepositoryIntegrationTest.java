@@ -2,12 +2,12 @@ package de.tudresden.inf.st.spring.data.cdo.repositories;
 
 import de.tudresden.inf.st.ecore.models.bookstoreDomainModel.Book;
 import de.tudresden.inf.st.ecore.models.bookstoreDomainModel.BookstoreDomainModelPackage;
-import de.tudresden.inf.st.ecore.models.bookstoreDomainModel.impl.BookstoreDomainModelPackageImpl;
 import de.tudresden.inf.st.spring.data.cdo.CdoOperations;
 import de.tudresden.inf.st.spring.data.cdo.CdoServerConnectionString;
 import de.tudresden.inf.st.spring.data.cdo.CdoTemplate;
 import de.tudresden.inf.st.spring.data.cdo.SimpleCdoDbFactory;
 import de.tudresden.inf.st.spring.data.cdo.repository.config.EnableCdoRepositories;
+import org.eclipse.emf.cdo.util.CDOUtil;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -17,10 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.event.annotation.BeforeTestClass;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.util.Arrays;
 import java.util.Optional;
 
 /**
@@ -82,8 +80,10 @@ public class BookAnnotatedRepositoryIntegrationTest {
 
     @Test
     public void save_multiple_times_has_no_effect() {
+        System.out.println(CDOUtil.getCDOObject(bookA.model).cdoID() + " // " + bookA.id);
         bookRepository.save(bookA);
-        bookRepository.save(bookA);
+        System.out.println(CDOUtil.getCDOObject(bookA.model).cdoID() + " // " + bookA.id);
+//        bookRepository.save(bookA);
     }
 
     @Test

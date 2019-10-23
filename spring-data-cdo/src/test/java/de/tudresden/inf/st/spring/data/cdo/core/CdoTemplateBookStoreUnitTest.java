@@ -4,6 +4,7 @@ import com.github.javafaker.Faker;
 import de.tudresden.inf.st.ecore.models.bookstoreDomainModel.Book;
 import de.tudresden.inf.st.ecore.models.bookstoreDomainModel.BookStore;
 import de.tudresden.inf.st.ecore.models.bookstoreDomainModel.BookstoreDomainModelFactory;
+import de.tudresden.inf.st.ecore.models.bookstoreDomainModel.BookstoreDomainModelPackage;
 import de.tudresden.inf.st.ecore.models.bookstoreDomainModel.impl.BookImpl;
 import de.tudresden.inf.st.ecore.models.bookstoreDomainModel.impl.BookStoreImpl;
 import de.tudresden.inf.st.spring.data.cdo.CdoDbFactory;
@@ -18,7 +19,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -37,16 +37,18 @@ import java.util.stream.IntStream;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration("classpath:infrastructure.xml")
-public class CdoTemplateBookStoreIntegrationTest {
+public class CdoTemplateBookStoreUnitTest {
     @Autowired
     private CdoTemplate template;
+
     @Autowired
     private CdoDbFactory factory;
 
     private ConfigurableApplicationContext context;
-    BookstoreDomainModelFactory bookStorefactory = BookstoreDomainModelFactory.eINSTANCE;
+    private BookstoreDomainModelFactory bookStorefactory = BookstoreDomainModelFactory.eINSTANCE;
 
     private static final String TEST_RESOURCE_PATH = "/junit/bookstore/";
+    private static final String BOOKSTORE_RESOURCE_PATH = "/junit/bookstore2/";
     private static final String BOOK_TEST_RESOURCE_PATH = "/junit/books/";
     private static final String FALLBACK_RESOURCE_PATH = "bookStoreImpl";
     private static final Faker faker = new Faker();
@@ -54,20 +56,35 @@ public class CdoTemplateBookStoreIntegrationTest {
     @Autowired
     public void setApplicationContext(ConfigurableApplicationContext context) {
         this.context = context;
-        PersistentEntities entities = PersistentEntities.of(template.getConverter().getMappingContext());
-    }
-
-    @Before
-    public void setUp() throws Exception {
-        this.template.setApplicationContext(context);
+//        PersistentEntities entities = PersistentEntities.of(template.getConverter().getMappingContext());
     }
 
     @After
     public void tearDown() throws Exception {
         CdoDeleteResult cdoDeleteResult = template.removeAll(TEST_RESOURCE_PATH);
         CdoDeleteResult cdoDeleteResult2 = template.removeAll(FALLBACK_RESOURCE_PATH);
+        CdoDeleteResult cdoDeleteResult3 = template.removeAll(BOOK_TEST_RESOURCE_PATH);
+        CdoDeleteResult cdoDeleteResult4 = template.removeAll(BOOKSTORE_RESOURCE_PATH);
         Assertions.assertTrue(cdoDeleteResult.wasAcknowledged());
         Assertions.assertTrue(cdoDeleteResult2.wasAcknowledged());
+        Assertions.assertTrue(cdoDeleteResult3.wasAcknowledged());
+        Assertions.assertTrue(cdoDeleteResult4.wasAcknowledged());
+        Thread.sleep(100);
+    }
+
+
+    @Before
+    public void setUp() throws Exception {
+        this.template.setApplicationContext(context);
+        Thread.sleep(100);
+        CdoDeleteResult cdoDeleteResult = template.removeAll(TEST_RESOURCE_PATH);
+        CdoDeleteResult cdoDeleteResult2 = template.removeAll(FALLBACK_RESOURCE_PATH);
+        CdoDeleteResult cdoDeleteResult3 = template.removeAll(BOOK_TEST_RESOURCE_PATH);
+        CdoDeleteResult cdoDeleteResult4 = template.removeAll(BOOKSTORE_RESOURCE_PATH);
+        Assertions.assertTrue(cdoDeleteResult.wasAcknowledged());
+        Assertions.assertTrue(cdoDeleteResult2.wasAcknowledged());
+        Assertions.assertTrue(cdoDeleteResult3.wasAcknowledged());
+        Assertions.assertTrue(cdoDeleteResult4.wasAcknowledged());
     }
 
 
@@ -92,6 +109,7 @@ public class CdoTemplateBookStoreIntegrationTest {
 
     @Test
     public void save_same_entity_not_possible() {
+        CdoTemplate template = new CdoTemplate(factory);
         Book book = generateRandomBook(bookStorefactory);
 
         System.out.println("Save entity the first time throws exception because the ID cannot be obtained.");
@@ -107,7 +125,7 @@ public class CdoTemplateBookStoreIntegrationTest {
     @Test
     public void add_single_bookstore_entity_use_fallback_resourcePath() {
         CdoTemplate template = new CdoTemplate(factory);
-//        BookstoreDomainModelFactory factory = BookstoreDomainModelFactory.eINSTANCE;
+
         Book book = bookStorefactory.createBook();
         book.setIsbn("9781234567897");
         book.setName("Haidee Aladdin Book");
@@ -129,7 +147,7 @@ public class CdoTemplateBookStoreIntegrationTest {
     @Test
     public void find_bookstore_by_id() {
         CdoTemplate template = new CdoTemplate(factory);
-//        BookstoreDomainModelFactory factory = BookstoreDomainModelFactory.eINSTANCE;
+
         Book book = bookStorefactory.createBook();
         book.setIsbn("9781234567897");
         book.setName("Haidee Aladdin Book");
@@ -152,7 +170,7 @@ public class CdoTemplateBookStoreIntegrationTest {
     @Test
     public void remove_bookstore_entity_by_id() {
         CdoTemplate template = new CdoTemplate(factory);
-//        BookstoreDomainModelFactory factory = BookstoreDomainModelFactory.eINSTANCE;
+
         Book book = bookStorefactory.createBook();
         book.setIsbn("9781234567897");
         book.setName("Lucasta Mariamne");
@@ -181,14 +199,11 @@ public class CdoTemplateBookStoreIntegrationTest {
         CdoTemplate template = new CdoTemplate(factory);
 
         int bookCount = 10;
-
-//        BookstoreDomainModelFactory factory = BookstoreDomainModelFactory.eINSTANCE;
-
         IntStream.range(0, bookCount)
                 .mapToObj(ix -> generateRandomBook(bookStorefactory))
                 .forEach(eachBook -> template.insert(eachBook, BOOK_TEST_RESOURCE_PATH));
 
-        System.out.println("Removing entities from the default computed resource path that doesn't exist should fail");
+        System.out.println("Should fail: Removing entities from the default computed resource path that doesn't exist");
         CdoDeleteResult cdoDeleteResult = template.removeAll(BookImpl.class);
         Assertions.assertFalse(cdoDeleteResult.wasAcknowledged());
         Assertions.assertEquals(CdoDeleteResult.UnacknowledgedCdoDeleteResult.class, cdoDeleteResult.getClass());
@@ -196,10 +211,46 @@ public class CdoTemplateBookStoreIntegrationTest {
             throw ((CdoDeleteResult.UnacknowledgedCdoDeleteResult) cdoDeleteResult).getReason();
         });
 
-        System.out.println("Removing entities from the correct resource path should succeed");
+        System.out.println("Should succeed: Removing entities from the correct resource path");
         CdoDeleteResult cdoDeleteResult1 = template.removeAll(BookImpl.class, BOOK_TEST_RESOURCE_PATH);
         Assertions.assertTrue(cdoDeleteResult1.wasAcknowledged());
         Assertions.assertTrue(cdoDeleteResult1.getDeletedCount() >= 10);
+    }
+
+    @Test
+    public void count_book_entities() {
+        CdoTemplate template = new CdoTemplate(factory);
+
+        int bookCount = 10;
+        IntStream.range(0, bookCount)
+                .mapToObj(ix -> generateRandomBook(bookStorefactory))
+                .forEach(eachBook -> template.insert(eachBook, BOOK_TEST_RESOURCE_PATH));
+
+        long l = template.countAll(Book.class, BookstoreDomainModelPackage.eINSTANCE, BOOK_TEST_RESOURCE_PATH);
+        Assertions.assertTrue(l >= 10);
+    }
+
+    @Test
+    public void count_bookstore_entities() {
+        CdoTemplate template = new CdoTemplate(factory);
+
+        BookStore bookStore = bookStorefactory.createBookStore();
+        bookStore.setLocation("Poland");
+        bookStore.setOwner("Hasdrubal Morganowitsch");
+        BookStore bookStore2 = bookStorefactory.createBookStore();
+        bookStore.setLocation("France");
+        bookStore.setOwner("Morgen Hasdrubalou");
+
+        int bookCount = 4;
+        IntStream.range(0, bookCount)
+                .peek(ix -> bookStore.getBooks().add(generateRandomBook(bookStorefactory)))
+                .forEach(ix -> bookStore2.getBooks().add(generateRandomBook(bookStorefactory)));
+
+        template.insert(bookStore, BOOKSTORE_RESOURCE_PATH);
+        template.insert(bookStore2, BOOKSTORE_RESOURCE_PATH);
+
+        long l = template.countAll(BookStore.class, BookstoreDomainModelPackage.eINSTANCE, BOOKSTORE_RESOURCE_PATH);
+        Assertions.assertEquals(2, l);
     }
 
     private static Book generateRandomBook(BookstoreDomainModelFactory factory) {

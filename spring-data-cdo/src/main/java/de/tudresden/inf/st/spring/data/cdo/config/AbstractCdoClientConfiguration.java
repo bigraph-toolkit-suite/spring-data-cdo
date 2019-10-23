@@ -11,7 +11,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 /**
- * Base class for Spring Data CDO configuration to be extended for JavaConfiguration with {@link CdoClient}.
+ * Base class for Spring Data CDO configuration to be extended by a custom user class for Java-based configuration with {@link CdoClient}.
  *
  * @author Dominik Grzelak
  */
@@ -35,7 +35,7 @@ public abstract class AbstractCdoClientConfiguration extends CdoConfigurationSup
     }
 
     /**
-     * Returns the base packages to scan for MongoDB mapped entities at startup. Will return the package name of the
+     * Returns the base packages to scan for CDO mapped entities at startup. Will return the package name of the
      * configuration class' (the concrete class, not this one here) by default. So if you have a
      * {@code com.acme.AppConfig} extending {@link } the base package will be considered
      * {@code com.acme} unless the method is overridden to implement alternate behavior.

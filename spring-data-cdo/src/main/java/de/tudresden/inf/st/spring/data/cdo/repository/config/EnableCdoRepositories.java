@@ -20,7 +20,7 @@ import java.lang.annotation.*;
 public @interface EnableCdoRepositories {
     /**
      * Alias for the {@link #basePackages()} attribute. Allows for more concise annotation declarations e.g.:
-     * {@code @EnableMongoRepositories("org.my.pkg")} instead of {@code @EnableMongoRepositories(basePackages="org.my.pkg")}.
+     * {@code @EnableCdoRepositories("org.my.pkg")} instead of {@code @EnableCdoRepositories(basePackages="org.my.pkg")}.
      */
     String[] value() default {};
 
@@ -57,9 +57,10 @@ public @interface EnableCdoRepositories {
      */
     String repositoryImplementationPostfix() default "Impl";
 
+    //TODO
     /**
      * Configures the location of where to find the Spring Data named queries properties file. Will default to
-     * {@code META-INFO/mongo-named-queries.properties}.
+     * {@code META-INFO/cdo-named-queries.properties}.
      *
      * @return
      */

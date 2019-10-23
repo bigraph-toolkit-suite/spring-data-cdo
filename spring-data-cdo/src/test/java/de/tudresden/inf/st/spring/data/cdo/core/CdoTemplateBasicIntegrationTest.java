@@ -11,6 +11,7 @@ import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EcoreFactory;
+import org.eclipse.emf.ecore.EcorePackage;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -179,7 +180,7 @@ public class CdoTemplateBasicIntegrationTest {
     // Data objects for the integration test
     // *****
 
-    @CDO(path = TEST_RESOURCE_PATH)
+    @CDO(path = TEST_RESOURCE_PATH, ePackage = EcorePackage.class)
     static class Person {
 
         @Id
@@ -195,7 +196,7 @@ public class CdoTemplateBasicIntegrationTest {
         }
     }
 
-    @CDO(path = TEST_RESOURCE_PATH)
+    @CDO(path = TEST_RESOURCE_PATH, ePackage = EcorePackage.class)
     static class WithObjectModelProperty {
 
         @Id

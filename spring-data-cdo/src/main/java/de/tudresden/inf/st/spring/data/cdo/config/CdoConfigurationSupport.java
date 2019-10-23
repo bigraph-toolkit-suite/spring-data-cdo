@@ -71,7 +71,7 @@ public abstract class CdoConfigurationSupport {
     }
 
     /**
-     * Scans the given base package for entities, i.e. MongoDB specific types annotated with
+     * Scans the given base package for entities, i.e. CDO specific types annotated with
      * and
      * {@link Persistent}.
      *

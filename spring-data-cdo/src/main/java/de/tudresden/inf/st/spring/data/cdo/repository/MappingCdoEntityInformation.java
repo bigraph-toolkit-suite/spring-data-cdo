@@ -75,7 +75,6 @@ public class MappingCdoEntityInformation<T, ID> extends PersistentEntityInformat
                     String.format("Could not determine whether %s is new! Unsupported identifier or version property!", entity)
             );
         }
-//        persistentEntityMetadata.isNew(entity);
         return super.isNew(entity);
     }
 
