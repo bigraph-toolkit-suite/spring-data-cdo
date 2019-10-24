@@ -9,6 +9,7 @@ import de.tudresden.inf.st.ecore.models.bookstoreDomainModel.impl.BookImpl;
 import de.tudresden.inf.st.ecore.models.bookstoreDomainModel.impl.BookStoreImpl;
 import de.tudresden.inf.st.spring.data.cdo.CdoDbFactory;
 import de.tudresden.inf.st.spring.data.cdo.CdoTemplate;
+import de.tudresden.inf.st.spring.data.cdo.DataNotFoundException;
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.util.CDOUtil;
 import org.eclipse.emf.cdo.util.InvalidURIException;
@@ -61,30 +62,22 @@ public class CdoTemplateBookStoreUnitTest {
 
     @After
     public void tearDown() throws Exception {
+        Thread.sleep(50);
         CdoDeleteResult cdoDeleteResult = template.removeAll(TEST_RESOURCE_PATH);
         CdoDeleteResult cdoDeleteResult2 = template.removeAll(FALLBACK_RESOURCE_PATH);
         CdoDeleteResult cdoDeleteResult3 = template.removeAll(BOOK_TEST_RESOURCE_PATH);
         CdoDeleteResult cdoDeleteResult4 = template.removeAll(BOOKSTORE_RESOURCE_PATH);
-        Assertions.assertTrue(cdoDeleteResult.wasAcknowledged());
-        Assertions.assertTrue(cdoDeleteResult2.wasAcknowledged());
-        Assertions.assertTrue(cdoDeleteResult3.wasAcknowledged());
-        Assertions.assertTrue(cdoDeleteResult4.wasAcknowledged());
-        Thread.sleep(100);
     }
 
 
     @Before
     public void setUp() throws Exception {
         this.template.setApplicationContext(context);
-        Thread.sleep(100);
-        CdoDeleteResult cdoDeleteResult = template.removeAll(TEST_RESOURCE_PATH);
-        CdoDeleteResult cdoDeleteResult2 = template.removeAll(FALLBACK_RESOURCE_PATH);
-        CdoDeleteResult cdoDeleteResult3 = template.removeAll(BOOK_TEST_RESOURCE_PATH);
-        CdoDeleteResult cdoDeleteResult4 = template.removeAll(BOOKSTORE_RESOURCE_PATH);
-        Assertions.assertTrue(cdoDeleteResult.wasAcknowledged());
-        Assertions.assertTrue(cdoDeleteResult2.wasAcknowledged());
-        Assertions.assertTrue(cdoDeleteResult3.wasAcknowledged());
-        Assertions.assertTrue(cdoDeleteResult4.wasAcknowledged());
+//        Thread.sleep(50);
+//        CdoDeleteResult cdoDeleteResult = template.removeAll(TEST_RESOURCE_PATH);
+//        CdoDeleteResult cdoDeleteResult2 = template.removeAll(FALLBACK_RESOURCE_PATH);
+//        CdoDeleteResult cdoDeleteResult3 = template.removeAll(BOOK_TEST_RESOURCE_PATH);
+//        CdoDeleteResult cdoDeleteResult4 = template.removeAll(BOOKSTORE_RESOURCE_PATH);
     }
 
 
@@ -108,7 +101,7 @@ public class CdoTemplateBookStoreUnitTest {
     }
 
     @Test
-    public void save_same_entity_not_possible() {
+    public void update_entity_will_not_fail() {
         CdoTemplate template = new CdoTemplate(factory);
         Book book = generateRandomBook(bookStorefactory);
 
@@ -117,9 +110,23 @@ public class CdoTemplateBookStoreUnitTest {
             template.save(book, TEST_RESOURCE_PATH);
         });
 
+        String changeTitleTo = "New Title";
+        String changeIsbnTo = "0123456789";
         System.out.println("Insert entity first, then update entity using save operation should not fail");
         template.insert(book, TEST_RESOURCE_PATH);
+        CDOID cdoid = CDOUtil.getCDOObject(book).cdoID();
+
+        System.out.println("Update the title of the book");
+        book.setName(changeTitleTo);
         template.save(book, TEST_RESOURCE_PATH);
+        Assertions.assertEquals(cdoid, CDOUtil.getCDOObject(book).cdoID());
+        Assertions.assertEquals(changeTitleTo, book.getName());
+
+        System.out.println("Update the ISBN of the book");
+        book.setIsbn(changeIsbnTo);
+        template.save(book, TEST_RESOURCE_PATH);
+        Assertions.assertEquals(cdoid, CDOUtil.getCDOObject(book).cdoID());
+        Assertions.assertEquals(changeIsbnTo, book.getIsbn());
     }
 
     @Test
@@ -186,11 +193,13 @@ public class CdoTemplateBookStoreUnitTest {
 
 
         BookStore insert = template.insert(bookStore, TEST_RESOURCE_PATH);
-        Assertions.assertNotNull(CDOUtil.getCDOObject(insert).cdoID());
+        CDOID cdoid = CDOUtil.getCDOObject(insert).cdoID();
+        Assertions.assertNotNull(cdoid);
+        System.out.println("ID is=" + cdoid);
 
-        CdoDeleteResult remove = template.remove(insert, FALLBACK_RESOURCE_PATH);
-        Assertions.assertTrue(remove.wasAcknowledged());
-        Assertions.assertNull(CDOUtil.getCDOObject(insert).cdoID());
+        Assertions.assertThrows(DataNotFoundException.class, () -> template.remove(insert, FALLBACK_RESOURCE_PATH));
+
+        template.remove(insert, TEST_RESOURCE_PATH);
 
     }
 
@@ -248,9 +257,12 @@ public class CdoTemplateBookStoreUnitTest {
 
         template.insert(bookStore, BOOKSTORE_RESOURCE_PATH);
         template.insert(bookStore2, BOOKSTORE_RESOURCE_PATH);
+        Assertions.assertNotNull(CDOUtil.getCDOObject(bookStore).cdoID());
+        Assertions.assertNotNull(CDOUtil.getCDOObject(bookStore2).cdoID());
 
+        Assertions.assertThrows(Exception.class, () -> template.countAll(BookStoreImpl.class, BookstoreDomainModelPackage.eINSTANCE, BOOKSTORE_RESOURCE_PATH));
         long l = template.countAll(BookStore.class, BookstoreDomainModelPackage.eINSTANCE, BOOKSTORE_RESOURCE_PATH);
-        Assertions.assertEquals(2, l);
+        Assertions.assertTrue(l >= 2);
     }
 
     private static Book generateRandomBook(BookstoreDomainModelFactory factory) {

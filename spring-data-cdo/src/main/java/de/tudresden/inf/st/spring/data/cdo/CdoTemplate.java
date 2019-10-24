@@ -9,11 +9,18 @@ import de.tudresden.inf.st.spring.data.cdo.repository.CdoPersistentEntity;
 import de.tudresden.inf.st.spring.data.cdo.repository.CdoPersistentProperty;
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.CDOCommonSession;
+import org.eclipse.emf.cdo.common.branch.CDOBranchVersion;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
 import org.eclipse.emf.cdo.common.id.CDOID;
+import org.eclipse.emf.cdo.common.revision.CDORevision;
+import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
+import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
 import org.eclipse.emf.cdo.common.util.CDOException;
 import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.eresource.CDOResourceFolder;
+import org.eclipse.emf.cdo.internal.common.revision.delta.CDORevisionDeltaImpl;
+import org.eclipse.emf.cdo.internal.common.revision.delta.CDOSetFeatureDeltaImpl;
+import org.eclipse.emf.cdo.session.CDOSession;
 import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevision;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.*;
@@ -30,6 +37,8 @@ import org.eclipse.emf.internal.cdo.object.DynamicCDOObjectImpl;
 import org.eclipse.emf.internal.cdo.view.CDOStateMachine;
 import org.eclipse.emf.spi.cdo.InternalCDOObject;
 import org.eclipse.net4j.util.concurrent.IRWLockManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -70,7 +79,7 @@ import java.util.stream.Collectors;
  * @author Dominik Grzelak
  */
 public class CdoTemplate implements CdoOperations, ApplicationContextAware, ApplicationEventPublisherAware {
-//    private static final Logger LOGGER = LoggerFactory.getLogger(CdoTemplate.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CdoTemplate.class);
 
     private static final Collection<String> ITERABLE_CLASSES;
     @Deprecated
@@ -240,14 +249,9 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
         final CdoPersistentEntity<?> persistentEntity = mappingContext.getRequiredPersistentEntity(rawType);
 
         T savedResult = execute(session -> {
-//            CDOView cdoView = session.getDelegate().openView();
-            CDOTransaction trans = openTransaction(session);
-
-            CDOResource resource = trans.getOrCreateResource(repoResourcePath);
             EObject internalValue = null;
-            EObject oldDBObject = null;
             final CDOID cdoid;
-            if (persistentEntity.isNativeCDOObject() || persistentEntity.isLegacyObject()) {
+            if (persistentEntity.isNativeCdoOrLegacyMode()) {
                 internalValue = (EObject) entity;
 //                Assert.isTrue(persistentEntity.isInheritedCDOObject() || persistentEntity.isInheritedLegacyObject(), "Error: invalid CDO entity");
                 cdoid = Optional.ofNullable(CDOUtil.getCDOObject(internalValue).cdoID())
@@ -264,51 +268,67 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
                 }));
             }
 
-            resource.getResourceSet().getPackageRegistry().put(null, Optional.ofNullable(internalValue).<IllegalStateException>orElseThrow(() -> {
-                throw new IllegalStateException("The persistent entity model of the class was null. Maybe it was not properly annotated? Null values cannot be saved.");
-            }));
-
+            ////TODO this causes possibly a stackoverflow exception later when removing all objects
+//            resource.getResourceSet().getPackageRegistry().put(null, Optional.ofNullable(internalValue).<IllegalStateException>orElseThrow(() -> {
+//                throw new IllegalStateException("The persistent entity model of the class was null. Maybe it was not properly annotated? Null values cannot be saved.");
+//            }));
+            CDOTransaction transaction = null;
             try {
-                oldDBObject = Optional.ofNullable(trans.getObject(cdoid)).<DataNotFoundException>orElseThrow(() -> {
-                    throw new DataNotFoundException("Object with ID=" + cdoid + " not found.");
-                });
+                //see: https://www.eclipse.org/forums/index.php/t/203394/
 
-                CDOUtil.getCDOObject(oldDBObject).cdoWriteLock().lock(session.getOptions().getWriteLockoutTimeout());
-//                oldDBObject = internalValue;
-//                CDOUtil.getCDOObject(oldDBObject).eAllContents().remove();
-//                CDOUtil.getCDOObject(oldDBObject).cdoDirectResource().
-                resource.getContents().add(internalValue);
-                resource.getContents().remove(oldDBObject);
+                //Compute delta first between the current object and the latest revision in the store
+                CDOObject objectToUpdate = CDOUtil.getCDOObject(internalValue);
+                CDORevision currentRevision = objectToUpdate.cdoRevision();
+                CDOBranchVersion branchVersion = currentRevision.getBranch().getVersion(currentRevision.getVersion());
+                CDORevision oldRevision = session.getDelegate().getRevisionManager()
+                        .getRevisionByVersion(cdoid, branchVersion, 0, true);
+                CDORevisionDelta delta = currentRevision.compare(oldRevision);
+
+                // safest approach taken to update the historical object:
+                // Open a second audit view that gets the latest object
+                transaction = (CDOTransaction) objectToUpdate.cdoView();
+                CDOSession session2 = transaction.getSession();
+                CDOView audit = session2.openView(currentRevision);
+                EObject historicalObject = audit.getObject(objectToUpdate);
+
+                // Lock the object in question and perform the update
+                // We must copy selected features over determined by the delta above
+                // Note/Question: not all feature delta types makes sense or must be supported (?)
+                transaction.lockObjects(Collections.singleton(CDOUtil.getCDOObject(historicalObject)),
+                        IRWLockManager.LockType.WRITE, session.getOptions().getWriteLockoutTimeout());
+                for (Map.Entry<EStructuralFeature, CDOFeatureDelta> featureDelta : ((CDORevisionDeltaImpl) delta).getFeatureDeltaMap().entrySet()) {
+                    Object newValue = ((CDOSetFeatureDeltaImpl) featureDelta.getValue()).getValue();
+                    switch (featureDelta.getValue().getType()) {
+                        case SET:
+                            historicalObject.eSet(featureDelta.getKey(), newValue);
+                            break;
+                        case UNSET:
+                            historicalObject.eSet(featureDelta.getKey(), null);
+                            break;
+                        case REMOVE:
+                            EcoreUtil.remove(historicalObject, featureDelta.getKey(), newValue);
+                            break;
+                        case ADD:
+                        case LIST:
+                        case MOVE:
+                        case CONTAINER:
+                        case CLEAR:
+                            throw new UnsupportedOperationException();
+                        default:
+                            continue;
+                    }
+                }
                 // not necessary, automatic unlock after commit
 //                CDOUtil.getCDOObject(oldDBObject).cdoWriteLock().unlock();
-//                if(persistentEntity.hasIdProperty()) {
-//                    GeneratingIdAccessor generatingIdAccessor = new GeneratingIdAccessor(
-//                            entity,
-//                            persistentEntity,
-//                            DefaultIdentifierGenerator.INSTANCE,
-//                            cdoConverter
-//                    );
-//                    Object identifier0 = generatingIdAccessor.getIdentifier();
-//                    if (Objects.nonNull(identifier0)) {
-//                        if (ClassUtils.isAssignable(InternalCDORevision.class, identifier0.getClass())) {
-//                            identifier = ((InternalCDORevision) identifier0).getID();
-//                        }
-//                        if (ClassUtils.isAssignable(CDOID.class, identifier0.getClass()) && Objects.nonNull(transaction.getObject((CDOID) identifier0))) {
-//                            throw new CommitException();
-//                        }
-//                    }
-//                    identifier = CDOUtil.getCDOObject(internalValue).cdoID();
-//                    generatingIdAccessor.getOrSetProvidedIdentifier(identifier);
-//                }
-                trans.commit();
+                transaction.commit();
             } catch (CommitException e) {
                 throw new DataIntegrityViolationException(e.toString());
-            } catch (TimeoutException e) {
+            } catch (InterruptedException e) {
                 throw new OptimisticLockingFailureException(
                         String.format("Cannot save entity with ID %s to repository %s. Has it been modified meanwhile?",
                                 Objects.nonNull(cdoid) ? cdoid.toURIFragment() : "NULL", repoResourcePath), e);
             } finally {
-                closeTransaction(trans);
+                closeTransaction(transaction);
             }
             return (T) entity;
         });
@@ -318,14 +338,6 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
 
         return savedResult;
     }
-
-//    protected boolean checkIfLegacyEObject(@Nullable Class<?> o) {
-//        if (Objects.nonNull(o)) {
-////            return DYNAMIC_ECORE_CDO_CLASSES.contains(o);
-//            return CDO_LEGACY_CLASSES.contains(o);
-//        }
-//        return false;
-//    }
 
     private void closeTransaction(@Nullable CDOTransaction transaction) {
 //        Optional.ofNullable(transaction).filter(x -> !x.isClosed()).ifPresent(Closeable::close);
@@ -451,7 +463,7 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
 //            EPackage.Registry.INSTANCE.put(s, context);
 
                 CDOQuery oclQuery = null;
-                if (!persistentEntity.isLegacyObject() && !persistentEntity.isNativeCDOObject()) {
+                if (!persistentEntity.isNativeCdoOrLegacyMode()) {
                     Class<?> classFor = persistentEntity.getRequiredEObjectModelProperty().getClassFor();
                     Assert.notNull(classFor, "classFor property must not be null. Maybe it isn't defined for EObjectModel property.");
                     EClass eClassifier = (EClass) context.getEClassifier(classFor.getSimpleName());
@@ -459,7 +471,7 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
                     oclQuery = createQuery(cdoView, className + ".allInstances()->size()", eClassifier);
                 } else {
                     String className = javaType.getSimpleName();
-                    Assert.isTrue(persistentEntity.isLegacyObject() || persistentEntity.isNativeCDOObject(), "Entity is not a subclass of EObject or CDOObject.");
+//                    Assert.isTrue(persistentEntity.isLegacyObject() || persistentEntity.isNativeCDOObject(), "Entity is not a subclass of EObject or CDOObject.");
                     EClass eClassifier = (EClass) context.getEClassifier(className);
                     Assert.notNull(eClassifier, String.format("EClass %s couldn't be obtained from the provided EPackage context", className));
                     oclQuery = createQuery(cdoView, className + ".allInstances()->size()", eClassifier);
@@ -518,7 +530,7 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
         EObject internalValue;
 
         // decide between explicit CDOObjects or custom user-defined objects
-        if (persistentEntity.isNativeCDOObject() || persistentEntity.isLegacyObject()) {
+        if (persistentEntity.isNativeCdoOrLegacyMode()) { //persistentEntity.isNativeCDOObject() || persistentEntity.isLegacyObject()) {
 //            Assert.isTrue(persistentEntity.isInheritedCDOObject() || persistentEntity.isInheritedLegacyObject(), "Invalid entity");
             internalValue = (EObject) objectToSave;
         } else {
@@ -554,28 +566,19 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
 //                resource.getResourceSet().getPackageRegistry().put(null, internalValue);
 
 //                System.out.println("resource.cdoRevision().getID(): " + resource.cdoRevision().getID());
-                GeneratingIdAccessor generatingIdAccessor;
-                if (persistentEntity.isLegacyObject() || persistentEntity.isNativeCDOObject()) {
-                    generatingIdAccessor = new GeneratingIdAccessor(
-                            cdoObject,
-                            mappingContext.getRequiredPersistentEntity(ClassUtils.getUserClass(cdoObject)),
-                            DefaultIdentifierGenerator.INSTANCE,
-                            cdoConverter
-                    );
-                } else {
+
+                resource.getContents().add(internalValue);
+                CDOCommitInfo commit = transaction.commit();
+
+                // only for non-explicit CDOObjects or LegacyCDOObjects: set the CDOID manually for the custom class' ID attribute
+                if (!persistentEntity.isNativeCdoOrLegacyMode()) {
+                    GeneratingIdAccessor generatingIdAccessor;
                     generatingIdAccessor = new GeneratingIdAccessor(
                             objectToSave,
                             persistentEntity,
                             DefaultIdentifierGenerator.INSTANCE,
                             cdoConverter
                     );
-                }
-
-                resource.getContents().add(internalValue);
-                CDOCommitInfo commit = transaction.commit();
-
-                // only for non-explicit CDOObjects or LegacyCDOObjects: set the CDOID manually for the custom class' ID attribute
-                if (!persistentEntity.isNativeCDOObject() && !persistentEntity.isLegacyObject()) {
                     Object identifier0 = generatingIdAccessor.getIdentifier();
                     if (Objects.nonNull(identifier0)) {
                         if (ClassUtils.isAssignable(InternalCDORevision.class, identifier0.getClass())) {
@@ -705,8 +708,14 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
                 if (resource.getContents().size() == 0) {
                     return CdoDeleteResult.acknowledged(commit.getDetachedObjects().size());
                 }
+            } catch (InvalidURIException e) {
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug(String.format("The resource path %s couldn't be removed. Maybe it doesn't exists.", resourcePath), e);
+                }
             } catch (CommitException e) {
-                e.printStackTrace();
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("An error occurred when removing resource path", e);
+                }
             }
             return CdoDeleteResult.unacknowledged();
         });
@@ -718,45 +727,43 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
 
         CdoPersistentEntity<?> persistentEntity = mappingContext.getPersistentEntity(classType);
         Assert.notNull(persistentEntity, "CdoPersistentEntity must not be null.");
-        boolean explicitCDOObject = persistentEntity.isNativeCDOObject();
-        boolean isLegacyObject = persistentEntity.isLegacyObject();
 
         String nsUri = persistentEntity.getNsUri();
         String packageName = persistentEntity.getPackageName();
 
         return execute(session -> {
             CDOTransaction cdoTransaction = null;
+//            Collection<EObject> toRemove = new LinkedList<>();
             try {
-                Class<?> classFor;
-                CdoPersistentProperty persistentProperty = null;
-                if (!explicitCDOObject && !isLegacyObject) {
-                    persistentProperty = persistentEntity.getRequiredEObjectModelProperty();
-                    Assert.notNull(persistentProperty.getClassFor(), "classFor property must not be null for EObjectModel property");
-                    classFor = persistentProperty.getClassFor();
-                } else {
-                    classFor = classType; //EObject.class;
-                    persistentProperty = null; // not important at this stage
-                }
-
                 cdoTransaction = openTransaction(session);
-                CDOResource resource;
-                resource = cdoTransaction.getResource(resourcePath);
-                Collection<EObject> toRemove = new LinkedList<>();
-                for (EObject each : resource.getContents()) {
-                    if (explicitCDOObject || isLegacyObject) {
-                        if (ClassUtils.isAssignable(ClassUtils.getUserClass(each), classType)) { //TODO make this part of a Query
-                            toRemove.add(each);
-                        }
-                    } else {
-                        if (objectMatchesCriteria(persistentProperty, each, classFor, nsUri, packageName)) { //TODO make this part of a Query
-                            toRemove.add(each);
-                        }
-                    }
-                }
+                CDOResource resource = cdoTransaction.getResource(resourcePath);
+
+                List<CDOObject> toRemove = resource.getContents().stream()
+                        .filter(each -> {
+                            if (persistentEntity.isNativeCdoOrLegacyMode()) {
+                                if (ClassUtils.isAssignable(ClassUtils.getUserClass(each), classType)) { //TODO make this part of a Query
+//                            toRemove.add(each);
+                                    return true;
+                                }
+                            } else {
+                                CdoPersistentProperty persistentProperty = persistentEntity.getRequiredEObjectModelProperty();
+                                Assert.notNull(persistentProperty.getClassFor(), "classFor property must not be null for EObjectModel property");
+                                if (objectMatchesCriteria(persistentProperty, each, persistentProperty.getClassFor(), nsUri, packageName)) { //TODO make this part of a Query
+//                            toRemove.add(each);
+                                    return true;
+                                }
+                            }
+                            return false;
+                        })
+                        .map(CDOUtil::getCDOObject)
+                        .collect(Collectors.toList());
+
                 if (toRemove.size() > 0) {
                     // Exclusive lock to these objects
-                    cdoTransaction.lockObjects(toRemove.stream().map(CDOUtil::getCDOObject).collect(Collectors.toList()), IRWLockManager.LockType.WRITE, session.getOptions().getWriteLockoutTimeout());
-                    boolean b = resource.getContents().removeAll(toRemove);
+                    //.stream().map(CDOUtil::getCDOObject).collect(Collectors.toList())
+                    cdoTransaction.lockObjects(toRemove, IRWLockManager.LockType.WRITE, session.getOptions().getWriteLockoutTimeout());
+                    boolean b = resource.getContents().removeAll(toRemove.stream().map(CDOUtil::getEObject).collect(Collectors.toList()));
+                    EcoreUtil.deleteAll(toRemove, true);
                     Assert.isTrue(b, "Objects were not removed.");
                     cdoTransaction.commit();
                 }
@@ -793,24 +800,30 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
                 transaction = openTransaction(delegate);
                 resource = transaction.getResource(resourcePath);
                 EObject remoteCdoObject;
-                if (persistentEntity.isNativeCDOObject() || persistentEntity.isLegacyObject()) {
+                if (persistentEntity.isNativeCdoOrLegacyMode()) { //persistentEntity.isNativeCDOObject() || persistentEntity.isLegacyObject()) {
                     //entity shall be equal to remoteCdoObject
 //                    cdoid = ((CDOObject) entity).cdoID();
                     cdoid = CDOUtil.getCDOObject((EObject) entity).cdoID();
                 } else { // is annotated
                     cdoid = (CDOID) persistentEntity.getIdentifierAccessor(entity).getRequiredIdentifier();
                 }
+                //TODO:
+//                resource.cdoResource().getResourceSet().getEObject()
                 remoteCdoObject = transaction.getObject(cdoid);
                 if (Objects.isNull(remoteCdoObject))
                     throw new DataNotFoundException("Object with ID=" + cdoid + " not found.");
+                if (!resource.getURI().equals(remoteCdoObject.eResource().getURI())) {
+                    throw new DataNotFoundException(String.format("Entity with ID=%s cannot be located within the resource path=%s. Actual URI of the object is=%s",
+                            cdoid, resourcePath, remoteCdoObject.eResource().getURI()));
+                }
                 CDOUtil.getCDOObject(remoteCdoObject).cdoWriteLock().lock(delegate.getOptions().getWriteLockoutTimeout());
-                EcoreUtil.delete(remoteCdoObject, true);
                 resource.getContents().remove(remoteCdoObject);
+                EcoreUtil.delete(remoteCdoObject, true);
                 CDOCommitInfo commit = transaction.commit();
 
                 // "Whenever an object is detached from the graph it looses all its CDO-specific properties: id, state, view and revision."
-                // However, for non-explicit CDO objects we have to unset the ID property manually
-                if (!persistentEntity.isNativeCDOObject() && !persistentEntity.isLegacyObject()) {
+                // However, for non-native CDO objects we have to unset the ID property manually
+                if (!persistentEntity.isNativeCdoOrLegacyMode()) { //!persistentEntity.isNativeCDOObject() && !persistentEntity.isLegacyObject()
                     persistentEntity.getPropertyAccessor(entity).setProperty(persistentEntity.getRequiredIdProperty(), null);
                     // override the "resetted" model property from the entity with the CDO one
                     // the CDO-specific stuff is unsetted already
@@ -820,11 +833,12 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
                         remoteCdoObject = CDOUtil.getCDOObject(remoteCdoObject);
                     }
                     persistentEntity.getPropertyAccessor(entity).setProperty(persistentEntity.getRequiredEObjectModelProperty(), remoteCdoObject);
-                } else if (persistentEntity.isLegacyObject()) {
-                    CdoPersistentEntity<?> persistentEntity0 = mappingContext.getPersistentEntity(CDOUtil.getCDOObject((EObject) entity).getClass());
-                    Assert.notNull(persistentEntity0, "Persistent entity of a object in legacy mode must not be null.");
-                    persistentEntity0.getPropertyAccessor(CDOUtil.getCDOObject((EObject) entity)).setProperty(persistentEntity0.getRequiredIdProperty(), null);
                 }
+//                else if (persistentEntity.isLegacyObject()) {
+//                    CdoPersistentEntity<?> persistentEntity0 = mappingContext.getPersistentEntity(CDOUtil.getCDOObject((EObject) entity).getClass());
+//                    Assert.notNull(persistentEntity0, "Persistent entity of a object in legacy mode must not be null.");
+//                    persistentEntity0.getPropertyAccessor(CDOUtil.getCDOObject((EObject) entity)).setProperty(persistentEntity0.getRequiredIdProperty(), null);
+//                }
 
                 deleteResult = CdoDeleteResult.acknowledged(1);
             } catch (InvalidURIException e) {
@@ -914,16 +928,22 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
     }
 
     protected CDOID ensureIDisCDOID(@NonNull Object o) {
-        Class<?> rawType = ClassUtils.getUserClass(o);
+        ensureIDisCDOID(ClassUtils.getUserClass(o));
+        return (CDOID) o;
+    }
+
+    protected void ensureIDisCDOID(@NonNull Class<?> rawType) {
+        if (ClassUtils.isAssignable(CDOID.class, rawType)) {
+            return;
+        }
         boolean b = Arrays.stream(rawType.getInterfaces()).anyMatch(x -> ClassUtils.isAssignable(CDOID.class, x));
         if (!b) {
             throw new IllegalArgumentException("ID must be of class CDOID.");
         }
-        return (CDOID) o;
     }
 
     //TODO: later move to "QueryAction" related class ...
-    public boolean objectMatchesCriteria(CdoPersistentProperty persistentProperty, EObject each, Class<?> classFor, String nsUri, String packageName) {
+    public boolean objectMatchesCriteria(CdoPersistentProperty persistentProperty, EObject each, Class<?> classFor, @Nullable String nsUri, @Nullable String packageName) {
         boolean hasMatch = false;
         //is dynamic ecore class?
         if (ClassUtils.isAssignable(EObject.class, persistentProperty.getType()) && ClassUtils.isAssignable(EObject.class, each.getClass())) { //checkIfDynamicEmfClass_NonLegacyClass(persistentProperty.getType()) && checkIfDynamicEmfClass_NonLegacyClass(each.getClass())) {

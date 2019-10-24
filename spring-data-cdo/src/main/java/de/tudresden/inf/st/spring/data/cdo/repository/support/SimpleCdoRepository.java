@@ -80,8 +80,7 @@ public class SimpleCdoRepository<T, ID> implements CdoRepository<T, ID> {
         Class<T> javaType = entityInformation.getJavaType();
         EPackage context = entityInformation.getContext();
         String resourcePath = entityInformation.getPathValue();
-        cdoOperations.countAll(javaType, context, resourcePath);
-        return 0;
+        return cdoOperations.countAll(javaType, context, resourcePath);
     }
 
     @Override

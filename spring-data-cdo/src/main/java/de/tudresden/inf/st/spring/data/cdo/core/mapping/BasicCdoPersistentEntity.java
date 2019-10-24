@@ -165,10 +165,12 @@ public class BasicCdoPersistentEntity<T> extends BasicPersistentEntity<T, CdoPer
         return isAnnotationPresent(CDO.class);
     }
 
-
     @Override
     public boolean hasIdProperty() {
-        if (isNativeCDOObject() && getPersistentProperty("revision") != null) {//TODO string!
+        if (isNativeCDOObject() && Objects.nonNull(getPersistentProperty("revision"))) {//TODO string!
+            return true;
+        }
+        else if (isLegacyObject() && Objects.nonNull(getPersistentProperty("idOrRevision"))) {
             return true;
         }
         return super.hasIdProperty();

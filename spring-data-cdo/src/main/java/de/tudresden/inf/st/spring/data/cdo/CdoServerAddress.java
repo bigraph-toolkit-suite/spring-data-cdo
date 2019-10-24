@@ -26,6 +26,10 @@ public class CdoServerAddress {
         return transportType;
     }
 
+    /**
+     * server
+     * @return
+     */
     public String getDescription() {
         return description;
     }

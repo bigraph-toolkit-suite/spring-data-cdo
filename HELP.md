@@ -168,6 +168,29 @@ in this case).
 CDOView: "Think of a CDOView as a read-only transaction, it has most of the
          (same) methods for accessing models. In fact a CDOTransaction is a
          sub type of a CDOView"
+         
+         
+"For a given *CDOObject* (and with auduting enabled in the server) you can
+access any *revision* with these methods:
+
+CDOUtil.getRevisionByVersion(CDOObject, int)
+CDOUtil.getRevisionByVersion(CDOObject, CDOBranch, int)
+
+If you need the "CDOObjects" for these *revisions* you must open audit views for the time stamps of these revisions:
+
+int version = 1;
+CDOView audit = object.cdoView().getSession.openView(CDOUtil.getRevision(object, version).getTimeStamp());
+CDOObject oldObject = audit.getObject(object);"
+
+
+Revision Count:
+"You can ask for the version of the latest revision of an object by
+
+a) If you have a view/transaction open: view.getObject(id).cdoRevision().getVersion() or
+
+b) by using the revision manager: session.getRevisionManager().getRevision(id, mainBranch.getHead(), ...).getVersion()
+
+If you only use one branch (the main branch) that version is equal to the number of revisions of that object."
 
 ## Spring
 

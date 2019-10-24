@@ -78,18 +78,27 @@ public class BookAnnotatedRepositoryIntegrationTest {
         Assertions.assertEquals(((Book) byId.get().model).getName(), ((Book) bookD.model).getName());
     }
 
+    //TODO: this causes a stackoverflow error when removing
     @Test
     public void save_multiple_times_has_no_effect() {
-        System.out.println(CDOUtil.getCDOObject(bookA.model).cdoID() + " // " + bookA.id);
+        String changeTitleTo = "Maven - HowTo";
+        System.out.println(CDOUtil.getCDOObject(bookA.model).cdoID() + "<->" + bookA.id);
+        Assertions.assertEquals(CDOUtil.getCDOObject(bookA.model).cdoID(), bookA.id);
+        ((Book) bookA.model).setName(changeTitleTo);
         bookRepository.save(bookA);
-        System.out.println(CDOUtil.getCDOObject(bookA.model).cdoID() + " // " + bookA.id);
-//        bookRepository.save(bookA);
+        System.out.println(CDOUtil.getCDOObject(bookA.model).cdoID() + "<->" + bookA.id);
+        Assertions.assertEquals(CDOUtil.getCDOObject(bookA.model).cdoID(), bookA.id);
+        Assertions.assertEquals(changeTitleTo, ((Book) bookA.model).getName());
+        bookRepository.save(bookA);
+        System.out.println(CDOUtil.getCDOObject(bookA.model).cdoID() + "<->" + bookA.id);
+        Assertions.assertEquals(CDOUtil.getCDOObject(bookA.model).cdoID(), bookA.id);
+        Assertions.assertEquals(changeTitleTo, ((Book) bookA.model).getName());
     }
 
     @Test
     public void count_entities() {
-        //TODO
-        bookRepository.count();
+        long count = bookRepository.count();
+        Assertions.assertEquals(4, count);
     }
 
 }
