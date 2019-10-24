@@ -38,9 +38,17 @@ public interface CdoPersistentEntity<T> extends PersistentEntity<T, CdoPersisten
      *
      * @return
      */
-    boolean isInheritedCDOObject();
+    boolean isNativeCDOObject();
 
-    boolean isInheritedLegacyObject();
+    boolean isLegacyObject();
+
+    /**
+     * @return {@code true} if the entity is either a native CDO object or in legacy mode (but still a standard EObject),
+     * otherwise {@code false} is returned
+     */
+    default boolean isNativeCdoOrLegacyMode() {
+        return isNativeCDOObject() || isLegacyObject();
+    }
 
     boolean hasEObjectModelProperty();
 

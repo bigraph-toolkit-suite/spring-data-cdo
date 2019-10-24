@@ -8,7 +8,6 @@ import de.tudresden.inf.st.spring.data.cdo.repository.CdoPersistentProperty;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EcorePackage;
-import org.eclipse.emf.ecore.InternalEObject;
 import org.eclipse.emf.internal.cdo.object.CDOLegacyAdapter;
 import org.eclipse.emf.spi.cdo.InternalCDOObject;
 import org.springframework.data.mapping.model.BasicPersistentEntity;
@@ -69,10 +68,8 @@ public class BasicCdoPersistentEntity<T> extends BasicPersistentEntity<T, CdoPer
         String fallbackNsUri = ""; // empty string fallback 'cause this is rather an optional element
         String fallbackEPackageName = ""; // empty string fallback 'cause this is rather an optional element
 
-        determineIfCdoObject(rawType);
-        if (!isInheritedCDOObject() && (ClassUtils.isAssignable(EObject.class, rawType) || ClassUtils.isAssignable(CDOLegacyAdapter.class, rawType))) {
-            this.isLegacyObject = true;
-        }
+        determineIfNativeCdoObject(rawType);
+
         //TODO valid resourcepath also: cdo://repo1/sample
         //add also a boolean hasRepoInPath() to be checked from cdotemplate later: hat vorrang!
         //find the resource path of the object
@@ -93,24 +90,35 @@ public class BasicCdoPersistentEntity<T> extends BasicPersistentEntity<T, CdoPer
             this.expression = null;
             this.expressionNsUri = null;
             this.expressionEPackageName = null;
+            this.ePackage = null;
         }
     }
 
-    private void determineIfCdoObject(Class<?> rawType) {
-        //Check class itself
+    /**
+     * Determines whether the entity in question is a native CDO object or a standard EObject (if at all)
+     *
+     * @param rawType the class type of the entity
+     */
+    private void determineIfNativeCdoObject(Class<?> rawType) {
+        //Check class itself whether it is a native CDO Object
         if (rawType.equals(InternalCDOObject.class) && !ClassUtils.isAssignable(CDOLegacyAdapter.class, rawType)) {
             isInheritedCdoObject = true;
             return;
-        }
-        // check all interfaces
-        Class<?>[] allInterfacesForClass = ClassUtils.getAllInterfacesForClass(rawType);
-        if (allInterfacesForClass.length > 0) {
-            for (Class<?> each : allInterfacesForClass) {
-                if (each.equals(InternalCDOObject.class) && !ClassUtils.isAssignable(CDOLegacyAdapter.class, rawType)) {
-                    isInheritedCdoObject = true;
-                    break;
+        } else { // check all interfaces
+            Class<?>[] allInterfacesForClass = ClassUtils.getAllInterfacesForClass(rawType);
+            if (allInterfacesForClass.length > 0) {
+                for (Class<?> each : allInterfacesForClass) {
+                    if (each.equals(InternalCDOObject.class) && !ClassUtils.isAssignable(CDOLegacyAdapter.class, rawType)) {
+                        isInheritedCdoObject = true;
+                        break;
+                    }
                 }
             }
+        }
+
+        // if the entity is not a native CDO object, try to determine whether it is a standard EObject
+        if (!isInheritedCdoObject && (ClassUtils.isAssignable(EObject.class, rawType) || ClassUtils.isAssignable(CDOLegacyAdapter.class, rawType))) {
+            this.isLegacyObject = true;
         }
     }
 
@@ -160,7 +168,7 @@ public class BasicCdoPersistentEntity<T> extends BasicPersistentEntity<T, CdoPer
 
     @Override
     public boolean hasIdProperty() {
-        if (isInheritedCDOObject() && getPersistentProperty("revision") != null) {//TODO string!
+        if (isNativeCDOObject() && getPersistentProperty("revision") != null) {//TODO string!
             return true;
         }
         return super.hasIdProperty();
@@ -168,9 +176,9 @@ public class BasicCdoPersistentEntity<T> extends BasicPersistentEntity<T, CdoPer
 
     @Override
     public CdoPersistentProperty getIdProperty() {
-        if (isInheritedCDOObject()) {
+        if (isNativeCDOObject()) {
             return getPersistentProperty("revision"); //TODO string!
-        } else if (isInheritedLegacyObject()) {
+        } else if (isLegacyObject()) {
             return getPersistentProperty("idOrRevision"); //TODO string!
         } else {
             return super.getIdProperty();
@@ -237,12 +245,12 @@ public class BasicCdoPersistentEntity<T> extends BasicPersistentEntity<T, CdoPer
     }
 
     @Override
-    public boolean isInheritedCDOObject() {
+    public boolean isNativeCDOObject() {
         return isInheritedCdoObject;
     }
 
     @Override
-    public boolean isInheritedLegacyObject() {
+    public boolean isLegacyObject() {
         return isLegacyObject;
     }
 

@@ -58,7 +58,7 @@ public class MappingCdoEntityInformation<T, ID> extends PersistentEntityInformat
     @Override
     public boolean isNew(T entity) {
         if (!persistentEntityMetadata.hasCDOAnnotation()) { // && (persistentEntityMetadata.isInheritedCDOObject() || persistentEntityMetadata.isInheritedLegacyObject())) {
-            Assert.isTrue(persistentEntityMetadata.isInheritedCDOObject() || persistentEntityMetadata.isInheritedLegacyObject(), "Invalid CDO entity.");
+            Assert.isTrue(persistentEntityMetadata.isNativeCDOObject() || persistentEntityMetadata.isLegacyObject(), "Invalid CDO entity.");
             Object value = valueLookup.apply(entity);
             if (value == null) {
                 return true;

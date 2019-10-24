@@ -49,7 +49,7 @@ public class BasicCdoPersistentProperty extends AnnotationBasedPersistentPropert
         this.fieldNamingStrategy = fieldNamingStrategy == null ? PropertyNameFieldNamingStrategy.INSTANCE
                 : fieldNamingStrategy;
 
-        if (!owner.isInheritedCDOObject()) {
+        if (!owner.isNativeCDOObject()) {
 
             EObjectModel field = findAnnotation(EObjectModel.class);
             if (Objects.nonNull(field)) {
