@@ -8,40 +8,38 @@ This module provides infrastructure components to build repository abstractions 
 
 == Getting Started
 
-Normal use case is to store and read pure CDOObjects and EObjects or user-defined classes that implement these interface directly.
+Normal use case is to store and read native CDOObjects and EObjects.
 
-On the other hand, non-explicit CDO classes must have a distinct member attribute referring to the EObject instance in question.
+Further, classes that doesn't inherit from EObject directly must have a distinct member attribute referring to the EObject instance in question.
 
-=== Details
+To be clear, the framework doesn't perform a transformation of standard Java POJOs to Ecore representatives.
+Only native CDO objects or standard EObjects (legacy mode) are supported.
+A domain object either extend or implement EObject/CDOObject directly.
+Legacy mode means that models that are not converted for CDO support.
+See also https://wiki.eclipse.org/CDO/Preparing_EMF_Models[Preparing EMF Models]
 
-So, these two types of classes are handled a bit differently.
-There are separated in:
-- explicit CDOObject classes Are classes which are sub classes of the class CDOObject.
-Either they extend or implement EObject/CDOObject directly.
-Legacy mode is also supported.
-That means, models that are not converted for CDO support.
-See also [Preparing EMF Models](https://wiki.eclipse.org/CDO/Preparing_EMF_Models)
-- non-explicit CDOObject classes
+=== Example
 
-- They differ just in the way classes must be annotated.
-- Classes, regardless of the above types, must be annotated with @CDO at minimum.
+The following example shows some possible configurations:
 
-Three types of EObject "models/data" are supported:
+[source,java]
+----
+class Person extends EObject {}
+class Person extends CDOObject {}
 
-- Meta models (EPackage)
-- Instance models (Generated classes or dynamically created objects)
+@CDO(path = "repository/resource/path",
+        nsUri = "http://www.example.org/personDomainModel",
+        ePackage = PersonDomainModelPackage.class,
+        ePackageBaseClass = "org.example.ecore.personDomainModel.PersonDomainModelPackage")
+class PersonWrapper {
+    @Id
+    CDOID id;
+    @EObjectModel(classFor=Person.class)
+    public Person model;
+}
+----
 
-Regarding the EObjectModel annotation, the classFor attribute is necessary for the following cases:
-- instance models Not relevant for EPackage objects, but:
-- nsUri
-- packageName
-- nsUri, packageName wichtig für querying and removing objects. mind. jedoch nsUri. fehlt eins, wird ggfs. mehr gelöscht.
-
-für dynamic wird class.getSimpleName verglichen.
-Ansonsten the canonical class name (inclusive the package)
-
-Fallback:
-- packageName: class name uncapitalized, set to "" if this should be taking into account
+Non-native CDO objects and EObjects classes should be annotated to provide further details.
 
 === Events
 
@@ -63,8 +61,7 @@ Add the Maven dependency:
 
 == Building from Source
 
-You don’t need to build from source to use Spring Data (binaries in https://repo.spring.io[repo.spring.io]), but if you want to
-try out the latest and greatest, Spring Data can be easily built with the https://github.com/takari/maven-wrapper[maven wrapper].
+You don’t need to build from source to use Spring Data (binaries in https://repo.spring.io[repo.spring.io]), but if you want to try out the latest and greatest, Spring Data can be easily built with the https://github.com/takari/maven-wrapper[maven wrapper].
 You also need JDK 1.8.
 
 [source,bash]
@@ -84,10 +81,8 @@ Building the documentation builds also the project without running tests.
 ----
 
 The generated documentation is available from `target/site/reference/html/index.html`.
-The Maven profile `distribute` is provided by `spring-data-parent`. For more information
-see link:https://github.com/spring-projects/spring-data-build[https://github.com/spring-projects/spring-data-build] on
-how to set up the Asciidoc documentation.
-
+The Maven profile `distribute` is provided by `spring-data-parent`.
+For more information see link:https://github.com/spring-projects/spring-data-build[https://github.com/spring-projects/spring-data-build] on how to set up the Asciidoc documentation.
 
 == Code of Conduct
 

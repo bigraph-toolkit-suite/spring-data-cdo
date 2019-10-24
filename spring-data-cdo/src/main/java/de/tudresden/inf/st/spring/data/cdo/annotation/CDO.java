@@ -1,7 +1,5 @@
 package de.tudresden.inf.st.spring.data.cdo.annotation;
 
-import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EcorePackage;
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.data.annotation.Persistent;
@@ -38,13 +36,16 @@ public @interface CDO {
 
     /**
      * Default setting suited for dynamic generated Ecore objects
+     *
+     * @return
+     */
+    String ePackageBaseClass() default "org.eclipse.emf.ecore.EcorePackage";
+
+    /**
+     * Default setting suited for dynamic generated Ecore objects
+     *
      * @return
      */
     Class ePackage() default EcorePackage.class;
 
-    /**
-     * Default setting suited for dynamic generated Ecore objects
-     * @return
-     */
-    String ePackageBaseClass() default "org.eclipse.emf.ecore.EcorePackage";
 }
