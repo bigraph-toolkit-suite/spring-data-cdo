@@ -11,6 +11,7 @@ https://www.eclipse.org/cdo/[*Connected Data Objects (CDO) model repository*].
 
 The standard use case is to store and read native `CDOObjects` and `EObjects`.
 To be clear, the framework doesn't perform a transformation of standard Java POJOs to Ecore representatives.
+That would imply the generation of dynamic EMF models.
 Only native CDO objects or standard EObjects (and in legacy mode) are supported.
 Legacy mode: Models that are not converted for CDO support.
 See also https://wiki.eclipse.org/CDO/Preparing_EMF_Models[Preparing EMF Models]
