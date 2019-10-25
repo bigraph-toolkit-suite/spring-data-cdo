@@ -17,7 +17,8 @@ import java.util.Objects;
 @CDO(path = "junit/test/books",
         nsUri = "http://www.example.org/bookstoreDomainModel",
         ePackage = BookstoreDomainModelPackage.class,
-        ePackageBaseClass = "de.tudresden.inf.st.ecore.models.bookstoreDomainModel.BookstoreDomainModelPackage")
+        ePackageBaseClass = "de.tudresden.inf.st.ecore.models.bookstoreDomainModel.BookstoreDomainModelPackage"
+)
 public class BookAnnotated {
 
     @Id

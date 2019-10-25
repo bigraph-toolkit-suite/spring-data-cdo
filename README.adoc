@@ -4,33 +4,43 @@
 
 The primary goal of the https://projects.spring.io/spring-data[Spring Data] project is to make it easier to build Spring-powered applications that use new data access technologies such as non-relational databases, map-reduce frameworks, and cloud based data services.
 
-This module provides infrastructure components to build repository abstractions for stores dealing with the *Connected Data Objects (CDO) model repository*.
+This module provides infrastructure components to build repository abstractions for stores dealing with the
+https://www.eclipse.org/cdo/[*Connected Data Objects (CDO) model repository*].
 
 == Getting Started
 
-Normal use case is to store and read native CDOObjects and EObjects.
-
-Further, classes that doesn't inherit from EObject directly must have a distinct member attribute referring to the EObject instance in question.
-
+The standard use case is to store and read native `CDOObjects` and `EObjects`.
 To be clear, the framework doesn't perform a transformation of standard Java POJOs to Ecore representatives.
-Only native CDO objects or standard EObjects (legacy mode) are supported.
-A domain object either extend or implement EObject/CDOObject directly.
-Legacy mode means that models that are not converted for CDO support.
+Only native CDO objects or standard EObjects (and in legacy mode) are supported.
+Legacy mode: Models that are not converted for CDO support.
 See also https://wiki.eclipse.org/CDO/Preparing_EMF_Models[Preparing EMF Models]
+
+Domain models should be defined using Eclipse EMF as usual.
+Then, domain classes can be created automatically.
+They can be used afterwards with *Spring Data CDO*.
 
 === Example
 
-The following example shows some possible configurations:
+The following examples show some possible configurations.
+
+The framework works with native EMF models:
 
 [source,java]
 ----
-class Person extends EObject {}
-class Person extends CDOObject {}
+// any auto-generated EMF model or native CDO model
+interface Person extends EObject {}
+interface Person extends CDOObject {}
+----
 
-@CDO(path = "repository/resource/path",
+Non-native EMF domain classes (i.e., classes that don't extend `EObject` or the `CDOObject` interface) should be annotated in the following way to provide necessary details:
+
+[source,java]
+----
+@CDO(path = "your/repository/resource/path",
         nsUri = "http://www.example.org/personDomainModel",
         ePackage = PersonDomainModelPackage.class,
-        ePackageBaseClass = "org.example.ecore.personDomainModel.PersonDomainModelPackage")
+        ePackageBaseClass = "org.example.ecore.personDomainModel.PersonDomainModelPackage"
+)
 class PersonWrapper {
     @Id
     CDOID id;
@@ -39,11 +49,9 @@ class PersonWrapper {
 }
 ----
 
-Non-native CDO objects and EObjects classes should be annotated to provide further details.
-
 === Events
 
-One can listen to specific events thrown by repository actions for adding additional logic, if needed.
+If needed, one can listen to specific events emitted by some repository actions for adding extended behavior.
 Events are implemented for Delete, Save and Insert operations, including "after" and "before" notions for fine-grained control.
 
 === Maven configuration
