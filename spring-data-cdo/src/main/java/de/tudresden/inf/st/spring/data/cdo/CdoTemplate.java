@@ -236,12 +236,17 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
     }
 
     /**
-     * if pathName resolves to a non existing resource path within a repository a new one will be created
+     * Performs an update of the given entity at the specified resource path.
+     * <p>
+     * The latest revision in the CDO is acquired and compared with the entity. Based upon the delta, the update is
+     * performed.
+     * <p>
+     * If pathName resolves to a non existing resource path within a repository a new one will be created
      *
-     * @param entity
-     * @param repoResourcePath
-     * @param <T>
-     * @return
+     * @param entity           the entity to update
+     * @param repoResourcePath the resource path where the entity resides //TODO is not evaluated currently (!)
+     * @param <T>              the type of the entity
+     * @return the updated entity
      */
     @Override
     public <T> T save(T entity, final String repoResourcePath) {
