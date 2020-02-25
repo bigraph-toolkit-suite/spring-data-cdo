@@ -1,5 +1,7 @@
 = Spring Data CDO
 
+image::./src/main/asciidoc/images/spring-cdo-logo-white-background.png[width=50%,scalewidth=6cm]
+
 *inofficial release*
 
 The primary goal of the https://projects.spring.io/spring-data[Spring Data] project is to make it easier to build Spring-powered applications that use new data access technologies such as non-relational databases, map-reduce frameworks, and cloud based data services.
