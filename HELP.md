@@ -2,16 +2,19 @@
 
 ## Eclipse CDO
 
-- provides means to store and load bigraphical models from a CDO server
+- provides means to store/load bigraphical models to/from a CDO server
 
 Hint: net4j version of CDO Server must match with the maven dependency.
 Otherwise an exception is thrown ala 
 `org.eclipse.net4j.channel.ChannelException: Failed to register channel with peer: Protocol version 37 does not match expected version 34`
 
-- What works: 
-    - emf.cdo.version 4.5.0 and CDO Server Eclipse Neon
-    - emf.cdo.version + net4j + hibernate 4.5.0 with CDO Server Eclipse Neon
-    - emf.cdo.version + net4j + hibernate 4.7.0 with CDO Server Eclipse Oxygen
+- Installation: Possible via the Eclipse Installer (Select Eclipse CDO Server in the list and select the correct product version, see below)
+
+### Compatible Versions
+
+These versions of the Eclipse CDO Server and Maven Dependencies are working together:
+- emf.cdo.version + net4j + hibernate 4.5.0 with CDO Server Eclipse Neon
+- emf.cdo.version + net4j + hibernate 4.7.0 with CDO Server Eclipse Oxygen
 
 - Approaches on how to implement support for spring data repositories: https://stackoverflow.com/questions/20161437/custom-spring-data-repository-backend
     - but takes to much time to implement correctly

@@ -3,6 +3,7 @@
 image::./src/main/asciidoc/images/spring-cdo-logo-white-background.png[width=50%,scalewidth=6cm]
 
 *inofficial release*
+*Current version: *
 
 The primary goal of the https://projects.spring.io/spring-data[Spring Data] project is to make it easier to build Spring-powered applications that use new data access technologies such as non-relational databases, map-reduce frameworks, and cloud based data services.
 
@@ -25,6 +26,8 @@ They can be used afterwards with *Spring Data CDO*.
 === Example
 
 The following examples show some possible configurations.
+
+==== Domain classes
 
 The framework works with native EMF models:
 
@@ -51,6 +54,39 @@ class PersonWrapper {
     public Person model;
 }
 ----
+
+They effectively work like a wrapper for internal members, which are of class `EObject` or `CDOObject`. Additionally, an ID must be specified of type `CDOID` using the `@Id` annotation feature of Spring. 
+
+==== Repository Definition
+
+[source,java]
+----
+@Repository
+public interface PersonRepository extends CdoRepository<PersonWrapper, CDOID> {
+}
+----
+
+==== Some Remarks
+
+As with all EMF-related programming, the respective `EPackage` must be registered in the global package registry first (see https://download.eclipse.org/modeling/emf/emf/javadoc/2.9.0/[EPackage.Registry]). The registry provides a mapping from namespace URIs to `EPackage` instances.
+
+> Though, this framework has some internal mechanism to initialize the EPackage in the registry automatically, it may not always find it.
+
+We advise to initialize the corresponding `EPackage` that is going to be used with this framework by using standard mechanisms of EMF:
+
+[source,java]
+----
+    @BeforeClass
+    public static void beforeClass() throws Exception {
+        PersonDomainModelPackageImpl.init();
+        // Or: EPackage.Registry.INSTANCE.put("http://www.example.org/personDomainModel", PersonDomainModelPackage.eINSTANCE);
+
+        // This statement should not fail:
+        EPackage ePackage = EPackage.Registry.INSTANCE.getEPackage("http://www.example.org/personDomainModel");
+        Assert.notNull(ePackage, "Model Package couldn't be found in the EPackage Registry.");
+    }
+----
+
 
 === Events
 
