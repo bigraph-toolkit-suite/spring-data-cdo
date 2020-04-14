@@ -56,7 +56,8 @@ class PersonWrapper {
 }
 ----
 
-They effectively work like a wrapper for internal members, which are of class `EObject` or `CDOObject`. Additionally, an ID must be specified of type `CDOID` using the `@Id` annotation feature of Spring. 
+They effectively work like a wrapper for internal members, which are of class `EObject` or `CDOObject`.
+Additionally, an ID must be specified of type `CDOID` using the `@Id` annotation feature of Spring.
 
 ==== Repository Definition
 
@@ -69,7 +70,8 @@ public interface PersonRepository extends CdoRepository<PersonWrapper, CDOID> {
 
 ==== Some Remarks
 
-As with all EMF-related programming, the respective `EPackage` must be registered in the global package registry first (see https://download.eclipse.org/modeling/emf/emf/javadoc/2.9.0/[EPackage.Registry]). The registry provides a mapping from namespace URIs to `EPackage` instances.
+As with all EMF-related programming, the respective `EPackage` must be registered in the global package registry first (see https://download.eclipse.org/modeling/emf/emf/javadoc/2.9.0/[EPackage.Registry]).
+The registry provides a mapping from namespace URIs to `EPackage` instances.
 
 > Though, this framework has some internal mechanism to initialize the EPackage in the registry automatically, it may not always find it.
 
@@ -87,7 +89,6 @@ We advise to initialize the corresponding `EPackage` that is going to be used wi
         Assert.notNull(ePackage, "Model Package couldn't be found in the EPackage Registry.");
     }
 ----
-
 
 === Events
 
@@ -131,6 +132,15 @@ Building the documentation builds also the project without running tests.
 The generated documentation is available from `target/site/reference/html/index.html`.
 The Maven profile `distribute` is provided by `spring-data-parent`.
 For more information see link:https://github.com/spring-projects/spring-data-build[https://github.com/spring-projects/spring-data-build] on how to set up the Asciidoc documentation.
+
+=== Deploy
+
+[source,bash]
+----
+ $ ./mvnw clean install -DskipTests
+ $ cd spring-data-cdo
+ $ mvn deploy
+----
 
 == Code of Conduct
 
