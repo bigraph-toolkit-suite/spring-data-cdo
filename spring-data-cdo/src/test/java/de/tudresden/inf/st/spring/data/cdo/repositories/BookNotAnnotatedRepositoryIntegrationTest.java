@@ -4,10 +4,12 @@ import com.github.javafaker.Faker;
 import de.tudresden.inf.st.ecore.models.bookstoreDomainModel.Book;
 import de.tudresden.inf.st.ecore.models.bookstoreDomainModel.BookstoreDomainModelFactory;
 import de.tudresden.inf.st.ecore.models.bookstoreDomainModel.BookstoreDomainModelPackage;
+import de.tudresden.inf.st.ecore.models.bookstoreDomainModel.impl.BookstoreDomainModelPackageImpl;
 import de.tudresden.inf.st.spring.data.cdo.CdoOperations;
 import de.tudresden.inf.st.spring.data.cdo.CdoServerConnectionString;
 import de.tudresden.inf.st.spring.data.cdo.CdoTemplate;
 import de.tudresden.inf.st.spring.data.cdo.SimpleCdoDbFactory;
+import de.tudresden.inf.st.spring.data.cdo.annotation.CDO;
 import de.tudresden.inf.st.spring.data.cdo.annotation.EObjectModel;
 import de.tudresden.inf.st.spring.data.cdo.repository.config.EnableCdoRepositories;
 import org.eclipse.emf.cdo.common.id.CDOID;
@@ -15,6 +17,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -23,14 +26,29 @@ import org.springframework.data.annotation.Id;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.util.Arrays;
 import java.util.Objects;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
+ * If the class is not annotated correctly and is not a native EObject or CDOObject, an {@link IllegalArgumentException}
+ * will be thrown.
+ *
  * @author Dominik Grzelak
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
 public class BookNotAnnotatedRepositoryIntegrationTest {
+
+    @BeforeClass
+    public static void init() throws Exception {
+        System.out.println("Register EPackage");
+        // The package must be registered as it is later retrieved. Necessary for the CDO query.
+//        BookstoreDomainModelPackage eINSTANCE = BookstoreDomainModelPackage.eINSTANCE;
+        BookstoreDomainModelPackageImpl.init();
+    }
 
     @Configuration
     @EnableCdoRepositories(basePackages = "de.tudresden.inf.st.spring.data.cdo.repositories")
@@ -50,13 +68,6 @@ public class BookNotAnnotatedRepositoryIntegrationTest {
     @Autowired
     CdoOperations operations;
 
-    @BeforeClass
-    public static void setU2p() throws Exception {
-        System.out.println("Register EPackage");
-        // The package must be registered as it is later retrieved. Necessary for the CDO query.
-        BookstoreDomainModelPackage eINSTANCE = BookstoreDomainModelPackage.eINSTANCE;
-    }
-
     @Before
     public void setUp() throws Exception {
 
@@ -66,11 +77,18 @@ public class BookNotAnnotatedRepositoryIntegrationTest {
         bookB = new BookNotAnnotated("CDO");
         bookC = new BookNotAnnotated("ECORE");
         bookD = new BookNotAnnotated("Eclipse");
-
-        bookRepository.save(bookA);
-        bookRepository.save(bookB);
-        bookRepository.save(bookC);
-        bookRepository.save(bookD);
+        assertThrows(IllegalArgumentException.class, () -> {
+            bookRepository.save(bookA);
+        });
+        assertThrows(IllegalArgumentException.class, () -> {
+            bookRepository.save(bookB);
+        });
+        assertThrows(IllegalArgumentException.class, () -> {
+            bookRepository.save(bookC);
+        });
+        assertThrows(IllegalArgumentException.class, () -> {
+            bookRepository.save(bookD);
+        });
         //TODO:
 //        bookRepository.saveAll(Arrays.asList(bookA, bookB, bookC, bookD));
     }
@@ -78,13 +96,13 @@ public class BookNotAnnotatedRepositoryIntegrationTest {
     @Test
     public void find_book_by_id() {
 //        Optional<BookNotAnnotated> byId = bookRepository.findById(bookD.getId());
-//        Assertions.assertTrue(byId.isPresent());
+//        Assertions.assertFalse(byId.isPresent());
 //        Assertions.assertEquals(((Book) byId.get().model).getName(), ((Book) bookD.model).getName());
     }
 
     @Test
     public void save_multiple_times_has_no_effect() {
-        bookRepository.save(bookA);
+//        bookRepository.save(bookA);
 //        bookRepository.save(bookA);
     }
 
@@ -94,10 +112,10 @@ public class BookNotAnnotatedRepositoryIntegrationTest {
 //        bookRepository.count();
     }
 
-    //@CDO(path = "junit/test/books",
-    //        nsUri = "http://www.example.org/bookstoreDomainModel",
-    //        ePackage = BookstoreDomainModelPackage.class,
-    //        ePackageBaseClass = "de.tudresden.inf.st.ecore.models.bookstoreDomainModel.BookstoreDomainModelPackage")
+    //    @CDO(path = "junit/test/books",
+//            nsUri = "http://www.example.org/bookstoreDomainModel",
+//            ePackage = BookstoreDomainModelPackage.class,
+//            ePackageBaseClass = "de.tudresden.inf.st.ecore.models.bookstoreDomainModel.BookstoreDomainModelPackage")
     public static class BookNotAnnotated {
 
         @Id

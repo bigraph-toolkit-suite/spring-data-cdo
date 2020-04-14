@@ -2,6 +2,7 @@ package de.tudresden.inf.st.spring.data.cdo.repositories;
 
 import de.tudresden.inf.st.ecore.models.bookstoreDomainModel.Book;
 import de.tudresden.inf.st.ecore.models.bookstoreDomainModel.BookstoreDomainModelPackage;
+import de.tudresden.inf.st.ecore.models.bookstoreDomainModel.impl.BookstoreDomainModelPackageImpl;
 import de.tudresden.inf.st.spring.data.cdo.CdoOperations;
 import de.tudresden.inf.st.spring.data.cdo.CdoServerConnectionString;
 import de.tudresden.inf.st.spring.data.cdo.CdoTemplate;
@@ -27,6 +28,13 @@ import java.util.Optional;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
 public class BookAnnotatedRepositoryIntegrationTest {
+    @BeforeClass
+    public static void init() throws Exception {
+        System.out.println("Register EPackage");
+        // The package must be registered as it is later retrieved. Necessary for the CDO query.
+//        BookstoreDomainModelPackage eINSTANCE = BookstoreDomainModelPackage.eINSTANCE;
+        BookstoreDomainModelPackageImpl.init();
+    }
 
     @Configuration
     @EnableCdoRepositories(basePackages = "de.tudresden.inf.st.spring.data.cdo.repositories")
@@ -46,12 +54,6 @@ public class BookAnnotatedRepositoryIntegrationTest {
     @Autowired
     CdoOperations operations;
 
-    @BeforeClass
-    public static void setU2p() throws Exception {
-        System.out.println("Register EPackage");
-        // The package must be registered as it is later retrieved. Necessary for the CDO query.
-        BookstoreDomainModelPackage eINSTANCE = BookstoreDomainModelPackage.eINSTANCE;
-    }
 
     @Before
     public void setUp() throws Exception {

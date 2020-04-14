@@ -130,27 +130,37 @@ public class BasicCdoPersistentEntity<T> extends BasicPersistentEntity<T, CdoPer
             ePackage = EPackage.Registry.INSTANCE.getEPackage(this.nsUri);
             if (Objects.isNull(ePackage)) {
                 try {
-                    //TODO: works only with Java 8
-                    Object o = Proxy.newProxyInstance(
-                            Thread.currentThread().getContextClassLoader(),
-                            new Class[]{ePackageClass},
-                            (proxy, method, args) -> {
-                                Constructor<MethodHandles.Lookup> constructor = MethodHandles.Lookup.class
-                                        .getDeclaredConstructor(Class.class);
-                                constructor.setAccessible(true);
-                                constructor.newInstance(ePackageClass)
-                                        .in(ePackageClass)
-                                        .unreflectSpecial(method, ePackageClass)
-                                        .bindTo(proxy)
-                                        .invokeWithArguments();
-                                return null;
-                            }
-                    );
-                    ReflectionUtils.getField(ePackageClass.getField("eINSTANCE"), o);
-                } catch (NoSuchFieldException e) {
-                    throw new RuntimeException(e);
+                    Class.forName(ePackageClass.getCanonicalName());
+                    ePackage = EPackage.Registry.INSTANCE.getEPackage(this.nsUri);
+                } catch (ClassNotFoundException e) {
+                    try {
+                        //TODO: works only with Java 8
+                        Object o = Proxy.newProxyInstance(
+                                Thread.currentThread().getContextClassLoader(),
+                                new Class[]{ePackageClass},
+                                (proxy, method, args) -> {
+                                    Constructor<MethodHandles.Lookup> constructor = MethodHandles.Lookup.class
+                                            .getDeclaredConstructor(Class.class);
+                                    constructor.setAccessible(true);
+                                    constructor.newInstance(ePackageClass)
+                                            .in(ePackageClass)
+                                            .unreflectSpecial(method, ePackageClass)
+                                            .bindTo(proxy)
+                                            .invokeWithArguments();
+                                    return null;
+                                }
+                        );
+                        ReflectionUtils.getField(ePackageClass.getField("eINSTANCE"), o);
+                    } catch (NoSuchFieldException nsfe) {
+//                        throw new RuntimeException(e);
+                        //TODO log error
+                    }
                 }
             }
+        }
+        // last try...
+        if (Objects.isNull(ePackage)) {
+            ePackage = EPackage.Registry.INSTANCE.getEPackage(this.nsUri);
         }
         Assert.notNull(ePackage, "Package with nsURI=" + nsUri + " couldn't be found in the EPackage Registry.");
     }
@@ -169,8 +179,7 @@ public class BasicCdoPersistentEntity<T> extends BasicPersistentEntity<T, CdoPer
     public boolean hasIdProperty() {
         if (isNativeCDOObject() && Objects.nonNull(getPersistentProperty("revision"))) {//TODO string!
             return true;
-        }
-        else if (isLegacyObject() && Objects.nonNull(getPersistentProperty("idOrRevision"))) {
+        } else if (isLegacyObject() && Objects.nonNull(getPersistentProperty("idOrRevision"))) {
             return true;
         }
         return super.hasIdProperty();
