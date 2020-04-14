@@ -12,12 +12,12 @@
 
     <groupId>org.springframework.data</groupId>
     <artifactId>spring-data-cdo-parent</artifactId>
-    <version>${revision}</version>
+    <version>0.2.1-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Spring Data CDO</name>
     <description>Eclipse CDO support for Spring Data</description>
-    <url>https://git-st.inf.tu-dresden.de/bft-bigrafogtecture/spring-data-cdo</url>
+    <url>https://git-st.inf.tu-dresden.de/bigraphs/spring-data-cdo</url>
 
     <modules>
         <module>spring-data-cdo</module>
@@ -37,7 +37,7 @@
         <emf.codegen.version>2.16.0</emf.codegen.version>
         <emf.cdo.version>4.7.0</emf.cdo.version>
         <eclipse.mirror>http://download.eclipse.org/</eclipse.mirror>
-        <junit-jupiter.version>5.4.0</junit-jupiter.version>
+        <junit-jupiter.version>5.4.2</junit-jupiter.version>
         <bintray.organization>st-tu-dresden</bintray.organization>
         <bintray.repo>maven-repository</bintray.repo>
         <bintray.package>${project.artifactId}</bintray.package>
@@ -164,7 +164,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-report-plugin</artifactId>
-                <version>3.0.0-M5</version>
+                <version>3.0.0-M4</version>
             </plugin>
         </plugins>
     </reporting>
