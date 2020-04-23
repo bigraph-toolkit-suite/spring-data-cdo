@@ -20,6 +20,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.util.Arrays;
 import java.util.Optional;
 
 /**
@@ -65,12 +66,12 @@ public class BookAnnotatedRepositoryIntegrationTest {
         bookC = new BookAnnotated("ECORE");
         bookD = new BookAnnotated("Eclipse");
 
-        bookRepository.save(bookA);
-        bookRepository.save(bookB);
-        bookRepository.save(bookC);
-        bookRepository.save(bookD);
-        //TODO:
-//        bookRepository.saveAll(Arrays.asList(bookA, bookB, bookC, bookD));
+//        bookRepository.save(bookA);
+//        bookRepository.save(bookB);
+//        bookRepository.save(bookC);
+//        bookRepository.save(bookD);
+        bookRepository.saveAll(Arrays.asList(bookA, bookB, bookC, bookD));
+        bookRepository.saveAll(Arrays.asList(bookA, bookB, bookC, bookD));
     }
 
     @Test

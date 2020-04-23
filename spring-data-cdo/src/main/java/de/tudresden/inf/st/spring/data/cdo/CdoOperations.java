@@ -9,6 +9,7 @@ import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.mapping.context.MappingContext;
 import org.springframework.lang.Nullable;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -69,7 +70,9 @@ public interface CdoOperations extends DisposableBean {
     /**
      * Inserts an entity of type {@code T}.
      * <p>
-     * The resource path under which the object is stored is automatically inferred using several strategies.
+     * The resource path under which the object is stored is automatically inferred using several strategies (e.g., based
+     * on the class).
+     * <p>
      * Annotate the class correctly to avoid unwanted side effects.
      *
      * @param objectToSave the entity in question
@@ -87,6 +90,27 @@ public interface CdoOperations extends DisposableBean {
      * @return
      */
     <T> T insert(T objectToSave, String resourcePath);
+
+    /**
+     * Insert a Collection of objects into a database collection under the given resource path in a single batch write
+     * to the database.
+     *
+     * @param objectsToSave the list of objects to save. Must not be {@code null}.
+     * @param resourcePath  the resource path where the entity should be inserted
+     * @return the inserted objects
+     */
+    <T> Collection<T> insertAll(Collection<? extends T> objectsToSave, String resourcePath);
+
+    /**
+     * Insert a mixed Collection of objects into a database resource under the given resource path in a single batch
+     * write to the database.
+     * <p>
+     * The resource path where the object going to be saved is derived from the class.
+     *
+     * @param objectsToSave the list of objects to save. Must not be {@code null}.
+     * @return the inserted objects
+     */
+    <T> Collection<T> insertAll(Collection<? extends T> objectsToSave);
 
     <T> T save(T entity);
 

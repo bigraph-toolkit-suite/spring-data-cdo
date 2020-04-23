@@ -525,6 +525,129 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
         return this.save(entity, getResourcePathFrom(ClassUtils.getUserClass(entity)));
     }
 
+    @Override
+    public <T> Collection<T> insertAll(Collection<? extends T> objectsToSave) {
+        return doInsertAll(objectsToSave, cdoConverter);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> Collection<T> insertAll(Collection<? extends T> batchToSave, String resourcePath) {
+        Assert.notNull(batchToSave, "BatchToSave must not be null!");
+        Assert.notNull(resourcePath, "ResourcePath must not be null!");
+        return (Collection<T>) doInsertBatch(resourcePath, batchToSave, this.cdoConverter);
+    }
+
+    /**
+     * Collect objects in the list and group them by a common resource path name in order to later call
+     * doInsertBatch individually.
+     *
+     * @param listToSave
+     * @param writer
+     * @param <T>
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    protected <T> Collection<T> doInsertAll(Collection<? extends T> listToSave, CdoConverter writer) {
+        //TODO
+        Map<String, List<T>> elementsByCollection = new HashMap<>();
+        List<T> savedObjects = new ArrayList<>(listToSave.size());
+
+        //TODO
+
+        return savedObjects;
+    }
+
+    protected <T> Collection<T> doInsertBatch(String repoResourcePath, Collection<? extends T> batchToSave, CdoWriter<T> writer) {
+        Assert.notNull(writer, "CdoWriter must not be null!");
+
+        final List<EObject> documentList = new ArrayList<>();
+//        List<T> initializedBatchToSave = new ArrayList<>(batchToSave.size());
+        for (T uninitialized : batchToSave) {
+            Class<?> rawType = ClassUtils.getUserClass(uninitialized);
+            CdoPersistentEntity<?> persistentEntity = mappingContext.getRequiredPersistentEntity(rawType);
+            EObject internalValue;
+            if (persistentEntity.isNativeCdoOrLegacyMode()) {
+                internalValue = (EObject) uninitialized;
+            } else {
+                internalValue = (EObject) cdoConverter.getInternalValue(persistentEntity, uninitialized, EObjectModel.class);
+            }
+
+            BeforeSaveEvent<T> event = new BeforeSaveEvent<>(uninitialized, internalValue, repoResourcePath);
+            maybePublishEvent(event);
+            documentList.add(internalValue);
+        }
+
+        List<EObject> savedEObjects = insertEObjectList(repoResourcePath, documentList);
+//        List<T> arr = new ArrayList<>(batchToSave);
+
+        List<T> savedObjects = new ArrayList<>(documentList.size());
+        int i = 0;
+        for (T obj : batchToSave) {
+            if (i < savedEObjects.size()) {
+//                T objectToSave = arr.get(i);
+                EObject bla = savedEObjects.get(i);
+                Class<?> rawType = ClassUtils.getUserClass(obj);
+                CdoPersistentEntity<?> persistentEntity = mappingContext.getRequiredPersistentEntity(rawType);
+                CDOID identifier = null;
+                if (!persistentEntity.isNativeCdoOrLegacyMode()) {
+                    GeneratingIdAccessor generatingIdAccessor;
+                    generatingIdAccessor = new GeneratingIdAccessor(
+                            obj,
+                            persistentEntity,
+                            DefaultIdentifierGenerator.INSTANCE,
+                            cdoConverter
+                    );
+                    Object identifier0 = generatingIdAccessor.getIdentifier();
+                    if (Objects.nonNull(identifier0)) {
+                        if (ClassUtils.isAssignable(InternalCDORevision.class, identifier0.getClass())) {
+                            identifier = ((InternalCDORevision) identifier0).getID();
+                        }
+//                        if (ClassUtils.isAssignable(CDOID.class, identifier0.getClass()) &&
+//                                Objects.nonNull(transaction.getObject((CDOID) identifier0))) {
+//                            throw new CommitException();
+//                        }
+                    }
+                    identifier = CDOUtil.getCDOObject(bla).cdoID();
+                    generatingIdAccessor.getOrSetProvidedIdentifier(identifier);
+                    savedObjects.add(obj);
+                } else {
+                    savedObjects.add((T) obj);
+                }
+            } else {
+                savedObjects.add((T) obj);
+            }
+            i++;
+        }
+        return savedObjects;
+    }
+
+    protected List<EObject> insertEObjectList(final String resourcePath, final List<EObject> documents) {
+        execute(session -> {
+            CDOTransaction transaction = openTransaction(session);
+            try {
+                System.out.println("CDOTransaction is = " + transaction);
+                CDOResource resource;
+                try {
+                    resource = transaction.getResource(resourcePath, true);
+                } catch (InvalidURIException e) {
+                    resource = transaction.createResource(resourcePath);
+                }
+                resource.getContents().addAll(documents);
+                CDOCommitInfo commit = transaction.commit();
+
+            } catch (CommitException e) {
+                throw new DuplicateKeyException(
+                        "Cannot insert existing Collection of objects in a single batch write.",
+                        e);
+            } finally {
+                closeTransaction(transaction);
+            }
+            return null;
+        });
+
+        return documents;
+    }
 
     protected <T> T doInsert(String repoResourcePath, T objectToSave, CdoWriter<T> writer) {
 
@@ -557,19 +680,18 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
                 System.out.println("Session is = " + session);
                 transaction = openTransaction(session);
                 System.out.println("CDOTransaction is = " + transaction);
-                boolean repoPathExists = true;
+//                boolean repoPathExists = true;
                 CDOResource resource;
                 try {
                     resource = transaction.getResource(repoResourcePath, true);
                     System.out.println("Get resource: " + resource);
                 } catch (InvalidURIException e) {
-                    repoPathExists = false;
+//                    repoPathExists = false;
                     resource = transaction.createResource(repoResourcePath);
                     System.out.println("Create new resource: " + resource);
                 }
 
 //                resource.getResourceSet().getPackageRegistry().put(null, internalValue);
-
 //                System.out.println("resource.cdoRevision().getID(): " + resource.cdoRevision().getID());
 
                 resource.getContents().add(internalValue);
