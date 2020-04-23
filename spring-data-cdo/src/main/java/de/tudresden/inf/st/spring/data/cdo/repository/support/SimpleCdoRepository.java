@@ -45,6 +45,10 @@ public class SimpleCdoRepository<T, ID> implements CdoRepository<T, ID> {
         return cdoOperations.save(entity, entityInformation.getPathValue());
     }
 
+    /*
+     * (non-Javadoc)
+     * @see de.tudresden.inf.st.spring.data.cdo.repository.CdoRepository#saveAll(java.lang.Iterable)
+     */
     @Override
     public <S extends T> Iterable<S> saveAll(Iterable<S> iterable) {
         return null; //TODO
