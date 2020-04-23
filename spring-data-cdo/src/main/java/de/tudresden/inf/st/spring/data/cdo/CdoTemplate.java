@@ -541,25 +541,38 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
     /**
      * Collect objects in the list and group them by a common resource path name in order to later call
      * doInsertBatch individually.
+     * <p>
+     * Objects to be saved can be mixed types of {@literal T}.
      *
      * @param listToSave
-     * @param writer
+     * @param cdoConverter
      * @param <T>
      * @return
      */
     @SuppressWarnings("unchecked")
-    protected <T> Collection<T> doInsertAll(Collection<? extends T> listToSave, CdoConverter writer) {
-        //TODO
+    protected <T> Collection<T> doInsertAll(Collection<? extends T> listToSave, CdoConverter cdoConverter) {
         Map<String, List<T>> elementsByCollection = new HashMap<>();
         List<T> savedObjects = new ArrayList<>(listToSave.size());
 
-        //TODO
+        for (T element : listToSave) {
+            if (Objects.isNull(element)) {
+                continue;
+            }
+
+            String collection = getResourcePathFrom(ClassUtils.getUserClass(element));
+            List<T> collectionElements = elementsByCollection.computeIfAbsent(collection, k -> new ArrayList<>());
+            collectionElements.add(element);
+        }
+
+        for (Map.Entry<String, List<T>> entry : elementsByCollection.entrySet()) {
+            savedObjects.addAll(doInsertBatch(entry.getKey(), entry.getValue(), cdoConverter));
+        }
 
         return savedObjects;
     }
 
-    protected <T> Collection<T> doInsertBatch(String repoResourcePath, Collection<? extends T> batchToSave, CdoWriter<T> writer) {
-        Assert.notNull(writer, "CdoWriter must not be null!");
+    protected <T> Collection<T> doInsertBatch(String repoResourcePath, Collection<? extends T> batchToSave, CdoConverter cdoConverter) {
+        Assert.notNull(cdoConverter, "CdoConverter must not be null!");
 
         final List<EObject> documentList = new ArrayList<>();
 //        List<T> initializedBatchToSave = new ArrayList<>(batchToSave.size());
@@ -570,7 +583,7 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
             if (persistentEntity.isNativeCdoOrLegacyMode()) {
                 internalValue = (EObject) uninitialized;
             } else {
-                internalValue = (EObject) cdoConverter.getInternalValue(persistentEntity, uninitialized, EObjectModel.class);
+                internalValue = (EObject) this.cdoConverter.getInternalValue(persistentEntity, uninitialized, EObjectModel.class);
             }
 
             BeforeSaveEvent<T> event = new BeforeSaveEvent<>(uninitialized, internalValue, repoResourcePath);
@@ -596,7 +609,7 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
                             obj,
                             persistentEntity,
                             DefaultIdentifierGenerator.INSTANCE,
-                            cdoConverter
+                            this.cdoConverter
                     );
                     Object identifier0 = generatingIdAccessor.getIdentifier();
                     if (Objects.nonNull(identifier0)) {
