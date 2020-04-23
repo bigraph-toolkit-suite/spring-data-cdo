@@ -9,10 +9,13 @@ import org.eclipse.emf.ecore.EPackage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.data.util.Streamable;
 import org.springframework.util.Assert;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * See: https://github.com/spring-projects/spring-data-commons/wiki/developer-guide#create-a-simplerepository-implementing-crudrepository-or-pagingandsortingrepository
@@ -45,9 +48,22 @@ public class SimpleCdoRepository<T, ID> implements CdoRepository<T, ID> {
         return cdoOperations.save(entity, entityInformation.getPathValue());
     }
 
+    /*
+     * (non-Javadoc)
+     * @see de.tudresden.inf.st.spring.data.cdo.repository.CdoRepository#saveAll(java.lang.Iterable)
+     */
     @Override
     public <S extends T> Iterable<S> saveAll(Iterable<S> iterable) {
-        return null; //TODO
+        Assert.notNull(iterable, "The given Iterable of entities must not be null!");
+
+        Streamable<S> source = Streamable.of(iterable);
+        boolean allNew = source.stream().allMatch(it -> entityInformation.isNew(it));
+
+        if (allNew) {
+            List<S> result = source.stream().collect(Collectors.toList());
+            return new ArrayList<>(cdoOperations.insertAll(result, entityInformation.getPathValue()));
+        }
+        return source.stream().map(this::save).collect(Collectors.toList());
     }
 
     @Override
@@ -72,6 +88,7 @@ public class SimpleCdoRepository<T, ID> implements CdoRepository<T, ID> {
 
     @Override
     public Iterable<T> findAllById(Iterable<ID> iterable) {
+        // TODO
         return null;
     }
 
