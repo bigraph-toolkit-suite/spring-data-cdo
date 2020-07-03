@@ -1,9 +1,9 @@
 package de.tudresden.inf.st.spring.data.cdo.core;
 
+import de.tudresden.inf.st.ecore.models.bookstoreDomainModel.impl.BookstoreDomainModelPackageImpl;
 import de.tudresden.inf.st.spring.data.cdo.CdoClient;
 import de.tudresden.inf.st.spring.data.cdo.CdoOperations;
 import de.tudresden.inf.st.spring.data.cdo.CdoTemplate;
-import de.tudresden.inf.st.spring.data.cdo.DataNotFoundException;
 import de.tudresden.inf.st.spring.data.cdo.annotation.CDO;
 import de.tudresden.inf.st.spring.data.cdo.annotation.EObjectModel;
 import de.tudresden.inf.st.spring.data.cdo.config.AbstractCdoClientConfiguration;
@@ -44,6 +44,7 @@ public class CdoBasicOperationsUnitTest {
 
     @Before
     public void setUp() throws Exception {
+        BookstoreDomainModelPackageImpl.init();
         operations = context.getBean(CdoOperations.class);
         Assertions.assertNotNull(operations);
     }

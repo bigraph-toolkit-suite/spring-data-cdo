@@ -284,48 +284,59 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
                 //Compute delta first between the current object and the latest revision in the store
                 CDOObject objectToUpdate = CDOUtil.getCDOObject(internalValue);
                 CDORevision currentRevision = objectToUpdate.cdoRevision();
-                CDOBranchVersion branchVersion = currentRevision.getBranch().getVersion(currentRevision.getVersion());
-                CDORevision oldRevision = session.getDelegate().getRevisionManager()
-                        .getRevisionByVersion(cdoid, branchVersion, 0, true);
-                CDORevisionDelta delta = currentRevision.compare(oldRevision);
+                if (Objects.nonNull(currentRevision)) {
+                    CDOBranchVersion branchVersion = currentRevision.getBranch().getVersion(currentRevision.getVersion());
+                    CDORevision oldRevision = session.getDelegate().getRevisionManager()
+                            .getRevisionByVersion(cdoid, branchVersion, 0, true);
+                    CDORevisionDelta delta = currentRevision.compare(oldRevision);
 
-                // safest approach taken to update the historical object:
-                // Open a second audit view that gets the latest object
-                transaction = (CDOTransaction) objectToUpdate.cdoView();
-                CDOSession session2 = transaction.getSession();
-                CDOView audit = session2.openView(currentRevision);
-                EObject historicalObject = audit.getObject(objectToUpdate);
-
-                // Lock the object in question and perform the update
-                // We must copy selected features over determined by the delta above
-                // Note/Question: not all feature delta types makes sense or must be supported (?)
-                transaction.lockObjects(Collections.singleton(CDOUtil.getCDOObject(historicalObject)),
-                        IRWLockManager.LockType.WRITE, session.getOptions().getWriteLockoutTimeout());
-                for (Map.Entry<EStructuralFeature, CDOFeatureDelta> featureDelta : ((CDORevisionDeltaImpl) delta).getFeatureDeltaMap().entrySet()) {
-                    Object newValue = ((CDOSetFeatureDeltaImpl) featureDelta.getValue()).getValue();
-                    switch (featureDelta.getValue().getType()) {
-                        case SET:
-                            historicalObject.eSet(featureDelta.getKey(), newValue);
-                            break;
-                        case UNSET:
-                            historicalObject.eSet(featureDelta.getKey(), null);
-                            break;
-                        case REMOVE:
-                            EcoreUtil.remove(historicalObject, featureDelta.getKey(), newValue);
-                            break;
-                        case ADD:
-                        case LIST:
-                        case MOVE:
-                        case CONTAINER:
-                        case CLEAR:
-                            throw new UnsupportedOperationException();
-                        default:
-                            continue;
+                    // safest approach taken to update the historical object:
+                    // Open a second audit view that gets the latest object
+                    transaction = (CDOTransaction) objectToUpdate.cdoView();
+                    CDOSession session2 = transaction.getSession();
+                    CDOView audit = session2.openView(currentRevision);
+                    EObject historicalObject = audit.getObject(objectToUpdate);
+                    // Lock the object in question and perform the update
+                    // We must copy selected features over determined by the delta above
+                    // Note/Question: not all feature delta types makes sense or must be supported (?)
+                    transaction.lockObjects(Collections.singleton(CDOUtil.getCDOObject(historicalObject)),
+                            IRWLockManager.LockType.WRITE, session.getOptions().getWriteLockoutTimeout());
+                    for (Map.Entry<EStructuralFeature, CDOFeatureDelta> featureDelta : ((CDORevisionDeltaImpl) delta).getFeatureDeltaMap().entrySet()) {
+                        Object newValue = ((CDOSetFeatureDeltaImpl) featureDelta.getValue()).getValue();
+                        switch (featureDelta.getValue().getType()) {
+                            case SET:
+                                historicalObject.eSet(featureDelta.getKey(), newValue);
+                                break;
+                            case UNSET:
+                                historicalObject.eSet(featureDelta.getKey(), null);
+                                break;
+                            case REMOVE:
+                                EcoreUtil.remove(historicalObject, featureDelta.getKey(), newValue);
+                                break;
+                            case ADD:
+                            case LIST:
+                            case MOVE:
+                            case CONTAINER:
+                            case CLEAR:
+                                throw new UnsupportedOperationException();
+                            default:
+                                continue;
+                        }
                     }
+                } else {
+                    transaction = openTransaction(session);
+                    CDOResource resource = transaction.getResource(repoResourcePath, true);
+                    CDOObject object = transaction.getObject(cdoid);
+                    transaction.lockObjects(Collections.singleton(CDOUtil.getCDOObject(object)),
+                            IRWLockManager.LockType.WRITE, session.getOptions().getWriteLockoutTimeout());
+                    resource.getContents().remove(object);
+                    resource.getContents().add(objectToUpdate);
                 }
                 // not necessary, automatic unlock after commit
 //                CDOUtil.getCDOObject(oldDBObject).cdoWriteLock().unlock();
                 transaction.commit();
+            } catch (NullPointerException e) {
+                throw new InvalidDataAccessResourceUsageException(e.toString());
             } catch (CommitException e) {
                 throw new DataIntegrityViolationException(e.toString());
             } catch (InterruptedException e) {

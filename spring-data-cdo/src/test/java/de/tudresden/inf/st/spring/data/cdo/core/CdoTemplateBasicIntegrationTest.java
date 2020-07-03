@@ -87,18 +87,20 @@ public class CdoTemplateBasicIntegrationTest {
         Assertions.assertNotNull(withObjectModelProperty);
         Assertions.assertEquals(withObjectModelProperty.id, a.id);
     }
-
+    //TODO: shall no fail
     @Test
     public void update_entity_not_triggering_exception() {
         Assertions.assertAll(() -> {
+            EcoreFactory theCoreFactory = EcoreFactory.eINSTANCE;
             WithObjectModelProperty test = new WithObjectModelProperty();
             test = template.insert(test);
-            EcoreFactory theCoreFactory = EcoreFactory.eINSTANCE;
             EClass testCdoClass = theCoreFactory.createEClass();
             testCdoClass.setName(getClass().getSimpleName() + "Updated");
             test.value = testCdoClass;
             WithObjectModelProperty save = template.save(test);
             Assertions.assertEquals(save, test);
+            WithObjectModelProperty save2 = template.save(test);
+            Assertions.assertEquals(save2, save);
         });
     }
 
