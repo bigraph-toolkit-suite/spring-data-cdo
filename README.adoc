@@ -4,7 +4,7 @@ image::./src/main/asciidoc/images/spring-cdo-logo-white-background.png[width=50%
 
 *inofficial release*
 
-*Current version:* v0.3.0-SNAPSHOT
+*Current version:* v0.4.0-SNAPSHOT
 
 The primary goal of the https://projects.spring.io/spring-data[Spring Data] project is to make it easier to build Spring-powered applications that use new data access technologies such as non-relational databases, map-reduce frameworks, and cloud based data services.
 
@@ -104,7 +104,7 @@ Add the Maven dependency:
 <dependency>
   <groupId>org.springframework.data</groupId>
   <artifactId>spring-data-cdo</artifactId>
-  <version>0.3.0-SNAPSHOT</version>
+  <version>0.4.0-SNAPSHOT</version>
 </dependency>
 ----
 
