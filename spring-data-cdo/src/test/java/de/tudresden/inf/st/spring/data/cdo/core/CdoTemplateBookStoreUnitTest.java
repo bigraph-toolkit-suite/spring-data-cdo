@@ -128,7 +128,7 @@ public class CdoTemplateBookStoreUnitTest {
         Assertions.assertEquals(cdoid, CDOUtil.getCDOObject(book).cdoID());
         Assertions.assertEquals(changeIsbnTo, book.getIsbn());
     }
-
+    // init Epackage before to prevent exception at the first run
     @Test
     public void add_single_bookstore_entity_use_fallback_resourcePath() {
         CdoTemplate template = new CdoTemplate(factory);

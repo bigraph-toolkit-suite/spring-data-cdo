@@ -12,7 +12,7 @@
 
     <groupId>org.springframework.data</groupId>
     <artifactId>spring-data-cdo-parent</artifactId>
-    <version>0.3.0-SNAPSHOT</version>
+    <version>0.4.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Spring Data CDO</name>
@@ -32,9 +32,14 @@
         <springdata.commons>2.2.0.BUILD-SNAPSHOT</springdata.commons>
         <guava.version>28.0-jre</guava.version>
         <!-- EMF -->
-        <emf.version>2.16.0</emf.version>
-        <emf.ecore.version>2.18.0</emf.ecore.version>
-        <emf.codegen.version>2.16.0</emf.codegen.version>
+<!--        <emf.version>2.16.0</emf.version>-->
+        <emf.version>2.19.0</emf.version>
+        <ecore.xmi.version>2.16.0</ecore.xmi.version>
+<!--        <emf.ecore.version>2.18.0</emf.ecore.version>-->
+        <emf.ecore.version>2.22.0</emf.ecore.version>
+        <emf.ecore.change.version>2.14.0</emf.ecore.change.version>
+<!--        <emf.codegen.version>2.16.0</emf.codegen.version>-->
+        <emf.codegen.version>2.20.0</emf.codegen.version>
         <emf.cdo.version>4.7.0</emf.cdo.version>
         <eclipse.mirror>http://download.eclipse.org/</eclipse.mirror>
         <junit-jupiter.version>5.4.2</junit-jupiter.version>
@@ -66,17 +71,17 @@
     </scm>
 
     <repositories>
-        <repository>
-            <id>Eclipse</id>
-            <layout>p2</layout>
-            <url>${eclipse.mirror}/releases/photon/</url>
-        </repository>
+<!--        <repository>-->
+<!--            <id>Eclipse</id>-->
+<!--            <layout>p2</layout>-->
+<!--            <url>${eclipse.mirror}/releases/photon/</url>-->
+<!--        </repository>-->
         <!-- add TMF repository for latest Xtend -->
-        <repository>
-            <id>TMF Repo</id>
-            <layout>p2</layout>
-            <url>${eclipse.mirror}/modeling/tmf/xtext/updates/releases/</url>
-        </repository>
+<!--        <repository>-->
+<!--            <id>TMF Repo</id>-->
+<!--            <layout>p2</layout>-->
+<!--            <url>${eclipse.mirror}/modeling/tmf/xtext/updates/releases/</url>-->
+<!--        </repository>-->
         <repository>
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
@@ -84,6 +89,11 @@
         <repository>
             <id>spring-libs-snapshot</id>
             <url>https://repo.spring.io/libs-snapshot</url>
+        </repository>
+        <repository>
+            <id>emf-cdo</id>
+            <url>https://download.eclipse.org/modeling/emf/cdo/drops/R20200610-0035/</url>
+            <layout>p2</layout>
         </repository>
     </repositories>
 
@@ -95,6 +105,10 @@
         <pluginRepository>
             <id>spring-libs-milestone</id>
             <url>https://repo.spring.io/libs-milestone</url>
+        </pluginRepository>
+        <pluginRepository>
+            <id>reficio</id>
+            <url>http://repo.reficio.org/maven/</url>
         </pluginRepository>
     </pluginRepositories>
 
