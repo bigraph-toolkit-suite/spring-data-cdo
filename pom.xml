@@ -12,7 +12,7 @@
 
     <groupId>org.springframework.data</groupId>
     <artifactId>spring-data-cdo-parent</artifactId>
-    <version>0.3.0-SNAPSHOT</version>
+    <version>0.4.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>Spring Data CDO</name>
