@@ -26,14 +26,12 @@ import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.*;
 import org.eclipse.emf.cdo.view.CDOQuery;
 import org.eclipse.emf.cdo.view.CDOView;
-import org.eclipse.emf.ecore.*;
-import org.eclipse.emf.ecore.impl.BasicEObjectImpl;
-import org.eclipse.emf.ecore.impl.DynamicEObjectImpl;
-import org.eclipse.emf.ecore.impl.EObjectImpl;
+import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.internal.cdo.object.CDOLegacyAdapter;
-import org.eclipse.emf.internal.cdo.object.CDOLegacyWrapper;
-import org.eclipse.emf.internal.cdo.object.DynamicCDOObjectImpl;
 import org.eclipse.emf.internal.cdo.view.CDOStateMachine;
 import org.eclipse.emf.spi.cdo.InternalCDOObject;
 import org.eclipse.net4j.util.concurrent.IRWLockManager;
@@ -82,9 +80,6 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
     private static final Logger LOGGER = LoggerFactory.getLogger(CdoTemplate.class);
 
     private static final Collection<String> ITERABLE_CLASSES;
-    @Deprecated
-    private static final Collection<Class> DYNAMIC_ECORE_CLASSES;
-    private static final Collection<Class> CDO_LEGACY_CLASSES;
 
     static {
 
@@ -93,20 +88,7 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
         iterableClasses.add(Collection.class.getName());
         iterableClasses.add(Iterator.class.getName());
 
-        Set<Class> dynamicClasses = new HashSet<>();
-        dynamicClasses.add(DynamicCDOObjectImpl.class);
-        dynamicClasses.add(DynamicEObjectImpl.class);
-        dynamicClasses.add(InternalEObject.class);
-        dynamicClasses.add(BasicEObjectImpl.class);
-        dynamicClasses.add(EObjectImpl.class);
-
-        Set<Class> cdoLegacyClasses = new HashSet<>();
-        cdoLegacyClasses.add(CDOLegacyWrapper.class);
-        cdoLegacyClasses.add(CDOLegacyAdapter.class);
-
         ITERABLE_CLASSES = Collections.unmodifiableCollection(iterableClasses);
-        DYNAMIC_ECORE_CLASSES = Collections.unmodifiableCollection(dynamicClasses);
-        CDO_LEGACY_CLASSES = Collections.unmodifiableCollection(cdoLegacyClasses);
     }
 
     private final CdoClientSessionOptions cdoSessionOptions;
@@ -1060,14 +1042,6 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
             eventPublisher.publishEvent(event);
         }
         return event;
-    }
-
-    //TODO:MOVE
-    protected boolean checkIfDynamicEmfClass_NonLegacyClass(@Nullable Class<?> o) {
-        if (null != o) {
-            return DYNAMIC_ECORE_CLASSES.contains(o);
-        }
-        return false;
     }
 
     protected void ensureNotIterable(@Nullable Object o) {

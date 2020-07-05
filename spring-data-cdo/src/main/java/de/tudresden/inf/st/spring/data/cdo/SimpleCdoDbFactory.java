@@ -1,4 +1,4 @@
-    package de.tudresden.inf.st.spring.data.cdo;
+package de.tudresden.inf.st.spring.data.cdo;
 
 import de.tudresden.inf.st.spring.data.cdo.config.CdoClientSessionOptions;
 import de.tudresden.inf.st.spring.data.cdo.core.CdoExceptionTranslator;
@@ -22,6 +22,12 @@ public class SimpleCdoDbFactory extends CdoDbFactorySupport<CdoClient> implement
         this(CdoClients.create(connectionString), connectionString.getRepoName());
     }
 
+    /**
+     * To create a client, see also {@link CdoClients}.
+     *
+     * @param cdoClient      a valid cdo client
+     * @param repositoryName the name of the repository
+     */
     public SimpleCdoDbFactory(CdoClient cdoClient, String repositoryName) {
         super(cdoClient, repositoryName, new CdoExceptionTranslator());
     }

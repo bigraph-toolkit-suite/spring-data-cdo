@@ -2,6 +2,7 @@ package de.tudresden.inf.st.spring.data.cdo;
 
 import de.tudresden.inf.st.spring.data.cdo.config.AbstractCdoClientConfiguration;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.lang.NonNull;
 
 /**
  * Sample configuration class.
@@ -15,6 +16,7 @@ public class JavaCdoConfigClass extends AbstractCdoClientConfiguration {
         return new CdoClient();
     }
 
+    @NonNull
     @Override
     protected String getRepositoryName() {
         return "repo1";

@@ -50,11 +50,11 @@ import java.util.Map;
 public class CdoClient {
 
     @NonNull
-    private CdoServerAddress addr;
+    private final CdoServerAddress addr;
     @NonNull
-    private CdoClientOptions cdoClientOptions;
+    private final CdoClientOptions cdoClientOptions;
     @Nullable
-    private CdoCredentials cdoCredentials;
+    private final CdoCredentials cdoCredentials;
 
     protected final transient IManagedContainer container;
 
@@ -166,9 +166,6 @@ public class CdoClient {
      */
     protected IConnector createConnector(CdoServerAddress addr) {
         IConnector connector = Net4jUtil.getConnector(container, addr.getTransportType(), addr.getFullConnectorDescription());
-//                Net4jUtil.getConnector(IPluginContainer.INSTANCE,
-//                addr.getTransportType(),
-//                description);
         //OR:
 //        final IConnector connector = (IConnector) IPluginContainer.INSTANCE
 //                .getElement( //
@@ -247,6 +244,7 @@ public class CdoClient {
     }
 
     public static IManagedContainer createContainer() {
+//        IPluginContainer.INSTANCE; //also a managed container
         IManagedContainer container = ContainerUtil.createContainer();
         Net4jUtil.prepareContainer(container); // Register Net4j factories
         TCPUtil.prepareContainer(container); // Register TCP factories

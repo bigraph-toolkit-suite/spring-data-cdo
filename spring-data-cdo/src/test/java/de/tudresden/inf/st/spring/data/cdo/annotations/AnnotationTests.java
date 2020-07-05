@@ -17,6 +17,7 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.support.GenericApplicationContext;
+import org.springframework.lang.NonNull;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -84,6 +85,7 @@ public class AnnotationTests {
             return new CdoClient();
         }
 
+        @NonNull
         @Override
         protected String getRepositoryName() {
             return "repo1";

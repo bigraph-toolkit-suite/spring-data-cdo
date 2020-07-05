@@ -3,6 +3,8 @@ package de.tudresden.inf.st.spring.data.cdo;
 import de.tudresden.inf.st.spring.data.cdo.config.CdoClientOptions;
 
 /**
+ * Factory for {@link CdoClient}.
+ *
  * @author Dominik Grzelak
  */
 public class CdoClients {
@@ -13,5 +15,9 @@ public class CdoClients {
 
     public static CdoClient create(CdoServerConnectionString cdoServerConnectionString) {
         return new CdoClient(CdoClientOptions.builder().applyConnectionString(cdoServerConnectionString).build());
+    }
+
+    public static CdoClient create(String host, int port) {
+        return new CdoClient(host, port);
     }
 }

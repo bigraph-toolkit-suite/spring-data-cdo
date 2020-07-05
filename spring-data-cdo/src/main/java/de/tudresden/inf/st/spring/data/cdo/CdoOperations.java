@@ -15,12 +15,13 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * Interface that specifies a basic set of CDO operations, implemented by {@link CdoTemplate}.
- * Not often used but a useful option for extensibility and testability (as it can be easily mocked or stubbed).
+ * This interface specifies a basic set of CDO operations, implemented mainly by {@link CdoTemplate}.
+ * It is not often directly used by the user but a useful option for extensibility and testability
+ * (as it can be easily mocked or stubbed).
  * <p>
  * All methods may throw a {@link org.eclipse.emf.cdo.util.OptimisticLockingException} if something is blocking the access
- * to some objects within the repository. The time to lock objects within {@literal n} milliseconds can be adjusted
- * in the {@link de.tudresden.inf.st.spring.data.cdo.config.CdoClientSessionOptions}.
+ * to some objects within the repository. The time to lock objects can be adjusted
+ * via {@link de.tudresden.inf.st.spring.data.cdo.config.CdoClientSessionOptions} when providing a {@link CdoClient}.
  *
  * @author Dominik Grzelak
  */

@@ -5,6 +5,7 @@ import de.tudresden.inf.st.spring.data.cdo.CdoDbFactory;
 import de.tudresden.inf.st.spring.data.cdo.SimpleCdoDbFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
 import java.util.Collection;
@@ -25,8 +26,9 @@ public abstract class AbstractCdoClientConfiguration extends CdoConfigurationSup
     /**
      * Return the name of the database to connect to.
      *
-     * @return must not be {@literal null}.
+     * @return the repository name; must not be {@literal null}.
      */
+    @NonNull
     protected abstract String getRepositoryName();
 
     @Bean
