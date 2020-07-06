@@ -93,6 +93,7 @@ public class CdoTemplateBookStoreUnitTest {
         book.setIsbn("123456789");
         book.setName("Book of Examples");
 
+        System.out.println("CDOID: " + CDOUtil.getCDOObject(book).cdoID());
         Book inserted = template.insert(book, BOOK_TEST_RESOURCE_PATH);
         inserted.setIsbn("12345678");
         inserted = template.save(inserted, BOOK_TEST_RESOURCE_PATH);
@@ -100,6 +101,7 @@ public class CdoTemplateBookStoreUnitTest {
         inserted = template.save(inserted, BOOK_TEST_RESOURCE_PATH);
         CDORevisionHolder<Book> revisions = template.getRevisionById(CDOUtil.getCDOObject(inserted).cdoID(), BOOK_TEST_RESOURCE_PATH);
 
+        assertEquals(3, revisions.getRevisionCount());
         List<Book> byTimeStamp = revisions.getByTimeStamp(678L);
         assertEquals(0, byTimeStamp.size());
 
@@ -118,6 +120,16 @@ public class CdoTemplateBookStoreUnitTest {
         Optional<Book> byVersion4 = revisions.getByVersion(4);
         assertFalse(byVersion4.isPresent());
 
+        assertThrows(DataNotFoundException.class, () -> {
+            System.out.println("Retrieving revision from wrong resource path fails...");
+            template.getRevision(byVersion3.get());
+        });
+        System.out.println("\tOkay...");
+        System.out.println("Retrieving revision from correct resource path succeeds...");
+        CDORevisionHolder<Book> revision = template.getRevision(byVersion3.get(), BOOK_TEST_RESOURCE_PATH);
+        assertNotNull(revision);
+        assertEquals(3, revision.getRevisionCount());
+        System.out.println("\tOkay...");
     }
 
     @Test

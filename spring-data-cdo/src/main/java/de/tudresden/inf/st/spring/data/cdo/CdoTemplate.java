@@ -263,6 +263,7 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
 
                 //Compute delta first between the current object and the latest revision in the store
                 CDOObject objectToUpdate = CDOUtil.getCDOObject(internalValue);
+                //objectToUpdate.cdoResource().getURI();repoResourcePath.split("/").equals(objectToUpdate.cdoResource().getURI().segments())
                 CDORevision currentRevision = objectToUpdate.cdoRevision();
                 if (Objects.nonNull(currentRevision)) {
                     CDOBranchVersion branchVersion = currentRevision.getBranch().getVersion(currentRevision.getVersion());
@@ -477,7 +478,16 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
         CDORevisionHolder<T> revisionContainerResult = execute(session -> {
             CDORevisionHolder<T> revisionContainer = CDORevisionHolder.create();
             CDOTransaction transaction = openTransaction(session);
-            CDOObject latestObject = transaction.getObject(cdoid);
+            CDOObject latestObject;
+            try {
+                CDOResource resource = transaction.getResource(resourcePath, true);
+                latestObject = transaction.getObject(cdoid);
+                if (Objects.nonNull(resource) && !resource.getContents().contains(latestObject)) {
+                    throw new DataNotFoundException(String.format("Entry with ID %s not found at %s", cdoid, resourcePath));
+                }
+            } catch (InvalidURIException e) {
+                throw new DataNotFoundException(String.format("Entry with ID %s not found at %s", cdoid, e.getURI()));
+            }
             Class<T> rawType = (Class<T>) ClassUtils.getUserClass(latestObject);
             final CdoPersistentEntity<?> persistentEntity = mappingContext.getRequiredPersistentEntity(rawType);
             final boolean explicitCDOObject = persistentEntity.isNativeCDOObject();
@@ -491,6 +501,7 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
             for (int version = cdoRevision.getVersion(); version > 0; version--) {
                 CDORevision revisionByVersion = CDOUtil.getRevisionByVersion(latestObject, head, version);
                 CDOObject object = session.getDelegate().openView(revisionByVersion).getObject(cdoid);
+//                CDOObject object = session.getDelegate().openView(head, CDOBranchPoint.UNSPECIFIED_DATE, latestObject.cdoResource().getResourceSet()).getObject(cdoid);
                 InternalEObject eachObject = ((CDOLegacyAdapter) object).cdoInternalInstance();
                 if (explicitCDOObject || isLegacy) {
                     Assert.isTrue(ClassUtils.isAssignable(ClassUtils.getUserClass(eachObject), rawType),
@@ -518,12 +529,6 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
             CDOView cdoView = null;
             try {
                 cdoView = session.getDelegate().openView();
-
-                // Do we need to add the EPackage to the registry??
-//            CDOPackageRegistry packageRegistry = cdoTransaction.getSession().getPackageRegistry();
-//            packageRegistry.putEPackage((EPackage) context);
-//            packageRegistry.put(s, context);
-//            EPackage.Registry.INSTANCE.put(s, context);
 
                 CDOQuery oclQuery = null;
                 if (!persistentEntity.isNativeCdoOrLegacyMode()) {
@@ -744,22 +749,21 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
             CDOID identifier = null;
             CDOTransaction transaction = null;
             try {
-                CDOObject cdoObject = CDOUtil.getCDOObject(internalValue);
 //                URI uri = EcoreUtil.getURI(internalValue);
 //                System.out.println("ecoreURI to save: " + uri);
 //                session.getDelegate().getPackageRegistry().putEPackage(cdoObject);
-                System.out.println("Session is = " + session);
+//                System.out.println("Session is = " + session);
                 transaction = openTransaction(session);
-                System.out.println("CDOTransaction is = " + transaction);
+//                System.out.println("CDOTransaction is = " + transaction);
 //                boolean repoPathExists = true;
                 CDOResource resource;
                 try {
                     resource = transaction.getResource(repoResourcePath, true);
-                    System.out.println("Get resource: " + resource);
+//                    System.out.println("Get resource: " + resource);
                 } catch (InvalidURIException e) {
 //                    repoPathExists = false;
                     resource = transaction.createResource(repoResourcePath);
-                    System.out.println("Create new resource: " + resource);
+//                    System.out.println("Create new resource: " + resource);
                 }
 
 //                resource.getResourceSet().getPackageRegistry().put(null, internalValue);

@@ -18,6 +18,10 @@ public class CDORevisionHolder<T> {
     private CDORevisionHolder() {
     }
 
+    public int getRevisionCount() {
+        return revisionMap.size();
+    }
+
     public static <T> CDORevisionHolder<T> create() {
         return new CDORevisionHolder<>();
     }

@@ -1,5 +1,6 @@
 package de.tudresden.inf.st.spring.data.cdo.repository.support;
 
+import de.tudresden.inf.st.spring.data.cdo.CDORevisionHolder;
 import de.tudresden.inf.st.spring.data.cdo.CdoOperations;
 import de.tudresden.inf.st.spring.data.cdo.core.CdoDeleteResult;
 import de.tudresden.inf.st.spring.data.cdo.repository.CdoEntityInformation;
@@ -10,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.data.util.Streamable;
+import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 
 import java.util.ArrayList;
@@ -64,6 +66,18 @@ public class SimpleCdoRepository<T, ID> implements CdoRepository<T, ID> {
             return new ArrayList<>(cdoOperations.insertAll(result, entityInformation.getPathValue()));
         }
         return source.stream().map(this::save).collect(Collectors.toList());
+    }
+
+    @Override
+    public CDORevisionHolder<T> getRevisionById(@NonNull ID id) {
+        Assert.notNull(id, "The given ID must not be null!");
+        return cdoOperations.getRevisionById(id, entityInformation.getPathValue());
+    }
+
+    @Override
+    public CDORevisionHolder<T> getRevision(@NonNull T entity) {
+        Assert.notNull(entity, "The given entity must not be null!");
+        return cdoOperations.getRevision(entity, entityInformation.getPathValue());
     }
 
     @Override

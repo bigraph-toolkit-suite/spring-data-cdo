@@ -50,4 +50,8 @@ public class BookAnnotated {
             book.setName(title);
         return book;
     }
+
+    public void changeISBN(String isbn) {
+        ((BookImpl) model).setIsbn(isbn);
+    }
 }

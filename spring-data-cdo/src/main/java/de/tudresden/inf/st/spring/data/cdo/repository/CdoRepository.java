@@ -1,7 +1,9 @@
 package de.tudresden.inf.st.spring.data.cdo.repository;
 
+import de.tudresden.inf.st.spring.data.cdo.CDORevisionHolder;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.NoRepositoryBean;
+import org.springframework.lang.NonNull;
 
 import java.util.Optional;
 
@@ -37,6 +39,8 @@ public interface CdoRepository<T, ID> extends CrudRepository<T, ID> {
     @Override
     Optional<T> findById(ID id);
 
+    CDORevisionHolder<T> getRevisionById(@NonNull ID id);
+    CDORevisionHolder<T> getRevision(@NonNull T entity);
     /*
      * (non-Javadoc)
      * @see org.springframework.data.repository.CrudRepository#existsById()
