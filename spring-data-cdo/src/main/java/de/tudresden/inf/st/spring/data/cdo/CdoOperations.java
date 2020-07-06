@@ -7,6 +7,7 @@ import org.eclipse.emf.ecore.EPackage;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.mapping.context.MappingContext;
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
 import java.util.Collection;
@@ -121,6 +122,10 @@ public interface CdoOperations extends DisposableBean {
 
     //TODO provide another method with query options to retrieve e.g. specific revision..
 
+    <T> CDORevisionHolder<T> getRevision(T entity);
+    <T> CDORevisionHolder<T> getRevision(T entity, String resourcePath);
+    <T, ID> CDORevisionHolder<T> getRevisionById(@NonNull ID id, String resourcePath);
+
     /**
      * always the latest revision
      *
@@ -131,7 +136,7 @@ public interface CdoOperations extends DisposableBean {
     @Nullable
     <T, ID> T find(ID entityID, Class<T> javaClassType, final String resourcePath);
 
-    <T> List<T> findAll(Class<T> javaClassType, final String pathValue);
+    <T> List<T> findAll(Class<T> javaClassType, final String resourcePath);
 
     /**
      * The resource path name is automatically retrieved from the annotated property. If not available

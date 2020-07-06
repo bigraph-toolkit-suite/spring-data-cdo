@@ -7,10 +7,12 @@ import de.tudresden.inf.st.ecore.models.bookstoreDomainModel.BookstoreDomainMode
 import de.tudresden.inf.st.ecore.models.bookstoreDomainModel.BookstoreDomainModelPackage;
 import de.tudresden.inf.st.ecore.models.bookstoreDomainModel.impl.BookImpl;
 import de.tudresden.inf.st.ecore.models.bookstoreDomainModel.impl.BookStoreImpl;
+import de.tudresden.inf.st.spring.data.cdo.CDORevisionHolder;
 import de.tudresden.inf.st.spring.data.cdo.CdoDbFactory;
 import de.tudresden.inf.st.spring.data.cdo.CdoTemplate;
 import de.tudresden.inf.st.spring.data.cdo.DataNotFoundException;
 import org.eclipse.emf.cdo.common.id.CDOID;
+import org.eclipse.emf.cdo.common.revision.CDORevision;
 import org.eclipse.emf.cdo.util.CDOUtil;
 import org.eclipse.emf.cdo.util.InvalidURIException;
 import org.junit.After;
@@ -24,7 +26,10 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.IntStream;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Requirements: CDO server must be running on localhost:2036
@@ -81,6 +86,39 @@ public class CdoTemplateBookStoreUnitTest {
 //        CdoDeleteResult cdoDeleteResult4 = template.removeAll(BOOKSTORE_RESOURCE_PATH);
     }
 
+    @Test
+    public void add_and_retrieve_book_revisions() {
+        CdoTemplate template = new CdoTemplate(factory);
+        Book book = bookStorefactory.createBook();
+        book.setIsbn("123456789");
+        book.setName("Book of Examples");
+
+        Book inserted = template.insert(book, BOOK_TEST_RESOURCE_PATH);
+        inserted.setIsbn("12345678");
+        inserted = template.save(inserted, BOOK_TEST_RESOURCE_PATH);
+        inserted.setIsbn("1234567");
+        inserted = template.save(inserted, BOOK_TEST_RESOURCE_PATH);
+        CDORevisionHolder<Book> revisions = template.getRevisionById(CDOUtil.getCDOObject(inserted).cdoID(), BOOK_TEST_RESOURCE_PATH);
+
+        List<Book> byTimeStamp = revisions.getByTimeStamp(678L);
+        assertEquals(0, byTimeStamp.size());
+
+        Optional<Book> byVersion1 = revisions.getByVersion(1);
+        Optional<CDORevision> cdoRevisionByVersion = revisions.getCDORevisionByVersion(1);
+        assertTrue(byVersion1.isPresent());
+        assertEquals("123456789", byVersion1.get().getIsbn());
+        assertTrue(cdoRevisionByVersion.isPresent());
+        assertEquals(1, cdoRevisionByVersion.get().getVersion());
+        Optional<Book> byVersion2 = revisions.getByVersion(2);
+        assertTrue(byVersion2.isPresent());
+        assertEquals("12345678", byVersion2.get().getIsbn());
+        Optional<Book> byVersion3 = revisions.getByVersion(3);
+        assertTrue(byVersion3.isPresent());
+        assertEquals("1234567", byVersion3.get().getIsbn());
+        Optional<Book> byVersion4 = revisions.getByVersion(4);
+        assertFalse(byVersion4.isPresent());
+
+    }
 
     @Test
     public void add_single_bookstore_entity() {
@@ -98,7 +136,7 @@ public class CdoTemplateBookStoreUnitTest {
 
         BookStore insert = template.insert(bookStore, TEST_RESOURCE_PATH);
         System.out.println("Inserted=" + insert);
-        Assertions.assertNotNull(CDOUtil.getCDOObject(insert).cdoID());
+        assertNotNull(CDOUtil.getCDOObject(insert).cdoID());
     }
 
     @Test
@@ -146,9 +184,9 @@ public class CdoTemplateBookStoreUnitTest {
         Assertions.assertEquals(template.getResourcePathFrom(bookStore.getClass()), FALLBACK_RESOURCE_PATH);
         BookStore insert = template.insert(bookStore);
         System.out.println("Inserted=" + insert);
-        Assertions.assertNotNull(CDOUtil.getCDOObject(insert).cdoID());
+        assertNotNull(CDOUtil.getCDOObject(insert).cdoID());
         List<BookStoreImpl> all = template.findAll(BookStoreImpl.class, FALLBACK_RESOURCE_PATH);
-        Assertions.assertNotNull(all);
+        assertNotNull(all);
         Assertions.assertTrue(all.size() > 0);
     }
 
@@ -171,7 +209,7 @@ public class CdoTemplateBookStoreUnitTest {
 
         CDOID idToSearch = CDOUtil.getCDOObject(insert).cdoID();
         BookStoreImpl bookStore1 = template.find(idToSearch, BookStoreImpl.class, FALLBACK_RESOURCE_PATH);
-        Assertions.assertNotNull(bookStore1);
+        assertNotNull(bookStore1);
         Assertions.assertEquals(idToSearch, CDOUtil.getCDOObject(bookStore1).cdoID());
     }
 
@@ -195,7 +233,7 @@ public class CdoTemplateBookStoreUnitTest {
 
         BookStore insert = template.insert(bookStore, TEST_RESOURCE_PATH);
         CDOID cdoid = CDOUtil.getCDOObject(insert).cdoID();
-        Assertions.assertNotNull(cdoid);
+        assertNotNull(cdoid);
         System.out.println("ID is=" + cdoid);
 
         Assertions.assertThrows(DataNotFoundException.class, () -> template.remove(insert, FALLBACK_RESOURCE_PATH));
@@ -215,7 +253,7 @@ public class CdoTemplateBookStoreUnitTest {
 
         System.out.println("Should fail: Removing entities from the default computed resource path that doesn't exist");
         CdoDeleteResult cdoDeleteResult = template.removeAll(BookImpl.class);
-        Assertions.assertFalse(cdoDeleteResult.wasAcknowledged());
+        assertFalse(cdoDeleteResult.wasAcknowledged());
         Assertions.assertEquals(CdoDeleteResult.UnacknowledgedCdoDeleteResult.class, cdoDeleteResult.getClass());
         Assertions.assertThrows(InvalidURIException.class, () -> {
             throw ((CdoDeleteResult.UnacknowledgedCdoDeleteResult) cdoDeleteResult).getReason();
@@ -258,8 +296,8 @@ public class CdoTemplateBookStoreUnitTest {
 
         template.insert(bookStore, BOOKSTORE_RESOURCE_PATH);
         template.insert(bookStore2, BOOKSTORE_RESOURCE_PATH);
-        Assertions.assertNotNull(CDOUtil.getCDOObject(bookStore).cdoID());
-        Assertions.assertNotNull(CDOUtil.getCDOObject(bookStore2).cdoID());
+        assertNotNull(CDOUtil.getCDOObject(bookStore).cdoID());
+        assertNotNull(CDOUtil.getCDOObject(bookStore2).cdoID());
 
         Assertions.assertThrows(Exception.class, () -> template.countAll(BookStoreImpl.class, BookstoreDomainModelPackage.eINSTANCE, BOOKSTORE_RESOURCE_PATH));
         long l = template.countAll(BookStore.class, BookstoreDomainModelPackage.eINSTANCE, BOOKSTORE_RESOURCE_PATH);
