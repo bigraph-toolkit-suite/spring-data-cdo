@@ -71,17 +71,6 @@
     </scm>
 
     <repositories>
-<!--        <repository>-->
-<!--            <id>Eclipse</id>-->
-<!--            <layout>p2</layout>-->
-<!--            <url>${eclipse.mirror}/releases/photon/</url>-->
-<!--        </repository>-->
-        <!-- add TMF repository for latest Xtend -->
-<!--        <repository>-->
-<!--            <id>TMF Repo</id>-->
-<!--            <layout>p2</layout>-->
-<!--            <url>${eclipse.mirror}/modeling/tmf/xtext/updates/releases/</url>-->
-<!--        </repository>-->
         <repository>
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
