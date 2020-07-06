@@ -32,13 +32,13 @@
         <springdata.commons>2.2.0.BUILD-SNAPSHOT</springdata.commons>
         <guava.version>28.0-jre</guava.version>
         <!-- EMF -->
-<!--        <emf.version>2.16.0</emf.version>-->
+        <!--        <emf.version>2.16.0</emf.version>-->
         <emf.version>2.19.0</emf.version>
         <ecore.xmi.version>2.16.0</ecore.xmi.version>
-<!--        <emf.ecore.version>2.18.0</emf.ecore.version>-->
+        <!--        <emf.ecore.version>2.18.0</emf.ecore.version>-->
         <emf.ecore.version>2.22.0</emf.ecore.version>
         <emf.ecore.change.version>2.14.0</emf.ecore.change.version>
-<!--        <emf.codegen.version>2.16.0</emf.codegen.version>-->
+        <!--        <emf.codegen.version>2.16.0</emf.codegen.version>-->
         <emf.codegen.version>2.20.0</emf.codegen.version>
         <emf.cdo.version>4.7.0</emf.cdo.version>
         <eclipse.mirror>http://download.eclipse.org/</eclipse.mirror>
@@ -158,6 +158,11 @@
                     <artifactId>maven-site-plugin</artifactId>
                     <version>3.8.2</version>
                 </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-report-plugin</artifactId>
+                    <version>3.0.0-M5</version>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
@@ -167,7 +172,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-report-plugin</artifactId>
-                <version>3.0.0-M4</version>
             </plugin>
         </plugins>
     </reporting>

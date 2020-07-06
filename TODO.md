@@ -1,4 +1,10 @@
 TODO:
+
+    add queryhandlerfactory [ocl] to standalone server
+    standalone server: fix resourcepath issue in some cases
+
+    flapmongo integration for cdo standalone server
+
     [UNSURE] //TODO valid resourcepath also: cdo://repo1/sample
     -> then use the repository instead of the one in the options
     
@@ -38,13 +44,3 @@ TODO:
        
         
 optimistic locking exception based on version: reload the latest snapshot, merge the specific attributes and update.
-        
-        
-Document: add bookstore lib to local-repo:
-mvn install:install-file  -Dfile=src/test/resources/bookstoreModelApi.jar \
-                          -DgroupId=de.tudresden.inf.st.ecore.models \
-                          -DartifactId=bookstore-api \
-                          -Dversion=1.0.0 \
-                          -Dpackaging=jar \
-                          -DgeneratePom=true \
-                          -DlocalRepositoryPath=src/test/resources/my-repo
