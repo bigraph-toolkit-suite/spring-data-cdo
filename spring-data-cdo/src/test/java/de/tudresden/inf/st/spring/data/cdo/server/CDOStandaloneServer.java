@@ -10,6 +10,7 @@ import org.eclipse.emf.cdo.server.IRepository;
 import org.eclipse.emf.cdo.server.IRepository.Props;
 import org.eclipse.emf.cdo.server.IStore;
 import org.eclipse.emf.cdo.server.net4j.CDONet4jServerUtil;
+import org.eclipse.emf.cdo.server.ocl.OCLQueryHandler;
 import org.eclipse.emf.cdo.spi.server.RepositoryConfigurator;
 import org.eclipse.emf.cdo.spi.server.RepositoryFactory;
 import org.eclipse.equinox.app.IApplicationContext;
@@ -98,10 +99,12 @@ public class CDOStandaloneServer extends OSGiApplication {
         }
         if (Objects.nonNull(configFile) && configFile.exists()) {
             OM.LOG.info("configure by file");
+            OCLQueryHandler.Factory oclFactory = new OCLQueryHandler.Factory();
             RepositoryConfigurator repositoryConfigurator = new RepositoryConfigurator(
                     IPluginContainer.INSTANCE);
             repositoryConfigurator.getStoreFactories().put("mem", new MEMStoreFactory());
             repositoryConfigurator.getRepositoryFactories().put("default", new RepositoryFactory());
+            repositoryConfigurator.getContainer().registerFactory(oclFactory);
             repositories = repositoryConfigurator.configure(configFile);
             if (repositories == null || repositories.length == 0) {
                 OM.LOG.warn("No repositories configured");
@@ -116,6 +119,8 @@ public class CDOStandaloneServer extends OSGiApplication {
             net4jConfigurator.getContainer().registerFactory(new HTTPAcceptor.DescriptionParserFactory());
             CDONet4jUtil.prepareContainer(net4jConfigurator.getContainer());
             CDONet4jServerUtil.prepareContainer(net4jConfigurator.getContainer());
+//            net4jConfigurator.getContainer().getFactoryRegistry().put(oclFactory.getKey(), oclFactory);
+//            net4jConfigurator.getContainer().registerFactory(oclFactory);
             acceptors = net4jConfigurator.configure(configFile);
             if (acceptors == null || acceptors.length == 0) {
                 OM.LOG.warn("No acceptors configured");
@@ -162,12 +167,14 @@ public class CDOStandaloneServer extends OSGiApplication {
 
     public IConnector initializeConnector(IStore store) {
         if (connector == null) {
+            OCLQueryHandler.Factory oclFactory = new OCLQueryHandler.Factory();
             container = IPluginContainer.INSTANCE;
             Net4jUtil.prepareContainer(container);
             CDONet4jUtil.prepareContainer(container);
             CDONet4jServerUtil.prepareContainer(container);
             TCPUtil.prepareContainer(container);
             HTTPUtil.prepareContainer(container);
+            container.registerFactory(oclFactory);
 
             // Initialize Acceptor
             if (acceptors == null) {

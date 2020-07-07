@@ -527,6 +527,7 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
         Assert.notNull(persistentEntity, "CdoPersistentEntity must not be null.");
         return execute(session -> {
             CDOView cdoView = null;
+            String className = null;
             try {
                 cdoView = session.getDelegate().openView();
 
@@ -535,14 +536,16 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
                     Class<?> classFor = persistentEntity.getRequiredEObjectModelProperty().getClassFor();
                     Assert.notNull(classFor, "classFor property must not be null. Maybe it isn't defined for EObjectModel property.");
                     EClass eClassifier = (EClass) context.getEClassifier(classFor.getSimpleName());
-                    String className = classFor.getSimpleName();
+                    className = classFor.getSimpleName();
                     oclQuery = createQuery(cdoView, className + ".allInstances()->size()", eClassifier);
+//                    oclQuery = createQuery(cdoView, "self.oclType().allInstances()->size()", eClassifier);
                 } else {
-                    String className = javaType.getSimpleName();
+                    className = javaType.getSimpleName();
 //                    Assert.isTrue(persistentEntity.isLegacyObject() || persistentEntity.isNativeCDOObject(), "Entity is not a subclass of EObject or CDOObject.");
                     EClass eClassifier = (EClass) context.getEClassifier(className);
                     Assert.notNull(eClassifier, String.format("EClass %s couldn't be obtained from the provided EPackage context", className));
                     oclQuery = createQuery(cdoView, className + ".allInstances()->size()", eClassifier);
+//                    oclQuery = createQuery(cdoView, "self.oclType().allInstances()->size()", eClassifier);
                 }
 
                 Object resultValue = oclQuery.getResultValue();
@@ -551,6 +554,11 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
                 }
                 return (Long) resultValue;
             } catch (Exception e) {
+                if (e.getMessage().contains("SemanticException") &&
+                        Objects.nonNull(className)) {
+                    if (e.getMessage().contains(className))
+                        return 0L;
+                }
                 if (e instanceof RuntimeException)
                     throw potentiallyConvertRuntimeException((RuntimeException) e, exceptionTranslator);
                 return -1L;

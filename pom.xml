@@ -84,6 +84,10 @@
             <url>https://download.eclipse.org/modeling/emf/cdo/drops/R20200610-0035/</url>
             <layout>p2</layout>
         </repository>
+        <repository>
+            <id>Eclipse-Maven-Repository</id>
+            <url>https://repo.eclipse.org/content/groups/releases/</url>
+        </repository>
     </repositories>
 
     <pluginRepositories>

@@ -1,9 +1,6 @@
 TODO:
 
-    add queryhandlerfactory [ocl] to standalone server
-    standalone server: fix resourcepath issue in some cases
-
-    flapmongo integration for cdo standalone server
+    throw DataAccessResourceFailureException for can't connect to CDO
 
     [UNSURE] //TODO valid resourcepath also: cdo://repo1/sample
     -> then use the repository instead of the one in the options
@@ -14,7 +11,10 @@ TODO:
     
     put all annotation based values outside template and into repo class
         ->not for everything!
-    
+
+    change listener for cdo model
+            - via adapter of eobject? or is there a CDO feature?
+
     Check isNew function: for dobule saves, cause now we have also legacy mode support
     
     CdoTemplate: finally block: we can close the transaction if not the session 
@@ -24,12 +24,12 @@ TODO:
     Allow definition of replica sets in CdoClient, CdoClientFactoryBean, etc...
     
     [CLOSED] Test expression in annotations
-    
-    change listener for cdo model
-        - via adapter of eobject? or is there a CDO feature?
-    
+    [CLOSED] add queryhandlerfactory [ocl] to standalone server
+    [CLOSED] standalone server: fix resourcepath issue in some cases
     [CLOSED] CdoServerConnectionString parser and tests
-    
+
+
+
     - Catch OptimisticLockingException: Could not lock objects within 10000 milli seconds
         -> enable user params via clientsessionoptions
         
@@ -37,9 +37,6 @@ TODO:
     
     Test:
         - data could not be retrieved after saving+deleting it in one transaction and finding it within another
-        
-     
-    throw DataAccessResourceFailureException for can't connect to CDO   
     
        
         
