@@ -42,12 +42,16 @@ public class CDOStandaloneServer extends OSGiApplication {
     public static void main(String[] args) {
         CDOStandaloneServer server = new CDOStandaloneServer("repo1");
         try {
-            String[] equinoxArgs = {}; //"-console", "--add-modules=ALL-SYSTEM"}; //"-noExit"
-            BundleContext context = EclipseStarter.startup(equinoxArgs, null);
-            server.start(getApplicationContext(context));
+            CDOStandaloneServer.start(server);
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public static void start(final CDOStandaloneServer server) throws Exception {
+        String[] equinoxArgs = {}; //"-console", "--add-modules=ALL-SYSTEM"}; //"-noExit"
+        BundleContext context = EclipseStarter.startup(equinoxArgs, null);
+        server.start(getApplicationContext(context));
     }
 
     public static IApplicationContext getApplicationContext(BundleContext context) {

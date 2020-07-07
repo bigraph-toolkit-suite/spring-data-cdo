@@ -22,8 +22,6 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 /**
- * Requirements: CDO server must be running on localhost:2036
- * <p>
  * Java configuration is used to create the necessary beans (e.g., {@link CdoOperations}). Then, the beans are registered
  * manually via {@link AnnotationConfigApplicationContext}.
  * The required beans are then acquired by the current context via the {@link GenericApplicationContext#getBean(Class)} method.
