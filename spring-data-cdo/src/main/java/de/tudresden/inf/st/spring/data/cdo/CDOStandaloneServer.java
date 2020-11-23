@@ -20,6 +20,7 @@ import org.eclipse.net4j.acceptor.IAcceptor;
 import org.eclipse.net4j.connector.IConnector;
 import org.eclipse.net4j.http.HTTPUtil;
 import org.eclipse.net4j.http.internal.server.HTTPAcceptor;
+import org.eclipse.net4j.internal.tcp.TCPAcceptor;
 import org.eclipse.net4j.tcp.TCPUtil;
 import org.eclipse.net4j.util.container.IManagedContainer;
 import org.eclipse.net4j.util.container.IPluginContainer;
@@ -146,6 +147,7 @@ public class CDOStandaloneServer extends OSGiApplication {
             HTTPUtil.prepareContainer(net4jConfigurator.getContainer());
             Net4jUtil.prepareContainer(net4jConfigurator.getContainer());
             net4jConfigurator.getContainer().registerFactory(new HTTPAcceptor.DescriptionParserFactory());
+            net4jConfigurator.getContainer().registerFactory(new TCPAcceptor.DescriptionParserFactory());
             CDONet4jUtil.prepareContainer(net4jConfigurator.getContainer());
             CDONet4jServerUtil.prepareContainer(net4jConfigurator.getContainer());
 //            net4jConfigurator.getContainer().getFactoryRegistry().put(oclFactory.getKey(), oclFactory);

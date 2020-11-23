@@ -112,10 +112,6 @@ public class BookNotAnnotatedRepositoryIntegrationTest {
 //        bookRepository.count();
     }
 
-    //    @CDO(path = "junit/test/books",
-//            nsUri = "http://www.example.org/bookstoreDomainModel",
-//            ePackage = BookstoreDomainModelPackage.class,
-//            ePackageBaseClass = "de.tudresden.inf.st.ecore.models.bookstoreDomainModel.BookstoreDomainModelPackage")
     public static class BookNotAnnotated {
 
         @Id

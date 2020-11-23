@@ -9,6 +9,7 @@ import org.eclipse.emf.cdo.common.revision.CDORevisionCache;
 import org.eclipse.emf.cdo.common.revision.CDORevisionUtil;
 import org.eclipse.emf.cdo.net4j.CDONet4jSessionConfiguration;
 import org.eclipse.emf.cdo.net4j.CDONet4jUtil;
+import org.eclipse.emf.cdo.net4j.ReconnectingCDOSessionConfiguration;
 import org.eclipse.emf.cdo.server.CDOServerUtil;
 import org.eclipse.emf.cdo.server.IRepository;
 import org.eclipse.emf.cdo.server.IRepositorySynchronizer;
@@ -40,6 +41,7 @@ import org.springframework.util.Assert;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Client prepares all necessary components for the physical connection to the server, and provides some functionality
@@ -125,10 +127,18 @@ public class CdoClient {
     }
 
     public CdoClientSession startSession(CDONet4jSessionConfiguration config, CdoClientSessionOptions options, String repoName) {
-        IConnector connector = createConnector(addr); //Net4jUtil.getConnector(IPluginContainer.INSTANCE, "tcp", "repos.foo.org:2036");
+        IConnector connector = config.getConnector();
+        if (Objects.isNull(connector)) {
+            connector = createConnector(addr);
+        }
         config.setConnector(connector);
+
         config.setRepositoryName(repoName);
         config.setActivateOnOpen(true);
+
+        assert config.getRepositoryName() != null;
+        assert config.getConnector() != null;
+
         return new CdoClientSession(config.openNet4jSession()).setOptions(options);
     }
 
@@ -144,11 +154,17 @@ public class CdoClient {
 
     protected CDONet4jSessionConfiguration createSessionConfiguration(CdoServerAddress connectorDescription) {
         IConnector connector = createConnector(connectorDescription);
-        CDONet4jSessionConfiguration configuration = CDONet4jUtil.createNet4jSessionConfiguration();
-        configuration.setConnector(connector);
-//        configuration.setRepositoryName(repositoryName);
-        configuration.setRevisionManager(CDORevisionUtil.createRevisionManager(CDORevisionCache.NOOP));
-        return configuration;
+
+        //        CDONet4jSessionConfiguration config = CDONet4jUtil.createNet4jSessionConfiguration();
+        ReconnectingCDOSessionConfiguration config = CDONet4jUtil.createReconnectingSessionConfiguration(
+                connectorDescription.getFullConnectorDescription(),
+                "", // (!) repository name has to be set later
+                IPluginContainer.INSTANCE);
+        config.setMaxReconnectAttempts(5);
+
+        config.setConnector(connector);
+        config.setRevisionManager(CDORevisionUtil.createRevisionManager(CDORevisionCache.NOOP)); //CDORevisionCache.NOOP
+        return config;
     }
 
     /**
@@ -159,6 +175,7 @@ public class CdoClient {
      */
     protected IConnector createConnector(CdoServerAddress addr) {
         IConnector connector = Net4jUtil.getConnector(container, addr.getTransportType(), addr.getFullConnectorDescription());
+        //Net4jUtil.getConnector(IPluginContainer.INSTANCE, "tcp", "repos.foo.org:2036");
         //OR:
 //        final IConnector connector = (IConnector) IPluginContainer.INSTANCE
 //                .getElement( //
