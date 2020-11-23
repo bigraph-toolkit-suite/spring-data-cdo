@@ -50,11 +50,11 @@ import java.util.Map;
 public class CdoClient {
 
     @NonNull
-    private CdoServerAddress addr;
+    private final CdoServerAddress addr;
     @NonNull
-    private CdoClientOptions cdoClientOptions;
+    private final CdoClientOptions cdoClientOptions;
     @Nullable
-    private CdoCredentials cdoCredentials;
+    private final CdoCredentials cdoCredentials;
 
     protected final transient IManagedContainer container;
 
@@ -124,18 +124,11 @@ public class CdoClient {
         return startSession(createSessionConfiguration(addr), options, options.getRepository());
     }
 
-//    @Deprecated
-//    public CdoClientSession startSession(CDONet4jSessionConfiguration config, String repoName) {
-//        return startSession(config, null, repoName);
-//    }
-
     public CdoClientSession startSession(CDONet4jSessionConfiguration config, CdoClientSessionOptions options, String repoName) {
         IConnector connector = createConnector(addr); //Net4jUtil.getConnector(IPluginContainer.INSTANCE, "tcp", "repos.foo.org:2036");
         config.setConnector(connector);
         config.setRepositoryName(repoName);
-//        config.setIDGenerator(); //TODO maybe: https://www.eclipse.org/forums/index.php/t/234279/
-        //CDOUtil
-        //or: CDONet4jSession session = (CDONet4jSession)IPluginContainer.INSTANCE.getElement("org.eclipse.emf.cdo.sessions", "cdo", "tcp://repos.foo.org:2036/MyRepo");
+        config.setActivateOnOpen(true);
         return new CdoClientSession(config.openNet4jSession()).setOptions(options);
     }
 
@@ -166,9 +159,6 @@ public class CdoClient {
      */
     protected IConnector createConnector(CdoServerAddress addr) {
         IConnector connector = Net4jUtil.getConnector(container, addr.getTransportType(), addr.getFullConnectorDescription());
-//                Net4jUtil.getConnector(IPluginContainer.INSTANCE,
-//                addr.getTransportType(),
-//                description);
         //OR:
 //        final IConnector connector = (IConnector) IPluginContainer.INSTANCE
 //                .getElement( //
@@ -247,6 +237,7 @@ public class CdoClient {
     }
 
     public static IManagedContainer createContainer() {
+//        IPluginContainer.INSTANCE; //also a managed container
         IManagedContainer container = ContainerUtil.createContainer();
         Net4jUtil.prepareContainer(container); // Register Net4j factories
         TCPUtil.prepareContainer(container); // Register TCP factories

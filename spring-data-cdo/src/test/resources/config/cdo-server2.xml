@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cdoServer>
+
+    <acceptor type="tcp" listenAddr="0.0.0.0" port="2036"/>
+
+    <repository name="repo1">
+        <property name="overrideUUID" value=""/>
+        <property name="supportingAudits" value="true"/>
+        <property name="supportingBranches" value="true"/>
+        <property name="ensureReferentialIntegrity" value="false"/>
+        <property name="allowInterruptRunningQueries" value="true"/>
+        <property name="idGenerationLocation" value="STORE"/>
+        <property name="serializeCommits" value="false"/>
+        <property name="optimisticLockingTimeout" value="10000"/>
+        <property name="supportingEcore" value="true"/>
+
+        <store type="mem">
+        </store>
+    </repository>
+</cdoServer>

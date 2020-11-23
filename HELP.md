@@ -1,5 +1,15 @@
 # Getting Started
 
+## Spring
+
+### Reference Documentation
+For further reference, please consider the following sections:
+
+* [Official Apache Maven documentation](https://maven.apache.org/guides/index.html)
+* [Spring Boot Maven Plugin Reference Guide](https://docs.spring.io/spring-boot/docs/2.2.0.BUILD-SNAPSHOT/maven-plugin/)
+* [Spring Configuration Processor](https://docs.spring.io/spring-boot/docs/{bootVersion}/reference/htmlsingle/#configuration-metadata-annotation-processor)
+* [Spring Boot DevTools](https://docs.spring.io/spring-boot/docs/{bootVersion}/reference/htmlsingle/#using-boot-devtools)
+
 ## Eclipse CDO
 
 - provides means to store/load bigraphical models to/from a CDO server
@@ -185,9 +195,11 @@ int version = 1;
 CDOView audit = object.cdoView().getSession.openView(CDOUtil.getRevision(object, version).getTimeStamp());
 CDOObject oldObject = audit.getObject(object);"
 
+Use CDOBranchPoint.UNSPECIFIED_DATE to reset the view back for looking at the latest state of the object.
 
-Revision Count:
-"You can ask for the version of the latest revision of an object by
+
+**Revision Count [https://www.eclipse.org/forums/index.php/t/450110/](https://www.eclipse.org/forums/index.php/t/450110/)**
+"You can ask for the version of the latest revision of an object by:
 
 a) If you have a view/transaction open: view.getObject(id).cdoRevision().getVersion() or
 
@@ -195,13 +207,5 @@ b) by using the revision manager: session.getRevisionManager().getRevision(id, m
 
 If you only use one branch (the main branch) that version is equal to the number of revisions of that object."
 
-## Spring
 
-### Reference Documentation
-For further reference, please consider the following sections:
-
-* [Official Apache Maven documentation](https://maven.apache.org/guides/index.html)
-* [Spring Boot Maven Plugin Reference Guide](https://docs.spring.io/spring-boot/docs/2.2.0.BUILD-SNAPSHOT/maven-plugin/)
-* [Spring Configuration Processor](https://docs.spring.io/spring-boot/docs/{bootVersion}/reference/htmlsingle/#configuration-metadata-annotation-processor)
-* [Spring Boot DevTools](https://docs.spring.io/spring-boot/docs/{bootVersion}/reference/htmlsingle/#using-boot-devtools)
 

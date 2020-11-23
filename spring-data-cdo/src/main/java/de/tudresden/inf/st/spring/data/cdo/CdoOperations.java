@@ -7,6 +7,7 @@ import org.eclipse.emf.ecore.EPackage;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.mapping.context.MappingContext;
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
 import java.util.Collection;
@@ -15,12 +16,13 @@ import java.util.Objects;
 import java.util.Optional;
 
 /**
- * Interface that specifies a basic set of CDO operations, implemented by {@link CdoTemplate}.
- * Not often used but a useful option for extensibility and testability (as it can be easily mocked or stubbed).
+ * This interface specifies a basic set of CDO operations, implemented mainly by {@link CdoTemplate}.
+ * It is not often directly used by the user but a useful option for extensibility and testability
+ * (as it can be easily mocked or stubbed).
  * <p>
  * All methods may throw a {@link org.eclipse.emf.cdo.util.OptimisticLockingException} if something is blocking the access
- * to some objects within the repository. The time to lock objects within {@literal n} milliseconds can be adjusted
- * in the {@link de.tudresden.inf.st.spring.data.cdo.config.CdoClientSessionOptions}.
+ * to some objects within the repository. The time to lock objects can be adjusted
+ * via {@link de.tudresden.inf.st.spring.data.cdo.config.CdoClientSessionOptions} when providing a {@link CdoClient}.
  *
  * @author Dominik Grzelak
  */
@@ -120,6 +122,10 @@ public interface CdoOperations extends DisposableBean {
 
     //TODO provide another method with query options to retrieve e.g. specific revision..
 
+    <T> CDORevisionHolder<T> getRevision(T entity);
+    <T> CDORevisionHolder<T> getRevision(T entity, String resourcePath);
+    <T, ID> CDORevisionHolder<T> getRevisionById(@NonNull ID id, String resourcePath);
+
     /**
      * always the latest revision
      *
@@ -130,7 +136,7 @@ public interface CdoOperations extends DisposableBean {
     @Nullable
     <T, ID> T find(ID entityID, Class<T> javaClassType, final String resourcePath);
 
-    <T> List<T> findAll(Class<T> javaClassType, final String pathValue);
+    <T> List<T> findAll(Class<T> javaClassType, final String resourcePath);
 
     /**
      * The resource path name is automatically retrieved from the annotated property. If not available

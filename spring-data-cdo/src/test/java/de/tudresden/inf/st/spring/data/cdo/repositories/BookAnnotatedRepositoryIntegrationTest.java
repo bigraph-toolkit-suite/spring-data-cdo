@@ -3,10 +3,7 @@ package de.tudresden.inf.st.spring.data.cdo.repositories;
 import de.tudresden.inf.st.ecore.models.bookstoreDomainModel.Book;
 import de.tudresden.inf.st.ecore.models.bookstoreDomainModel.BookstoreDomainModelPackage;
 import de.tudresden.inf.st.ecore.models.bookstoreDomainModel.impl.BookstoreDomainModelPackageImpl;
-import de.tudresden.inf.st.spring.data.cdo.CdoOperations;
-import de.tudresden.inf.st.spring.data.cdo.CdoServerConnectionString;
-import de.tudresden.inf.st.spring.data.cdo.CdoTemplate;
-import de.tudresden.inf.st.spring.data.cdo.SimpleCdoDbFactory;
+import de.tudresden.inf.st.spring.data.cdo.*;
 import de.tudresden.inf.st.spring.data.cdo.repository.config.EnableCdoRepositories;
 import org.eclipse.emf.cdo.util.CDOUtil;
 import org.junit.Before;
@@ -22,6 +19,8 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.Arrays;
 import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * @author Dominik Grzelak
@@ -48,6 +47,7 @@ public class BookAnnotatedRepositoryIntegrationTest {
     }
 
     BookAnnotated bookA, bookB, bookC, bookD;
+    BookAnnotated bookRev;
 
     @Autowired
     protected BookAnnotatedRepository bookRepository;
@@ -60,25 +60,35 @@ public class BookAnnotatedRepositoryIntegrationTest {
     public void setUp() throws Exception {
 
         bookRepository.deleteAll();
+        assertEquals(0, bookRepository.count());
 
         bookA = new BookAnnotated("EMF");
         bookB = new BookAnnotated("CDO");
         bookC = new BookAnnotated("ECORE");
         bookD = new BookAnnotated("Eclipse");
+        bookRev = new BookAnnotated("Book of Samples");
 
-//        bookRepository.save(bookA);
-//        bookRepository.save(bookB);
-//        bookRepository.save(bookC);
-//        bookRepository.save(bookD);
         bookRepository.saveAll(Arrays.asList(bookA, bookB, bookC, bookD));
         bookRepository.saveAll(Arrays.asList(bookA, bookB, bookC, bookD));
+        bookRepository.save(bookRev);
+    }
+
+    @Test
+    public void get_revisions_of_book() {
+        bookRepository.save(bookRev);
+        bookRev.changeISBN("12345");
+        bookRepository.save(bookRev);
+
+        CDORevisionHolder<BookAnnotated> revision = bookRepository.getRevision(bookRev);
+        System.out.println(revision);
+        assertEquals(2, revision.getRevisionCount());
     }
 
     @Test
     public void find_book_by_id() {
         Optional<BookAnnotated> byId = bookRepository.findById(bookD.getId());
         Assertions.assertTrue(byId.isPresent());
-        Assertions.assertEquals(((Book) byId.get().model).getName(), ((Book) bookD.model).getName());
+        assertEquals(((Book) byId.get().model).getName(), ((Book) bookD.model).getName());
     }
 
     //TODO: this causes a stackoverflow error when removing
@@ -86,22 +96,22 @@ public class BookAnnotatedRepositoryIntegrationTest {
     public void save_multiple_times_has_no_effect() {
         String changeTitleTo = "Maven - HowTo";
         System.out.println(CDOUtil.getCDOObject(bookA.model).cdoID() + "<->" + bookA.id);
-        Assertions.assertEquals(CDOUtil.getCDOObject(bookA.model).cdoID(), bookA.id);
+        assertEquals(CDOUtil.getCDOObject(bookA.model).cdoID(), bookA.id);
         ((Book) bookA.model).setName(changeTitleTo);
         bookRepository.save(bookA);
         System.out.println(CDOUtil.getCDOObject(bookA.model).cdoID() + "<->" + bookA.id);
-        Assertions.assertEquals(CDOUtil.getCDOObject(bookA.model).cdoID(), bookA.id);
-        Assertions.assertEquals(changeTitleTo, ((Book) bookA.model).getName());
+        assertEquals(CDOUtil.getCDOObject(bookA.model).cdoID(), bookA.id);
+        assertEquals(changeTitleTo, ((Book) bookA.model).getName());
         bookRepository.save(bookA);
         System.out.println(CDOUtil.getCDOObject(bookA.model).cdoID() + "<->" + bookA.id);
-        Assertions.assertEquals(CDOUtil.getCDOObject(bookA.model).cdoID(), bookA.id);
-        Assertions.assertEquals(changeTitleTo, ((Book) bookA.model).getName());
+        assertEquals(CDOUtil.getCDOObject(bookA.model).cdoID(), bookA.id);
+        assertEquals(changeTitleTo, ((Book) bookA.model).getName());
     }
 
     @Test
     public void count_entities() {
         long count = bookRepository.count();
-        Assertions.assertEquals(4, count);
+        assertEquals(5, count);
     }
 
 }

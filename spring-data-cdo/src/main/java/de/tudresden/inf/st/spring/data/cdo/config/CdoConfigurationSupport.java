@@ -10,13 +10,11 @@ import org.springframework.data.annotation.Persistent;
 import org.springframework.data.mapping.model.CamelCaseAbbreviatingFieldNamingStrategy;
 import org.springframework.data.mapping.model.FieldNamingStrategy;
 import org.springframework.data.mapping.model.PropertyNameFieldNamingStrategy;
+import org.springframework.lang.Nullable;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author Dominik Grzelak
@@ -25,6 +23,7 @@ public abstract class CdoConfigurationSupport {
 
     protected abstract String getRepositoryName();
 
+    @Nullable
     protected Collection<String> getMappingBasePackages() {
         Package mappingBasePackage = getClass().getPackage();
         return Collections.singleton(mappingBasePackage == null ? null : mappingBasePackage.getName());
@@ -55,18 +54,18 @@ public abstract class CdoConfigurationSupport {
      * Scans the mapping base package for classes annotated with {@link CDO}. By default, it scans for entities in
      * all packages returned by {@link #getMappingBasePackages()}.
      *
-     * @return
+     * @return set of all CDO entities
      * @throws ClassNotFoundException
      * @see #getMappingBasePackages()
      */
     protected Set<Class<?>> getInitialEntitySet() throws ClassNotFoundException {
 
-        Set<Class<?>> initialEntitySet = new HashSet<Class<?>>();
-
-        for (String basePackage : getMappingBasePackages()) {
-            initialEntitySet.addAll(scanForEntities(basePackage));
+        Set<Class<?>> initialEntitySet = new HashSet<>();
+        if (Objects.nonNull(getMappingBasePackages())) {
+            for (String basePackage : getMappingBasePackages()) {
+                initialEntitySet.addAll(scanForEntities(basePackage));
+            }
         }
-
         return initialEntitySet;
     }
 

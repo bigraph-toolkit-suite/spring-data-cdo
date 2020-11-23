@@ -9,6 +9,7 @@ import de.tudresden.inf.st.spring.data.cdo.repository.CdoPersistentEntity;
 import de.tudresden.inf.st.spring.data.cdo.repository.CdoPersistentProperty;
 import org.eclipse.emf.cdo.CDOObject;
 import org.eclipse.emf.cdo.common.CDOCommonSession;
+import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.branch.CDOBranchVersion;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
 import org.eclipse.emf.cdo.common.id.CDOID;
@@ -27,13 +28,8 @@ import org.eclipse.emf.cdo.util.*;
 import org.eclipse.emf.cdo.view.CDOQuery;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.*;
-import org.eclipse.emf.ecore.impl.BasicEObjectImpl;
-import org.eclipse.emf.ecore.impl.DynamicEObjectImpl;
-import org.eclipse.emf.ecore.impl.EObjectImpl;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.internal.cdo.object.CDOLegacyAdapter;
-import org.eclipse.emf.internal.cdo.object.CDOLegacyWrapper;
-import org.eclipse.emf.internal.cdo.object.DynamicCDOObjectImpl;
 import org.eclipse.emf.internal.cdo.view.CDOStateMachine;
 import org.eclipse.emf.spi.cdo.InternalCDOObject;
 import org.eclipse.net4j.util.concurrent.IRWLockManager;
@@ -82,9 +78,6 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
     private static final Logger LOGGER = LoggerFactory.getLogger(CdoTemplate.class);
 
     private static final Collection<String> ITERABLE_CLASSES;
-    @Deprecated
-    private static final Collection<Class> DYNAMIC_ECORE_CLASSES;
-    private static final Collection<Class> CDO_LEGACY_CLASSES;
 
     static {
 
@@ -93,20 +86,7 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
         iterableClasses.add(Collection.class.getName());
         iterableClasses.add(Iterator.class.getName());
 
-        Set<Class> dynamicClasses = new HashSet<>();
-        dynamicClasses.add(DynamicCDOObjectImpl.class);
-        dynamicClasses.add(DynamicEObjectImpl.class);
-        dynamicClasses.add(InternalEObject.class);
-        dynamicClasses.add(BasicEObjectImpl.class);
-        dynamicClasses.add(EObjectImpl.class);
-
-        Set<Class> cdoLegacyClasses = new HashSet<>();
-        cdoLegacyClasses.add(CDOLegacyWrapper.class);
-        cdoLegacyClasses.add(CDOLegacyAdapter.class);
-
         ITERABLE_CLASSES = Collections.unmodifiableCollection(iterableClasses);
-        DYNAMIC_ECORE_CLASSES = Collections.unmodifiableCollection(dynamicClasses);
-        CDO_LEGACY_CLASSES = Collections.unmodifiableCollection(cdoLegacyClasses);
     }
 
     private final CdoClientSessionOptions cdoSessionOptions;
@@ -283,6 +263,7 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
 
                 //Compute delta first between the current object and the latest revision in the store
                 CDOObject objectToUpdate = CDOUtil.getCDOObject(internalValue);
+                //objectToUpdate.cdoResource().getURI();repoResourcePath.split("/").equals(objectToUpdate.cdoResource().getURI().segments())
                 CDORevision currentRevision = objectToUpdate.cdoRevision();
                 if (Objects.nonNull(currentRevision)) {
                     CDOBranchVersion branchVersion = currentRevision.getBranch().getVersion(currentRevision.getVersion());
@@ -392,9 +373,6 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
                 object = cdoView.getObject(cdoid);
                 if (Objects.isNull(object))
                     throw new DataNotFoundException("Data couldn't be retrieved with id=" + cdoid);
-//                final CdoPersistentEntity<?> persistentEntity = mappingContext.getPersistentEntity(javaClassType);
-
-//                session.getDelegate().getPackageRegistry().getSubTypes();
                 if (explicitCDOObject) {
                     Assert.isTrue(ClassUtils.isAssignable(ClassUtils.getUserClass(object), javaClassType), "Domain class type cannot be assigned to class type of the corresponding CDO object ");
 //                    if (ClassUtils.isAssignable(ClassUtils.getUserClass(object), javaClassType)) { //TODO make this part of a Query
@@ -464,33 +442,110 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
     }
 
     @Override
+    public <T> CDORevisionHolder<T> getRevision(T entity) {
+        Assert.notNull(entity, "Entity must not be null!");
+        return getRevision(entity, getResourcePathFrom(entity.getClass()));
+    }
+
+    @Override
+    public <T> CDORevisionHolder<T> getRevision(T entity, String resourcePath) {
+        Assert.notNull(entity, "Entity must not be null!");
+        final Class<?> rawType = ClassUtils.getUserClass(entity);
+        final CdoPersistentEntity<?> persistentEntity = mappingContext.getRequiredPersistentEntity(rawType);
+        CDOID cdoid;
+        if (persistentEntity.isNativeCdoOrLegacyMode()) {
+            cdoid = Optional.ofNullable(CDOUtil.getCDOObject((EObject) entity).cdoID())
+                    .<IllegalStateException>orElseThrow(() -> {
+                        throw new IllegalStateException("Could not obtain identifier!");
+                    });
+        } else {
+            CdoPersistentProperty requiredIdProperty = persistentEntity.getRequiredIdProperty();
+            Object idObject = persistentEntity.getPropertyAccessor(entity).getProperty(requiredIdProperty);
+            cdoid = ensureIDisCDOID(Optional.ofNullable(idObject).<IllegalStateException>orElseThrow(() -> {
+                throw new IllegalStateException("Could not obtain identifier!");
+            }));
+        }
+        return getRevisionById(cdoid, resourcePath);
+    }
+
+    @Override
+    public <T, ID> CDORevisionHolder<T> getRevisionById(@NonNull ID id, String resourcePath) {
+        Assert.notNull(id, "ID must not be null!");
+        //TODO allow also string-typed ids and convert here accordingly
+        ensureIDisCDOID(id);
+
+        CDOID cdoid = (CDOID) id;
+        CDORevisionHolder<T> revisionContainerResult = execute(session -> {
+            CDORevisionHolder<T> revisionContainer = CDORevisionHolder.create();
+            CDOTransaction transaction = openTransaction(session);
+            CDOObject latestObject;
+            try {
+                CDOResource resource = transaction.getResource(resourcePath, true);
+                latestObject = transaction.getObject(cdoid);
+                if (Objects.nonNull(resource) && !resource.getContents().contains(latestObject)) {
+                    throw new DataNotFoundException(String.format("Entry with ID %s not found at %s", cdoid, resourcePath));
+                }
+            } catch (InvalidURIException e) {
+                throw new DataNotFoundException(String.format("Entry with ID %s not found at %s", cdoid, e.getURI()));
+            }
+            Class<T> rawType = (Class<T>) ClassUtils.getUserClass(latestObject);
+            final CdoPersistentEntity<?> persistentEntity = mappingContext.getRequiredPersistentEntity(rawType);
+            final boolean explicitCDOObject = persistentEntity.isNativeCDOObject();
+            final boolean isLegacy = persistentEntity.isLegacyObject();
+            if (isLegacy) {
+                rawType = (Class<T>) ClassUtils.getUserClass(((CDOLegacyAdapter) latestObject).cdoInternalInstance());
+            }
+
+            CDORevision cdoRevision = latestObject.cdoRevision();
+            CDOBranch head = transaction.getBranch().getHead().getBranch();
+            for (int version = cdoRevision.getVersion(); version > 0; version--) {
+                CDORevision revisionByVersion = CDOUtil.getRevisionByVersion(latestObject, head, version);
+                CDOObject object = session.getDelegate().openView(revisionByVersion).getObject(cdoid);
+//                CDOObject object = session.getDelegate().openView(head, CDOBranchPoint.UNSPECIFIED_DATE, latestObject.cdoResource().getResourceSet()).getObject(cdoid);
+                InternalEObject eachObject = ((CDOLegacyAdapter) object).cdoInternalInstance();
+                if (explicitCDOObject || isLegacy) {
+                    Assert.isTrue(ClassUtils.isAssignable(ClassUtils.getUserClass(eachObject), rawType),
+                            "Object from database cannot be cast to " + rawType);
+                    if (ClassUtils.isAssignable(ClassUtils.getUserClass(eachObject), rawType)) {
+                        T cast = rawType.cast(eachObject);
+                        revisionContainer.add(cast, revisionByVersion);
+                    }
+                } else {
+                    T read = cdoConverter.read(rawType, eachObject);
+                    Assert.notNull(read, "CdoConverter returned null while reading EObject");
+                    revisionContainer.add(read, revisionByVersion);
+                }
+            }
+            return revisionContainer;
+        });
+        return revisionContainerResult;
+    }
+
+    @Override
     public <T> long countAll(final Class<T> javaType, final EPackage context, final String resourcePath) {
         final CdoPersistentEntity<?> persistentEntity = mappingContext.getPersistentEntity(javaType);
         Assert.notNull(persistentEntity, "CdoPersistentEntity must not be null.");
         return execute(session -> {
             CDOView cdoView = null;
+            String className = null;
             try {
                 cdoView = session.getDelegate().openView();
-
-                // Do we need to add the EPackage to the registry??
-//            CDOPackageRegistry packageRegistry = cdoTransaction.getSession().getPackageRegistry();
-//            packageRegistry.putEPackage((EPackage) context);
-//            packageRegistry.put(s, context);
-//            EPackage.Registry.INSTANCE.put(s, context);
 
                 CDOQuery oclQuery = null;
                 if (!persistentEntity.isNativeCdoOrLegacyMode()) {
                     Class<?> classFor = persistentEntity.getRequiredEObjectModelProperty().getClassFor();
                     Assert.notNull(classFor, "classFor property must not be null. Maybe it isn't defined for EObjectModel property.");
                     EClass eClassifier = (EClass) context.getEClassifier(classFor.getSimpleName());
-                    String className = classFor.getSimpleName();
+                    className = classFor.getSimpleName();
                     oclQuery = createQuery(cdoView, className + ".allInstances()->size()", eClassifier);
+//                    oclQuery = createQuery(cdoView, "self.oclType().allInstances()->size()", eClassifier);
                 } else {
-                    String className = javaType.getSimpleName();
+                    className = javaType.getSimpleName();
 //                    Assert.isTrue(persistentEntity.isLegacyObject() || persistentEntity.isNativeCDOObject(), "Entity is not a subclass of EObject or CDOObject.");
                     EClass eClassifier = (EClass) context.getEClassifier(className);
                     Assert.notNull(eClassifier, String.format("EClass %s couldn't be obtained from the provided EPackage context", className));
                     oclQuery = createQuery(cdoView, className + ".allInstances()->size()", eClassifier);
+//                    oclQuery = createQuery(cdoView, "self.oclType().allInstances()->size()", eClassifier);
                 }
 
                 Object resultValue = oclQuery.getResultValue();
@@ -499,6 +554,11 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
                 }
                 return (Long) resultValue;
             } catch (Exception e) {
+                if (e.getMessage().contains("SemanticException") &&
+                        Objects.nonNull(className)) {
+                    if (e.getMessage().contains(className))
+                        return 0L;
+                }
                 if (e instanceof RuntimeException)
                     throw potentiallyConvertRuntimeException((RuntimeException) e, exceptionTranslator);
                 return -1L;
@@ -697,22 +757,21 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
             CDOID identifier = null;
             CDOTransaction transaction = null;
             try {
-                CDOObject cdoObject = CDOUtil.getCDOObject(internalValue);
 //                URI uri = EcoreUtil.getURI(internalValue);
 //                System.out.println("ecoreURI to save: " + uri);
 //                session.getDelegate().getPackageRegistry().putEPackage(cdoObject);
-                System.out.println("Session is = " + session);
+//                System.out.println("Session is = " + session);
                 transaction = openTransaction(session);
-                System.out.println("CDOTransaction is = " + transaction);
+//                System.out.println("CDOTransaction is = " + transaction);
 //                boolean repoPathExists = true;
                 CDOResource resource;
                 try {
                     resource = transaction.getResource(repoResourcePath, true);
-                    System.out.println("Get resource: " + resource);
+//                    System.out.println("Get resource: " + resource);
                 } catch (InvalidURIException e) {
 //                    repoPathExists = false;
                     resource = transaction.createResource(repoResourcePath);
-                    System.out.println("Create new resource: " + resource);
+//                    System.out.println("Create new resource: " + resource);
                 }
 
 //                resource.getResourceSet().getPackageRegistry().put(null, internalValue);
@@ -1060,14 +1119,6 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
             eventPublisher.publishEvent(event);
         }
         return event;
-    }
-
-    //TODO:MOVE
-    protected boolean checkIfDynamicEmfClass_NonLegacyClass(@Nullable Class<?> o) {
-        if (null != o) {
-            return DYNAMIC_ECORE_CLASSES.contains(o);
-        }
-        return false;
     }
 
     protected void ensureNotIterable(@Nullable Object o) {
