@@ -41,7 +41,8 @@ import java.util.Objects;
 public class CDOStandaloneServer extends OSGiApplication {
 
     public static void main(String[] args) {
-        CDOStandaloneServer server = new CDOStandaloneServer("repo1");
+//        CDOStandaloneServer server = new CDOStandaloneServer("repo1");
+        CDOStandaloneServer server = new CDOStandaloneServer(new File("spring-data-cdo/src/test/resources/config/cdo-server2.xml"));
         try {
             CDOStandaloneServer.start(server);
         } catch (Exception e) {
@@ -81,10 +82,16 @@ public class CDOStandaloneServer extends OSGiApplication {
     private IConnector connector = null;
     private CDONet4jSession session = null;
     private IManagedContainer container = null;
+    private File serverConfigFile;
 
     public CDOStandaloneServer(String repositoryName) {
         super(ID);
         this.repositoryName = repositoryName;
+    }
+
+    public CDOStandaloneServer(File serverConfigFile) {
+        super(ID);
+        this.serverConfigFile = serverConfigFile;
     }
 
     @Override
@@ -92,11 +99,13 @@ public class CDOStandaloneServer extends OSGiApplication {
         super.doStart();
         OM.LOG.info("CDO Server starting");
 //        File file = OMPlatform.INSTANCE.getConfigFile("cdo-server.xml");
+        String filename = Objects.nonNull(serverConfigFile) ? "file:" + serverConfigFile.toString() :
+                "classpath:" + OMPlatform.INSTANCE.getConfigFolder() + "/cdo-server.xml";
         File configFile = null;
         try {
-            configFile = ResourceUtils.getFile("classpath:" + OMPlatform.INSTANCE.getConfigFolder() + "/cdo-server.xml");
-        } catch (FileNotFoundException ignored) {
-        }
+            configFile = ResourceUtils.getFile(filename);
+        } catch (FileNotFoundException ignored) { /* ignored */}
+
         if (Objects.nonNull(configFile) && configFile.exists()) {
             OM.LOG.info("configure by file");
             OCLQueryHandler.Factory oclFactory = new OCLQueryHandler.Factory();
