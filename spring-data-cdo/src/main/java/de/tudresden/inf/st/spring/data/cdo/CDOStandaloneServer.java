@@ -1,4 +1,4 @@
-package de.tudresden.inf.st.spring.data.cdo.server;
+package de.tudresden.inf.st.spring.data.cdo;
 
 import org.eclipse.core.runtime.adaptor.EclipseStarter;
 import org.eclipse.emf.cdo.internal.server.bundle.OM;
@@ -38,22 +38,42 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * In-memory standalone CDO server.
+ * <p>
+ * Changes made at runtime will be lost after the server is shutdown.
+ * <p>
+ * <b>Example to Start the Server:</b>
+ * <pre><code>
+ *         CDOStandaloneServer server = new CDOStandaloneServer("repo1");
+ *         CDOStandaloneServer.start(server);
+ *         CDOStandaloneServer.start(server, new String[] {"-console", "--add-modules=ALL-SYSTEM", "-noExit"});
+ * </code></pre>
+ *
+ * @author Dominik Grzelak
+ */
 public class CDOStandaloneServer extends OSGiApplication {
 
-    public static void main(String[] args) {
-//        CDOStandaloneServer server = new CDOStandaloneServer("repo1");
-        CDOStandaloneServer server = new CDOStandaloneServer(new File("spring-data-cdo/src/test/resources/config/cdo-server2.xml"));
-        try {
-            CDOStandaloneServer.start(server);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static void start(final CDOStandaloneServer server) throws Exception {
-        String[] equinoxArgs = {}; //"-console", "--add-modules=ALL-SYSTEM"}; //"-noExit"
+    /**
+     * Convenience method to start the {@link CDOStandaloneServer}.
+     *
+     * @param server      the CDO server instance to start
+     * @param equinoxArgs e.g., "-console", "--add-modules=ALL-SYSTEM", "-noExit"
+     * @throws Exception
+     */
+    public static void start(final CDOStandaloneServer server, String[] equinoxArgs) throws Exception {
         BundleContext context = EclipseStarter.startup(equinoxArgs, null);
         server.start(getApplicationContext(context));
+    }
+
+    /**
+     * Convenience method to start the {@link CDOStandaloneServer}.
+     *
+     * @param server the CDO server instance to start
+     * @throws Exception
+     */
+    public static void start(final CDOStandaloneServer server) throws Exception {
+        CDOStandaloneServer.start(server, new String[]{});
     }
 
     public static IApplicationContext getApplicationContext(BundleContext context) {

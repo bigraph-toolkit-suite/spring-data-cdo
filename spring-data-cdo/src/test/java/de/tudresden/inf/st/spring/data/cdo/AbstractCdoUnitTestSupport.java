@@ -1,6 +1,5 @@
 package de.tudresden.inf.st.spring.data.cdo;
 
-import de.tudresden.inf.st.spring.data.cdo.server.CDOStandaloneServer;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
@@ -26,6 +25,9 @@ public abstract class AbstractCdoUnitTestSupport {
 
     @BeforeClass
     public static void setUpAll() {
+//        if (AbstractCdoUnitTestSupport.spawnServer) {
+//            System.out.println("Standalone server is spawned ...");
+//        }
     }
 
     protected static void spawnServer() throws Exception {
@@ -37,6 +39,7 @@ public abstract class AbstractCdoUnitTestSupport {
 
     protected static void closeServer() {
         if (spawnServer && cdoStandaloneServer != null) {
+            System.out.println("Standalone server is closed ...");
             cdoStandaloneServer.stop();
         }
     }

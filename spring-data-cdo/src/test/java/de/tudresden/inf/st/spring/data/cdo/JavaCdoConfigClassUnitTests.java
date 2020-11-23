@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
  *
  * @author Dominik Grzelak
  */
-public class JavaCdoConfigClassUnitTests {
+public class JavaCdoConfigClassUnitTests extends AbstractCdoUnitTestSupport{
 
 	@Test
 	public void loadsConfigClassFromDefaultPackage() {
