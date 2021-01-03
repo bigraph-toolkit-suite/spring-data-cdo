@@ -29,7 +29,7 @@
         <java.version>1.8</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <dist.id>spring-data-cdo</dist.id>
-        <springdata.commons>2.2.0.BUILD-SNAPSHOT</springdata.commons>
+        <spring.data.commons.version>2.4.1</spring.data.commons.version>
         <guava.version>28.0-jre</guava.version>
         <!-- EMF -->
         <!--        <emf.version>2.16.0</emf.version>-->
