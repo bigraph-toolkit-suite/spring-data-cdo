@@ -140,9 +140,7 @@ For more information see link:https://github.com/spring-projects/spring-data-bui
 
 [source,bash]
 ----
- $ ./mvnw clean install -DskipTests
- $ cd spring-data-cdo
- $ mvn deploy
+ $ mvn package deploy -DskipTests -Pdeploy -Dusername=USERNAME -Dpassword=PASSWORD-HASHED
 ----
 
 == Code of Conduct

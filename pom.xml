@@ -29,23 +29,18 @@
         <java.version>1.8</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <dist.id>spring-data-cdo</dist.id>
-        <spring.data.commons.version>2.4.1</spring.data.commons.version>
-        <guava.version>28.0-jre</guava.version>
-        <!-- EMF -->
-        <!--        <emf.version>2.16.0</emf.version>-->
+        <eclipse.mirror>http://download.eclipse.org/</eclipse.mirror>
+        <!-- Versions: EMF -->
         <emf.version>2.19.0</emf.version>
         <ecore.xmi.version>2.16.0</ecore.xmi.version>
-        <!--        <emf.ecore.version>2.18.0</emf.ecore.version>-->
         <emf.ecore.version>2.22.0</emf.ecore.version>
         <emf.ecore.change.version>2.14.0</emf.ecore.change.version>
-        <!--        <emf.codegen.version>2.16.0</emf.codegen.version>-->
         <emf.codegen.version>2.20.0</emf.codegen.version>
         <emf.cdo.version>4.7.0</emf.cdo.version>
-        <eclipse.mirror>http://download.eclipse.org/</eclipse.mirror>
+        <!-- Versions: Other -->
+        <spring.data.commons.version>2.4.1</spring.data.commons.version>
+        <guava.version>28.0-jre</guava.version>
         <junit-jupiter.version>5.4.2</junit-jupiter.version>
-        <bintray.organization>st-tu-dresden</bintray.organization>
-        <bintray.repo>maven-repository</bintray.repo>
-        <bintray.package>${project.artifactId}</bintray.package>
     </properties>
 
     <developers>
@@ -93,6 +88,14 @@
             <id>Eclipse-Maven-Repository</id>
             <url>https://repo.eclipse.org/content/groups/releases/</url>
         </repository>
+        <repository>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <id>STFactory</id>
+            <name>st-tu-dresden-artifactory</name>
+            <url>https://stgroup.jfrog.io/artifactory/st-tu-dresden-maven-repository/</url>
+        </repository>
     </repositories>
 
     <pluginRepositories>
@@ -104,20 +107,19 @@
             <id>spring-libs-milestone</id>
             <url>https://repo.spring.io/libs-milestone</url>
         </pluginRepository>
-        <!--        <pluginRepository>-->
-        <!--            <id>reficio</id>-->
-        <!--            <url>http://repo.reficio.org/maven/</url>-->
-        <!--        </pluginRepository>-->
     </pluginRepositories>
 
     <distributionManagement>
         <repository>
-            <id>bintray-st-tu-dresden-maven-repository</id>
-            <name>st-tu-dresden-maven-repository</name>
-            <url>
-                https://api.bintray.com/maven/${bintray.organization}/${bintray.repo}/${bintray.package}/;publish=1
-            </url>
+            <id>central</id>
+            <name>STFactory-releases</name>
+            <url>https://stgroup.jfrog.io/artifactory/st-tu-dresden-maven-repository</url>
         </repository>
+        <snapshotRepository>
+            <id>snapshots</id>
+            <name>STFactory-snapshots</name>
+            <url>https://stgroup.jfrog.io/artifactory/st-tu-dresden-maven-repository</url>
+        </snapshotRepository>
     </distributionManagement>
 
     <build>
@@ -149,31 +151,11 @@
                         <!-- disable the default existing mapping -->
                         <skip>true</skip>
                     </configuration>
-                    <executions>
-                        <execution>
-                            <configuration>
-                                <url>
-                                    https://api.bintray.com/maven/${bintray.organization}/${bintray.repo}/${bintray.package}/;publish=1
-                                </url>
-                                <repositoryId>bintray-st-tu-dresden-maven-repository</repositoryId>
-                                <file>${project.build.directory}/${project.build.finalName}.jar</file>
-                                <artifactId>${project.artifactId}</artifactId>
-                                <groupId>${project.groupId}</groupId>
-                                <version>${project.version}</version>
-                                <packaging>jar</packaging>
-                            </configuration>
-                            <phase>deploy</phase>
-                            <id>bintray-deploy</id>
-                            <goals>
-                                <goal>deploy-file</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-
                 </plugin>
                 <plugin>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-maven-plugin</artifactId>
+                    <version>2.4.1</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -200,4 +182,58 @@
         </plugins>
     </reporting>
 
+    <profiles>
+        <!-- ****************** -->
+        <!-- Deployment Profile -->
+        <!-- ****************** -->
+        <profile>
+            <id>deploy</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jfrog.buildinfo</groupId>
+                        <artifactId>artifactory-maven-plugin</artifactId>
+                        <version>3.0.0</version>
+                        <inherited>false</inherited>
+                        <executions>
+                            <execution>
+                                <id>build-info</id>
+                                <goals>
+                                    <goal>publish</goal>
+                                </goals>
+                                <configuration>
+                                    <deployProperties>
+                                        <groupId>${project.groupId}</groupId>
+                                        <artifactId>${project.artifactId}</artifactId>
+                                        <version>${project.version}</version>
+                                    </deployProperties>
+                                    <artifactory>
+                                        <includeEnvVars>false</includeEnvVars>
+                                        <envVarsExcludePatterns>*password*,*secret*,*key*,*token*,*passphrase*
+                                        </envVarsExcludePatterns>
+                                        <timeoutSec>60</timeoutSec>
+                                    </artifactory>
+                                    <publisher>
+                                        <contextUrl>https://stgroup.jfrog.io/artifactory/</contextUrl>
+                                        <!--suppress UnresolvedMavenProperty -->
+                                        <username>${username}</username>
+                                        <!--suppress UnresolvedMavenProperty -->
+                                        <password>${password}</password>
+                                        <!--                                        <excludePatterns>*-tests.jar,*cdo-distribution*-->
+                                        <!--                                        </excludePatterns>-->
+                                        <!-- Name of local repository in Artifactory @ stgroup.jfrog.io/ -->
+                                        <repoKey>st-tu-dresden-maven-repository</repoKey>
+                                        <snapshotRepoKey>st-tu-dresden-maven-repository</snapshotRepoKey>
+                                    </publisher>
+                                    <buildInfo>
+                                        <buildName>spring-data-cdo-builds</buildName>
+                                    </buildInfo>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
