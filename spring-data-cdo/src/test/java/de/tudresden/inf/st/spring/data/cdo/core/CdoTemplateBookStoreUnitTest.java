@@ -11,10 +11,18 @@ import de.tudresden.inf.st.spring.data.cdo.CDORevisionHolder;
 import de.tudresden.inf.st.spring.data.cdo.CdoDbFactory;
 import de.tudresden.inf.st.spring.data.cdo.CdoTemplate;
 import de.tudresden.inf.st.spring.data.cdo.DataNotFoundException;
+import de.tudresden.inf.st.spring.data.cdo.repositories.BookAnnotated;
+import org.eclipse.emf.cdo.common.commit.CDOChangeKind;
 import org.eclipse.emf.cdo.common.id.CDOID;
+import org.eclipse.emf.cdo.common.model.CDOPackageRegistry;
+import org.eclipse.emf.cdo.common.revision.CDOIDAndVersion;
 import org.eclipse.emf.cdo.common.revision.CDORevision;
+import org.eclipse.emf.cdo.common.revision.CDORevisionKey;
+import org.eclipse.emf.cdo.session.CDOSessionInvalidationEvent;
 import org.eclipse.emf.cdo.util.CDOUtil;
 import org.eclipse.emf.cdo.util.InvalidURIException;
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EPackage;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,7 +34,9 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -68,10 +78,10 @@ public class CdoTemplateBookStoreUnitTest {
     @After
     public void tearDown() throws Exception {
         Thread.sleep(50);
-        CdoDeleteResult cdoDeleteResult = template.removeAll(TEST_RESOURCE_PATH);
+//        CdoDeleteResult cdoDeleteResult = template.removeAll(TEST_RESOURCE_PATH);
         CdoDeleteResult cdoDeleteResult2 = template.removeAll(FALLBACK_RESOURCE_PATH);
-        CdoDeleteResult cdoDeleteResult3 = template.removeAll(BOOK_TEST_RESOURCE_PATH);
-        CdoDeleteResult cdoDeleteResult4 = template.removeAll(BOOKSTORE_RESOURCE_PATH);
+//        CdoDeleteResult cdoDeleteResult3 = template.removeAll(BOOK_TEST_RESOURCE_PATH);
+//        CdoDeleteResult cdoDeleteResult4 = template.removeAll(BOOKSTORE_RESOURCE_PATH);
     }
 
 

@@ -4,6 +4,10 @@ import de.tudresden.inf.st.spring.data.cdo.annotation.EObjectModel;
 import de.tudresden.inf.st.spring.data.cdo.config.CdoClientSessionOptions;
 import de.tudresden.inf.st.spring.data.cdo.core.*;
 import de.tudresden.inf.st.spring.data.cdo.core.event.*;
+import de.tudresden.inf.st.spring.data.cdo.core.listener.CdoEventBasedActionDelegate;
+import de.tudresden.inf.st.spring.data.cdo.core.listener.DefaultCdoSessionListener;
+import de.tudresden.inf.st.spring.data.cdo.core.listener.filter.CdoListenerFilter;
+import de.tudresden.inf.st.spring.data.cdo.core.listener.filter.FilterCriteria;
 import de.tudresden.inf.st.spring.data.cdo.core.mapping.CdoMappingContext;
 import de.tudresden.inf.st.spring.data.cdo.repository.CdoPersistentEntity;
 import de.tudresden.inf.st.spring.data.cdo.repository.CdoPersistentProperty;
@@ -13,6 +17,7 @@ import org.eclipse.emf.cdo.common.branch.CDOBranch;
 import org.eclipse.emf.cdo.common.branch.CDOBranchVersion;
 import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
 import org.eclipse.emf.cdo.common.id.CDOID;
+import org.eclipse.emf.cdo.common.model.CDOPackageRegistry;
 import org.eclipse.emf.cdo.common.revision.CDORevision;
 import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
 import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
@@ -25,6 +30,7 @@ import org.eclipse.emf.cdo.session.CDOSession;
 import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevision;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.*;
+import org.eclipse.emf.cdo.view.CDOAdapterPolicy;
 import org.eclipse.emf.cdo.view.CDOQuery;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.*;
@@ -33,6 +39,7 @@ import org.eclipse.emf.internal.cdo.object.CDOLegacyAdapter;
 import org.eclipse.emf.internal.cdo.view.CDOStateMachine;
 import org.eclipse.emf.spi.cdo.InternalCDOObject;
 import org.eclipse.net4j.util.concurrent.IRWLockManager;
+import org.eclipse.net4j.util.event.IListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -199,6 +206,13 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
         return new SessionBoundCdoTemplate(session, CdoTemplate.this);
     }
 
+    @Override
+    public CDOPackageRegistry getCDOPackageRegistry() {
+        return execute(session -> {
+            return session.getDelegate().getPackageRegistry();
+        });
+    }
+
     //see: https://www.baeldung.com/spring-data-crud-repository-save
     @Override
     public <T> T insert(T objectToSave) {
@@ -266,6 +280,8 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
                 //objectToUpdate.cdoResource().getURI();repoResourcePath.split("/").equals(objectToUpdate.cdoResource().getURI().segments())
                 CDORevision currentRevision = objectToUpdate.cdoRevision();
                 if (Objects.nonNull(currentRevision)) {
+                    // PartialCollectionLoadingNotSupportedException: List contains proxy elements
+                    session.getDelegate().options().setCollectionLoadingPolicy(CDOUtil.createCollectionLoadingPolicy(0, 300));
                     CDOBranchVersion branchVersion = currentRevision.getBranch().getVersion(currentRevision.getVersion());
                     CDORevision oldRevision = session.getDelegate().getRevisionManager()
                             .getRevisionByVersion(cdoid, branchVersion, 0, true);
@@ -354,7 +370,7 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
     @Nullable
     @Override
     public <T, ID> T find(final ID entityID, Class<T> javaClassType, final String resourcePath) {
-        Assert.notNull(entityID, "ID of Entity must not be null!");
+        Assert.notNull(entityID, "ID of Entity meach.getID()ust not be null!");
         //TODO allow also string-typed ids and convert here accordingly
         ensureIDisCDOID(entityID);
 
@@ -378,7 +394,9 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
 //                    if (ClassUtils.isAssignable(ClassUtils.getUserClass(object), javaClassType)) { //TODO make this part of a Query
                     return (T) object; //javaClassType.cast(object);
                 } else if (isLegacy) {
-                    return javaClassType.cast(((CDOLegacyAdapter) object).cdoInternalInstance());
+                    if (object instanceof CDOLegacyAdapter) {
+                        return javaClassType.cast(((CDOLegacyAdapter) object).cdoInternalInstance());
+                    } else return null;
                 } else {
                     T read = cdoConverter.read(javaClassType, object);
                     Assert.notNull(read, "CdoConverter returned null while reading EObject");
@@ -1074,6 +1092,39 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
     public <T> CdoDeleteResult remove(T entity) {
         Assert.notNull(entity, "Entity must not be null!");
         return remove(entity, getResourcePathFrom(entity.getClass()));
+    }
+
+    @Override
+    public IListener addListener(CdoListenerFilter filter, CdoEventBasedActionDelegate action) {
+        return attachListener(filter, action);
+    }
+
+    @Override
+    public <ID> IListener addListener(ID entityID, CdoEventBasedActionDelegate action) {
+        final CDOID cdoid = (CDOID) entityID;
+        CdoListenerFilter filter = CdoListenerFilter.filter(new FilterCriteria().byCdoId((CDOID) entityID));
+        return attachListener(filter, action);
+    }
+
+    @Override
+    public IListener addListener(String resourcePath, CdoEventBasedActionDelegate action) {
+        CdoListenerFilter filter = CdoListenerFilter.filter(new FilterCriteria().byRepositoryPath(resourcePath));
+        return attachListener(filter, action);
+    }
+
+    protected DefaultCdoSessionListener attachListener(@Nullable CdoListenerFilter filter, CdoEventBasedActionDelegate action) {
+        return execute(session -> {
+            CDOView view = session.getDelegate().openView();
+            view.options().addChangeSubscriptionPolicy(CDOAdapterPolicy.ALL);
+            view.getSession().options().setPassiveUpdateEnabled(true);
+            view.getSession().options().setPassiveUpdateMode(CDOCommonSession.Options.PassiveUpdateMode.INVALIDATIONS);
+            DefaultCdoSessionListener cdoSessionListener = filter != null ?
+                    new DefaultCdoSessionListener(filter, "") :
+                    new DefaultCdoSessionListener("");
+            cdoSessionListener.setAction(action);
+            view.getSession().addListener(cdoSessionListener);
+            return cdoSessionListener;
+        });
     }
 
     /**

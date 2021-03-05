@@ -1,9 +1,13 @@
 package de.tudresden.inf.st.spring.data.cdo;
 
 import de.tudresden.inf.st.spring.data.cdo.core.CdoDeleteResult;
+import de.tudresden.inf.st.spring.data.cdo.core.listener.CdoEventBasedActionDelegate;
+import de.tudresden.inf.st.spring.data.cdo.core.listener.filter.CdoListenerFilter;
 import de.tudresden.inf.st.spring.data.cdo.repository.CdoPersistentEntity;
 import de.tudresden.inf.st.spring.data.cdo.repository.CdoPersistentProperty;
+import org.eclipse.emf.cdo.common.model.CDOPackageRegistry;
 import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.net4j.util.event.IListener;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.data.mapping.context.MappingContext;
@@ -123,7 +127,9 @@ public interface CdoOperations extends DisposableBean {
     //TODO provide another method with query options to retrieve e.g. specific revision..
 
     <T> CDORevisionHolder<T> getRevision(T entity);
+
     <T> CDORevisionHolder<T> getRevision(T entity, String resourcePath);
+
     <T, ID> CDORevisionHolder<T> getRevisionById(@NonNull ID id, String resourcePath);
 
     /**
@@ -213,6 +219,8 @@ public interface CdoOperations extends DisposableBean {
      */
     CdoConverter getConverter();
 
+    CDOPackageRegistry getCDOPackageRegistry();
+
     /**
      * The current class type (i.e., normally an {@link org.eclipse.emf.ecore.EClass}) is automatically inferred by
      * using the provided {@link EPackage} of the entity as context.
@@ -224,5 +232,13 @@ public interface CdoOperations extends DisposableBean {
      * @param resourcePath the resource path
      * @return
      */
-    <T> long countAll(final Class<T> javaType, final EPackage context, final String resourcePath);
+    <T>
+
+    long countAll(final Class<T> javaType, final EPackage context, final String resourcePath);
+
+    IListener addListener(CdoListenerFilter filter, CdoEventBasedActionDelegate action);
+
+    IListener addListener(final String resourcePath, CdoEventBasedActionDelegate action);
+
+    <ID> IListener addListener(ID entityID, CdoEventBasedActionDelegate action);
 }

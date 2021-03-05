@@ -4,7 +4,7 @@ image::./src/main/asciidoc/images/spring-cdo-logo-white-background.png[width=50%
 
 *inofficial release*
 
-*Current version:* v0.5.0-SNAPSHOT
+*Current version:* 0.5.0-SNAPSHOT
 
 The primary goal of the https://projects.spring.io/spring-data[Spring Data] project is to make it easier to build Spring-powered applications that use new data access technologies such as non-relational databases, map-reduce frameworks, and cloud based data services.
 
@@ -24,9 +24,38 @@ Domain models should be defined using Eclipse EMF as usual.
 Then, domain classes can be created automatically.
 They can be used afterwards with *Spring Data CDO*.
 
+=== Getting Started: Maven configuration
+
+Add the Maven dependency:
+
+[source,xml]
+----
+<dependency>
+  <groupId>org.springframework.data</groupId>
+  <artifactId>spring-data-cdo</artifactId>
+  <version>0.5.0-SNAPSHOT</version>
+</dependency>
+----
+
+And include the required repository:
+
+[source,xml]
+----
+<repositories>
+    <repository>
+        <snapshots>
+            <enabled>true</enabled>
+        </snapshots>
+        <id>STFactory</id>
+        <name>st-tu-dresden-artifactory</name>
+        <url>https://stgroup.jfrog.io/artifactory/st-tu-dresden-maven-repository/</url>
+    </repository>
+</repositories>
+----
+
 === Example
 
-The following examples show some possible configurations.
+The following examples show some possible configurations and usage scenarios.
 
 ==== Domain classes
 
@@ -70,7 +99,7 @@ public interface PersonRepository extends CdoRepository<PersonWrapper, CDOID> {
 
 ==== Some Remarks
 
-As with all EMF-related programming, the respective `EPackage` must be registered in the global package registry first (see https://download.eclipse.org/modeling/emf/emf/javadoc/2.9.0/[EPackage.Registry]).
+With regard to EMF-related programming, the respective `EPackage` must be registered in the global package registry first (see https://download.eclipse.org/modeling/emf/emf/javadoc/2.9.0/[EPackage.Registry]).
 The registry provides a mapping from namespace URIs to `EPackage` instances.
 
 > Though, this framework has some internal mechanism to initialize the EPackage in the registry automatically, it may not always find it.
@@ -90,23 +119,24 @@ We advise to initialize the corresponding `EPackage` that is going to be used wi
     }
 ----
 
+Especially when working with CDO the package should be registered locally and remotely:
+
+[source,java]
+----
+CdoTemplate template = new CdoTemplate(factory);
+CDOPackageRegistry.INSTANCE.put(BookstoreDomainModelPackage.eNS_URI, BookstoreDomainModelPackage.eINSTANCE);
+CDOPackageRegistry remoteRegistry = template.getCDOPackageRegistry(); //acquire the remote CDO package registry
+EPackage ePackage = remoteRegistry.getEPackage(BookstoreDomainModelPackage.eNS_URI);
+if (ePackage == null) {
+    remoteRegistry.put(BookstoreDomainModelPackage.eNS_URI, BookstoreDomainModelPackage.eINSTANCE);
+}
+----
+
 === Events
 
-If needed, one can listen to specific events emitted by some repository actions for adding extended behavior.
+When required, one can listen to specific events emitted by some repository actions for adding extended behavior.
 Events are implemented for Delete, Save and Insert operations, including "after" and "before" notions for fine-grained control.
 
-=== Maven configuration
-
-Add the Maven dependency:
-
-[source,xml]
-----
-<dependency>
-  <groupId>org.springframework.data</groupId>
-  <artifactId>spring-data-cdo</artifactId>
-  <version>0.4.2</version>
-</dependency>
-----
 
 == Building from Source
 
@@ -140,7 +170,7 @@ For more information see link:https://github.com/spring-projects/spring-data-bui
 
 [source,bash]
 ----
- $ mvn package deploy -DskipTests -Pdeploy -Dusername=USERNAME -Dpassword=PASSWORD-HASHED
+ $ mvn package deploy -DskipTests -Pdeploy -Dusername=USERNAME -Dpassword=HASHED-PASSWORD
 ----
 
 == Code of Conduct
