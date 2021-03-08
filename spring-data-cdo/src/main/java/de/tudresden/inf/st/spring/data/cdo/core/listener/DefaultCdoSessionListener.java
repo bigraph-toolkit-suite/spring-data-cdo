@@ -1,11 +1,16 @@
 package de.tudresden.inf.st.spring.data.cdo.core.listener;
 
 import de.tudresden.inf.st.spring.data.cdo.core.listener.filter.CdoListenerFilter;
+import org.eclipse.emf.cdo.common.revision.CDOIDAndVersion;
+import org.eclipse.emf.cdo.common.revision.CDORevisionKey;
 import org.eclipse.emf.cdo.session.CDOSessionInvalidationEvent;
 import org.eclipse.net4j.util.event.IEvent;
 import org.eclipse.net4j.util.event.IListener;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Dominik Grzelak
@@ -17,10 +22,10 @@ final public class DefaultCdoSessionListener implements IListener {
     private static final long DEFAULT_TIMEOUT = 3000; // 3 seconds
     private long timeout;
     private String name;
-    CdoEventBasedActionDelegate action;
+    List<CdoSessionActionDelegate<?>> actions;
 
-    public DefaultCdoSessionListener setAction(CdoEventBasedActionDelegate action) {
-        this.action = action;
+    public DefaultCdoSessionListener setAction(List<CdoSessionActionDelegate<?>> action) {
+        this.actions = action;
         return this;
     }
 
@@ -46,8 +51,8 @@ final public class DefaultCdoSessionListener implements IListener {
             synchronized (this) {
                 events.put(event, timeStamp);
                 if (filter.getNotifyThreshold() == -1) {
-                    if (action != null) {
-                        action.perform((CDOSessionInvalidationEvent) event);
+                    if (actions != null && actions.size() > 0) {
+                        dispatchActionDelegate(actions, event);
                     }
                 } else {
                     throw new RuntimeException("Not yet implemented");
@@ -80,5 +85,23 @@ final public class DefaultCdoSessionListener implements IListener {
             }
         }
         return false;
+    }
+
+    void dispatchActionDelegate(List<CdoSessionActionDelegate<?>> delegates, IEvent event) {
+        for (CdoSessionActionDelegate<?> delegate : delegates) {
+            if (delegate instanceof CdoEventBasedActionDelegate) {
+                ((CdoEventBasedActionDelegate) delegate).perform(event);
+            } else if (delegate instanceof CdoChangedObjectsActionDelegate &&
+                    event instanceof CDOSessionInvalidationEvent) {
+                CDOSessionInvalidationEvent invalidationEvent = (CDOSessionInvalidationEvent) event;
+                List<CDORevisionKey> changedObjects = invalidationEvent.getChangedObjects();
+                ((CdoChangedObjectsActionDelegate) delegate).perform(changedObjects);
+            } else if (delegate instanceof CdoNewObjectsActionDelegate &&
+                    event instanceof CDOSessionInvalidationEvent) {
+                CDOSessionInvalidationEvent invalidationEvent = (CDOSessionInvalidationEvent) event;
+                List<CDOIDAndVersion> newObjects = invalidationEvent.getNewObjects();
+                ((CdoNewObjectsActionDelegate) delegate).perform(newObjects);
+            }
+        }
     }
 }

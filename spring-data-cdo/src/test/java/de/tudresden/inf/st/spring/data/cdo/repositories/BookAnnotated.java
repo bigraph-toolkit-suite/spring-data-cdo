@@ -38,6 +38,10 @@ public class BookAnnotated {
         this.model = generateRandomBook(title);
     }
 
+    public EObject getModel() {
+        return model;
+    }
+
     private static Book generateRandomBook(String title) {
         BookstoreDomainModelFactory factory = BookstoreDomainModelFactory.eINSTANCE;
         Faker faker = new Faker();

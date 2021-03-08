@@ -1,7 +1,7 @@
 package de.tudresden.inf.st.spring.data.cdo;
 
 import de.tudresden.inf.st.spring.data.cdo.core.CdoDeleteResult;
-import de.tudresden.inf.st.spring.data.cdo.core.listener.CdoEventBasedActionDelegate;
+import de.tudresden.inf.st.spring.data.cdo.core.listener.CdoSessionActionDelegate;
 import de.tudresden.inf.st.spring.data.cdo.core.listener.filter.CdoListenerFilter;
 import de.tudresden.inf.st.spring.data.cdo.repository.CdoPersistentEntity;
 import de.tudresden.inf.st.spring.data.cdo.repository.CdoPersistentProperty;
@@ -236,9 +236,29 @@ public interface CdoOperations extends DisposableBean {
 
     long countAll(final Class<T> javaType, final EPackage context, final String resourcePath);
 
-    IListener addListener(CdoListenerFilter filter, CdoEventBasedActionDelegate action);
+    /**
+     * The given listener is added to a CDO session. See also {@link CdoOperations#addListeners(CdoListenerFilter, CdoSessionActionDelegate[])}
+     * to add multiple listeners to the same CDO session.
+     * Each call of this method will add the given action delegate to a new CDO session listener.
+     *
+     * @param filter a filter
+     * @param action the action delegate
+     * @param <T>    the type of the action delegate
+     * @return the created CDO session listener
+     */
+    <T extends CdoSessionActionDelegate<?>> IListener addListener(CdoListenerFilter filter, T action);
 
-    IListener addListener(final String resourcePath, CdoEventBasedActionDelegate action);
+    /**
+     * The specified listeners are all added to the same CDO session.
+     *
+     * @param filter  a filter
+     * @param actions the action delegates
+     * @param <T>     the type of the action delegate
+     * @return the created CDO session listener
+     */
+    <T extends CdoSessionActionDelegate<?>> IListener addListeners(CdoListenerFilter filter, T... actions);
 
-    <ID> IListener addListener(ID entityID, CdoEventBasedActionDelegate action);
+//    IListener addListener(final String resourcePath, CdoEventBasedActionDelegate action);
+//
+//    <ID> IListener addListener(ID entityID, CdoEventBasedActionDelegate action);
 }

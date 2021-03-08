@@ -4,10 +4,9 @@ import de.tudresden.inf.st.spring.data.cdo.annotation.EObjectModel;
 import de.tudresden.inf.st.spring.data.cdo.config.CdoClientSessionOptions;
 import de.tudresden.inf.st.spring.data.cdo.core.*;
 import de.tudresden.inf.st.spring.data.cdo.core.event.*;
-import de.tudresden.inf.st.spring.data.cdo.core.listener.CdoEventBasedActionDelegate;
+import de.tudresden.inf.st.spring.data.cdo.core.listener.CdoSessionActionDelegate;
 import de.tudresden.inf.st.spring.data.cdo.core.listener.DefaultCdoSessionListener;
 import de.tudresden.inf.st.spring.data.cdo.core.listener.filter.CdoListenerFilter;
-import de.tudresden.inf.st.spring.data.cdo.core.listener.filter.FilterCriteria;
 import de.tudresden.inf.st.spring.data.cdo.core.mapping.CdoMappingContext;
 import de.tudresden.inf.st.spring.data.cdo.repository.CdoPersistentEntity;
 import de.tudresden.inf.st.spring.data.cdo.repository.CdoPersistentProperty;
@@ -1095,24 +1094,29 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
     }
 
     @Override
-    public IListener addListener(CdoListenerFilter filter, CdoEventBasedActionDelegate action) {
+    public <T extends CdoSessionActionDelegate<?>> IListener addListener(CdoListenerFilter filter, T action) {
         return attachListener(filter, action);
     }
 
     @Override
-    public <ID> IListener addListener(ID entityID, CdoEventBasedActionDelegate action) {
-        final CDOID cdoid = (CDOID) entityID;
-        CdoListenerFilter filter = CdoListenerFilter.filter(new FilterCriteria().byCdoId((CDOID) entityID));
-        return attachListener(filter, action);
+    public <T extends CdoSessionActionDelegate<?>> IListener addListeners(CdoListenerFilter filter, T... actions) {
+        return attachListener(filter, actions);
     }
 
-    @Override
-    public IListener addListener(String resourcePath, CdoEventBasedActionDelegate action) {
-        CdoListenerFilter filter = CdoListenerFilter.filter(new FilterCriteria().byRepositoryPath(resourcePath));
-        return attachListener(filter, action);
-    }
+//    @Override
+//    public <ID> IListener addListener(ID entityID, CdoEventBasedActionDelegate action) {
+//        final CDOID cdoid = (CDOID) entityID;
+//        CdoListenerFilter filter = CdoListenerFilter.filter(new FilterCriteria().byCdoId((CDOID) entityID));
+//        return attachListener(filter, action);
+//    }
+//
+//    @Override
+//    public IListener addListener(String resourcePath, CdoEventBasedActionDelegate action) {
+//        CdoListenerFilter filter = CdoListenerFilter.filter(new FilterCriteria().byRepositoryPath(resourcePath));
+//        return attachListener(filter, action);
+//    }
 
-    protected DefaultCdoSessionListener attachListener(@Nullable CdoListenerFilter filter, CdoEventBasedActionDelegate action) {
+    protected <T extends CdoSessionActionDelegate<?>> DefaultCdoSessionListener attachListener(@Nullable CdoListenerFilter filter, T... actions) {
         return execute(session -> {
             CDOView view = session.getDelegate().openView();
             view.options().addChangeSubscriptionPolicy(CDOAdapterPolicy.ALL);
@@ -1121,7 +1125,7 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
             DefaultCdoSessionListener cdoSessionListener = filter != null ?
                     new DefaultCdoSessionListener(filter, "") :
                     new DefaultCdoSessionListener("");
-            cdoSessionListener.setAction(action);
+            cdoSessionListener.setAction(Arrays.asList(actions));
             view.getSession().addListener(cdoSessionListener);
             return cdoSessionListener;
         });
