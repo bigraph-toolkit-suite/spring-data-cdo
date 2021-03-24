@@ -4,9 +4,12 @@ import de.tudresden.inf.st.spring.data.cdo.annotation.EObjectModel;
 import de.tudresden.inf.st.spring.data.cdo.config.CdoClientSessionOptions;
 import de.tudresden.inf.st.spring.data.cdo.core.*;
 import de.tudresden.inf.st.spring.data.cdo.core.event.*;
+import de.tudresden.inf.st.spring.data.cdo.core.listener.CdoNewObjectsActionDelegate;
 import de.tudresden.inf.st.spring.data.cdo.core.listener.CdoSessionActionDelegate;
 import de.tudresden.inf.st.spring.data.cdo.core.listener.DefaultCdoSessionListener;
+import de.tudresden.inf.st.spring.data.cdo.core.listener.ResourceContentAdapter;
 import de.tudresden.inf.st.spring.data.cdo.core.listener.filter.CdoListenerFilter;
+import de.tudresden.inf.st.spring.data.cdo.core.listener.filter.FilterCriteria;
 import de.tudresden.inf.st.spring.data.cdo.core.mapping.CdoMappingContext;
 import de.tudresden.inf.st.spring.data.cdo.repository.CdoPersistentEntity;
 import de.tudresden.inf.st.spring.data.cdo.repository.CdoPersistentProperty;
@@ -30,6 +33,7 @@ import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevision;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
 import org.eclipse.emf.cdo.util.*;
 import org.eclipse.emf.cdo.view.CDOAdapterPolicy;
+import org.eclipse.emf.cdo.view.CDOInvalidationPolicy;
 import org.eclipse.emf.cdo.view.CDOQuery;
 import org.eclipse.emf.cdo.view.CDOView;
 import org.eclipse.emf.ecore.*;
@@ -1113,6 +1117,7 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
         return attachListener(filter, actions);
     }
 
+    // some convenient methods ...
 //    @Override
 //    public <ID> IListener addListener(ID entityID, CdoEventBasedActionDelegate action) {
 //        final CDOID cdoid = (CDOID) entityID;
@@ -1129,17 +1134,83 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
     protected <T extends CdoSessionActionDelegate<?>> DefaultCdoSessionListener attachListener(@Nullable CdoListenerFilter filter, T... actions) {
         return execute(session -> {
             CDOView view = session.getDelegate().openView();
-            view.options().addChangeSubscriptionPolicy(CDOAdapterPolicy.ALL);
+            applyCDOViewOptions(view);
             view.getSession().options().setPassiveUpdateEnabled(true);
             view.getSession().options().setPassiveUpdateMode(CDOCommonSession.Options.PassiveUpdateMode.INVALIDATIONS);
+
+            Map<T, Boolean> actionApplied = new LinkedHashMap<>();
+            for (T eachAction : actions) {
+                actionApplied.put(eachAction, false);
+            }
+
+            // Assign actions to specific filters if possible
+            if (filter != null) {
+                Set<String> repositoryPaths = new LinkedHashSet<>();
+                for (FilterCriteria filterCriteria : filter.getCriteria().values()) {
+                    String repositoryPath = filterCriteria.getRepositoryPath();
+                    if (repositoryPath != null) {
+                        repositoryPaths.add(repositoryPath);
+                    }
+                }
+                if (repositoryPaths.size() > 0) {
+                    // Repository Path filter can only process 'CdoNewObjectsActionDelegate' actions
+                    List<CdoNewObjectsActionDelegate> suitableActions = actionApplied.keySet().stream()
+                            .filter(x -> x instanceof CdoNewObjectsActionDelegate)
+                            .map(x -> {
+                                actionApplied.replace(x, true);
+                                return (CdoNewObjectsActionDelegate) x;
+                            })
+                            .collect(Collectors.toCollection(ArrayList<CdoNewObjectsActionDelegate>::new));
+                    if (suitableActions.size() > 0) {
+                        ResourceContentAdapter resourceContentAdapter = new ResourceContentAdapter(suitableActions);
+                        for (String repoPath : repositoryPaths) {
+                            if (repoPath != null) {
+                                CDOResource resource = null;
+                                // This is necessary in case the listeners are added before an actual object is stored within a specific repository path
+                                try {
+                                    resource = view.getResource(repoPath, true);
+                                } catch (InvalidURIException e) {
+                                    try {
+                                        // ... then we need to create the resource first
+                                        CDOTransaction cdoTransaction = openTransaction(session);
+                                        resource = cdoTransaction.getOrCreateResource(repoPath);
+                                        cdoTransaction.commit();
+                                        resource = view.getResource(repoPath, true);
+                                    } catch (CommitException commitException) {
+                                        throw new RuntimeException(commitException);
+                                    }
+                                } finally {
+                                    assert resource != null;
+                                }
+                                resource.eAdapters().add(resourceContentAdapter);
+                            }
+                        }
+                    }
+                }
+            }
+
             DefaultCdoSessionListener cdoSessionListener = filter != null ?
                     new DefaultCdoSessionListener(filter, "") :
                     new DefaultCdoSessionListener("");
-            cdoSessionListener.setAction(Arrays.asList(actions));
+//            cdoSessionListener.setAction(Arrays.asList(actions));
+            // Collect the remainder actions that were not previously "consumed" by the filters
+            List<T> collect = actionApplied.entrySet().stream().filter(x -> !x.getValue()).map(Map.Entry::getKey).collect(Collectors.toList());
+            cdoSessionListener.setAction((List<CdoSessionActionDelegate<?>>) collect);
             view.getSession().addListener(cdoSessionListener);
+
             return cdoSessionListener;
         });
     }
+
+    private void applyCDOViewOptions(CDOView view) {
+        view.options().addChangeSubscriptionPolicy(CDOAdapterPolicy.ALL);
+        view.options().setInvalidationNotificationEnabled(true);
+        view.options().setLoadNotificationEnabled(true);
+        view.options().setDetachmentNotificationEnabled(true);
+        view.options().setInvalidationPolicy(CDOInvalidationPolicy.DEFAULT);
+        view.options().setLockNotificationEnabled(true);
+    }
+
 
     /**
      * Executes an arbitrary storage operation. It provides all necessary resources for the given callback.

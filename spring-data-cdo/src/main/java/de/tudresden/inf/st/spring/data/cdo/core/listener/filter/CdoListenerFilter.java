@@ -79,4 +79,8 @@ public class CdoListenerFilter {
         }
         return this;
     }
+
+    public Map<String, FilterCriteria> getCriteria() {
+        return criteria;
+    }
 }

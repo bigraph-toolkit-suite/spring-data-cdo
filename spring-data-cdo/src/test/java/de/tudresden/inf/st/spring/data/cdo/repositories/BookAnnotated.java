@@ -5,7 +5,6 @@ import de.tudresden.inf.st.ecore.models.bookstoreDomainModel.Book;
 import de.tudresden.inf.st.ecore.models.bookstoreDomainModel.BookstoreDomainModelFactory;
 import de.tudresden.inf.st.ecore.models.bookstoreDomainModel.BookstoreDomainModelPackage;
 import de.tudresden.inf.st.ecore.models.bookstoreDomainModel.impl.BookImpl;
-import de.tudresden.inf.st.ecore.models.bookstoreDomainModel.impl.BookstoreDomainModelPackageImpl;
 import de.tudresden.inf.st.spring.data.cdo.annotation.CDO;
 import de.tudresden.inf.st.spring.data.cdo.annotation.EObjectModel;
 import org.eclipse.emf.cdo.common.id.CDOID;

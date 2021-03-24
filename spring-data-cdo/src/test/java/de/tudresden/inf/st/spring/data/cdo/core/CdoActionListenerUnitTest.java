@@ -58,10 +58,7 @@ public class CdoActionListenerUnitTest {
 
         final BookAnnotated bookRev = new BookAnnotated("A book title");
 
-        CdoListenerFilter filter = CdoListenerFilter
-                .filter(
-                        new FilterCriteria().byRepositoryPath("junit/test/books")
-                )
+        CdoListenerFilter filter = new CdoListenerFilter()
                 .restrict(CDOSessionInvalidationEvent.class);
 
         AtomicInteger cnt = new AtomicInteger(0);
@@ -130,10 +127,7 @@ public class CdoActionListenerUnitTest {
 
         final BookAnnotated bookRev = new BookAnnotated("A book title");
 
-        CdoListenerFilter filter = CdoListenerFilter
-                .filter(
-                        new FilterCriteria().byRepositoryPath("junit/test/books")
-                )
+        CdoListenerFilter filter = new CdoListenerFilter()
                 .restrict(CDOSessionInvalidationEvent.class);
 
         AtomicInteger cnt = new AtomicInteger(0);
@@ -184,5 +178,88 @@ public class CdoActionListenerUnitTest {
         assert inserted.getId() == CDOUtil.getCDOObject(inserted.getModel()).cdoID();
         Thread.sleep(2500);
         assert cnt.get() == 4;
+    }
+
+    @Test
+    public void add_two_listener_withRepoPathFilter_test() throws InterruptedException {
+        CdoTemplate template = new CdoTemplate(factory);
+        CDOPackageRegistry.INSTANCE.put(BookstoreDomainModelPackage.eNS_URI, BookstoreDomainModelPackage.eINSTANCE);
+        CDOPackageRegistry registry = template.getCDOPackageRegistry();
+        EPackage ePackage = registry.getEPackage(BookstoreDomainModelPackage.eNS_URI);
+        if (ePackage == null) {
+            registry.put(BookstoreDomainModelPackage.eNS_URI, BookstoreDomainModelPackage.eINSTANCE);
+        }
+
+        final BookAnnotated bookRev = new BookAnnotated("A book title");
+
+        CdoListenerFilter filter = CdoListenerFilter
+                .filter(
+                        new FilterCriteria().byRepositoryPath("junit/test/books")
+                )
+                .restrict(CDOSessionInvalidationEvent.class);
+
+        AtomicInteger cnt = new AtomicInteger(0);
+
+        CdoChangedObjectsActionDelegate actionDelegate1 = changedObjects -> {
+            for (CDORevisionKey each : changedObjects) {
+                try {
+                    CDORevisionHolder<Object> revisionById = template.getRevisionById(each.getID(), "junit/test/books");
+                    System.out.println("Changed object");
+                    System.out.println("\t CO: ID: " + each.getID() + " // Version: " + each.getVersion());
+                    System.out.println("\t CO: RevisionCount: " + revisionById.getRevisionCount());
+                    System.out.println("---------------");
+                    cnt.incrementAndGet();
+                } catch (Exception e) {
+                    continue;
+                }
+            }
+        };
+
+        // Is covered by the filter criteria
+        CdoNewObjectsActionDelegate actionDelegate2 = newObjects -> {
+            for (CDOIDAndVersion each : newObjects) {
+                try {
+                    CDORevisionHolder<Object> revisionById = template.getRevisionById(each.getID(), "junit/test/books");
+                    System.out.println("New object");
+                    System.out.println("\t NO: ID: " + each.getID() + " // Version: " + each.getVersion());
+                    System.out.println("\t NO: RevisionCount: " + revisionById.getRevisionCount());
+                    System.out.println("---------------");
+                    cnt.incrementAndGet();
+                } catch (Exception e) {
+                    continue;
+                }
+            }
+        };
+
+        CdoNewObjectsActionDelegate actionDelegate3 = newObjects -> {
+            for (CDOIDAndVersion each : newObjects) {
+                try {
+                    CDORevisionHolder<Object> revisionById = template.getRevisionById(each.getID(), "junit/test/books");
+                    System.out.println("New object");
+                    System.out.println("\t NO: ID: " + each.getID() + " // Version: " + each.getVersion());
+                    System.out.println("\t NO: RevisionCount: " + revisionById.getRevisionCount());
+                    System.out.println("---------------");
+                    cnt.incrementAndGet();
+                } catch (Exception e) {
+                    continue;
+                }
+            }
+        };
+        CdoListenerFilter filter3 = new CdoListenerFilter()
+                .restrict(CDOSessionInvalidationEvent.class);
+
+        template.addListeners(filter, actionDelegate2, actionDelegate1);
+        template.addListener(filter3, actionDelegate3);
+        BookAnnotated inserted = template.insert(bookRev);
+        inserted.changeISBN("1111");
+        inserted = template.save(inserted);
+        inserted.changeISBN("1112");
+        inserted = template.save(inserted);
+        inserted.changeISBN("1113");
+        inserted = template.save(inserted);
+        System.out.println("Inserted=" + inserted + " with ID= " + CDOUtil.getCDOObject(inserted.getModel()).cdoID());
+        assert inserted.getId() == CDOUtil.getCDOObject(inserted.getModel()).cdoID();
+        Thread.sleep(2500);
+//        assert cnt.get() == 4;
     }
 }
