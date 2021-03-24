@@ -89,8 +89,8 @@ final public class DefaultCdoSessionListener implements IListener {
 
     void dispatchActionDelegate(List<CdoSessionActionDelegate<?>> delegates, IEvent event) {
         for (CdoSessionActionDelegate<?> delegate : delegates) {
-            if (delegate instanceof CdoEventBasedActionDelegate) {
-                ((CdoEventBasedActionDelegate) delegate).perform(event);
+            if (delegate instanceof CdoAnyEventActionDelegate) {
+                ((CdoAnyEventActionDelegate) delegate).perform(event);
             } else if (delegate instanceof CdoChangedObjectsActionDelegate &&
                     event instanceof CDOSessionInvalidationEvent) {
                 CDOSessionInvalidationEvent invalidationEvent = (CDOSessionInvalidationEvent) event;

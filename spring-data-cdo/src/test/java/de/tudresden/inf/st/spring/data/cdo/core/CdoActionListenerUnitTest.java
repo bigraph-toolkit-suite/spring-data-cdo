@@ -5,7 +5,7 @@ import de.tudresden.inf.st.spring.data.cdo.CDORevisionHolder;
 import de.tudresden.inf.st.spring.data.cdo.CdoDbFactory;
 import de.tudresden.inf.st.spring.data.cdo.CdoTemplate;
 import de.tudresden.inf.st.spring.data.cdo.core.listener.CdoChangedObjectsActionDelegate;
-import de.tudresden.inf.st.spring.data.cdo.core.listener.CdoEventBasedActionDelegate;
+import de.tudresden.inf.st.spring.data.cdo.core.listener.CdoAnyEventActionDelegate;
 import de.tudresden.inf.st.spring.data.cdo.core.listener.CdoNewObjectsActionDelegate;
 import de.tudresden.inf.st.spring.data.cdo.core.listener.filter.CdoListenerFilter;
 import de.tudresden.inf.st.spring.data.cdo.core.listener.filter.FilterCriteria;
@@ -64,7 +64,7 @@ public class CdoActionListenerUnitTest {
         AtomicInteger cnt = new AtomicInteger(0);
         AtomicInteger changeCounter = new AtomicInteger(0);
 
-        CdoEventBasedActionDelegate f = event2 -> {
+        CdoAnyEventActionDelegate f = event2 -> {
             System.out.println("Event received: " + event2);
             cnt.incrementAndGet();
             changeCounter.incrementAndGet();
