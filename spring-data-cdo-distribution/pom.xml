@@ -318,9 +318,9 @@
                                     <goal>install-file</goal>
                                 </goals>
                                 <configuration>
-                                    <groupId>org.eclipse.net4j</groupId>
+                                    <groupId>org.eclipse.emf.cdo</groupId>
                                     <artifactId>org.eclipse.net4j</artifactId>
-                                    <version>4.10.1.v20200901-1413</version>
+                                    <version>4.10.1-SNAPSHOT</version>
                                     <packaging>jar</packaging>
                                     <file>
                                         ${basedir}/target/repository/plugins/org.eclipse.net4j_4.10.1.v20200901-1413.jar
