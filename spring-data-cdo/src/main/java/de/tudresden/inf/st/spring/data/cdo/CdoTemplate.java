@@ -519,16 +519,17 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
                 CDORevision revisionByVersion = CDOUtil.getRevisionByVersion(latestObject, head, version);
                 CDOObject object = session.getDelegate().openView(revisionByVersion).getObject(cdoid);
 //                CDOObject object = session.getDelegate().openView(head, CDOBranchPoint.UNSPECIFIED_DATE, latestObject.cdoResource().getResourceSet()).getObject(cdoid);
-                InternalEObject eachObject = ((CDOLegacyAdapter) object).cdoInternalInstance();
+//                CDOObject eachObject = object;
+//                InternalEObject eachObject = ((CDOLegacyAdapter) object).cdoInternalInstance();
                 if (explicitCDOObject || isLegacy) {
-                    Assert.isTrue(ClassUtils.isAssignable(ClassUtils.getUserClass(eachObject), rawType),
+                    Assert.isTrue(ClassUtils.isAssignable(ClassUtils.getUserClass(object), rawType),
                             "Object from database cannot be cast to " + rawType);
-                    if (ClassUtils.isAssignable(ClassUtils.getUserClass(eachObject), rawType)) {
-                        T cast = rawType.cast(eachObject);
+                    if (ClassUtils.isAssignable(ClassUtils.getUserClass(object), rawType)) {
+                        T cast = rawType.cast(object);
                         revisionContainer.add(cast, revisionByVersion);
                     }
                 } else {
-                    T read = cdoConverter.read(rawType, eachObject);
+                    T read = cdoConverter.read(rawType, object);
                     Assert.notNull(read, "CdoConverter returned null while reading EObject");
                     revisionContainer.add(read, revisionByVersion);
                 }
