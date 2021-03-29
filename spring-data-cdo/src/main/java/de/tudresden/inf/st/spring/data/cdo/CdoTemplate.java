@@ -399,7 +399,9 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
                 } else if (isLegacy) {
                     if (object instanceof CDOLegacyAdapter) {
                         return javaClassType.cast(((CDOLegacyAdapter) object).cdoInternalInstance());
-                    } else return null;
+                    } else {
+                        return (T) object;
+                    }
                 } else {
                     T read = cdoConverter.read(javaClassType, object);
                     Assert.notNull(read, "CdoConverter returned null while reading EObject");
