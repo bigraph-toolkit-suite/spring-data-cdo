@@ -1162,8 +1162,8 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
                             })
                             .collect(Collectors.toCollection(ArrayList<CdoNewObjectsActionDelegate>::new));
                     if (suitableActions.size() > 0) {
-                        ResourceContentAdapter resourceContentAdapter = new ResourceContentAdapter(suitableActions);
                         for (String repoPath : repositoryPaths) {
+                            ResourceContentAdapter resourceContentAdapter = new ResourceContentAdapter(suitableActions);
                             if (repoPath != null) {
                                 CDOResource resource = null;
                                 // This is necessary in case the listeners are added before an actual object is stored within a specific repository path
@@ -1182,6 +1182,7 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
                                 } finally {
                                     assert resource != null;
                                 }
+                                resourceContentAdapter.getProperties().put(FilterCriteria.Key.REPOSITORY_PATH, repoPath);
                                 resource.eAdapters().add(resourceContentAdapter);
                             }
                         }

@@ -147,7 +147,7 @@ public class CdoActionListenerUnitTest {
             }
         };
 
-        CdoNewObjectsActionDelegate actionDelegate2 = newObjects -> {
+        CdoNewObjectsActionDelegate actionDelegate2 = (newObjects, props) -> {
             for (CDOIDAndVersion each : newObjects) {
                 try {
                     CDORevisionHolder<Object> revisionById = template.getRevisionById(each.getID(), "junit/test/books");
@@ -216,7 +216,7 @@ public class CdoActionListenerUnitTest {
         };
 
         // Is covered by the filter criteria
-        CdoNewObjectsActionDelegate actionDelegate2 = newObjects -> {
+        CdoNewObjectsActionDelegate actionDelegate2 = (newObjects, props) -> {
             for (CDOIDAndVersion each : newObjects) {
                 try {
                     CDORevisionHolder<Object> revisionById = template.getRevisionById(each.getID(), "junit/test/books");
@@ -231,7 +231,7 @@ public class CdoActionListenerUnitTest {
             }
         };
 
-        CdoNewObjectsActionDelegate actionDelegate3 = newObjects -> {
+        CdoNewObjectsActionDelegate actionDelegate3 = (newObjects, props) -> {
             for (CDOIDAndVersion each : newObjects) {
                 try {
                     CDORevisionHolder<Object> revisionById = template.getRevisionById(each.getID(), "junit/test/books");

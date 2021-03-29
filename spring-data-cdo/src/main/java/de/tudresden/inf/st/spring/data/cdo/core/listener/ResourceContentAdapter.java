@@ -8,6 +8,8 @@ import org.eclipse.emf.common.notify.impl.AdapterImpl;
 import org.eclipse.emf.ecore.EObject;
 
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 /**
@@ -15,9 +17,14 @@ import java.util.List;
  */
 public class ResourceContentAdapter extends AdapterImpl implements CDOAdapter {
     List<CdoNewObjectsActionDelegate> delegates;
+    HashMap<String, Object> properties = new LinkedHashMap<>();
 
     public ResourceContentAdapter(List<CdoNewObjectsActionDelegate> delegates) {
         this.delegates = delegates;
+    }
+
+    public HashMap<String, Object> getProperties() {
+        return properties;
     }
 
     @Override
@@ -26,7 +33,7 @@ public class ResourceContentAdapter extends AdapterImpl implements CDOAdapter {
             CDORevision cdoRevision = CDOUtil.getCDOObject((EObject) (msg).getNewValue()).cdoRevision(true);
             if (cdoRevision != null) {
                 for (CdoNewObjectsActionDelegate each : delegates) {
-                    each.perform(Collections.singletonList(cdoRevision));
+                    each.perform(Collections.singletonList(cdoRevision), properties);
                 }
             }
         }
