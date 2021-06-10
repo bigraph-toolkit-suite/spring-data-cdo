@@ -28,10 +28,12 @@ import org.eclipse.net4j.acceptor.IAcceptor;
 import org.eclipse.net4j.connector.IConnector;
 import org.eclipse.net4j.db.IDBAdapter;
 import org.eclipse.net4j.db.h2.H2Adapter;
+import org.eclipse.net4j.http.HTTPUtil;
 import org.eclipse.net4j.tcp.TCPUtil;
 import org.eclipse.net4j.util.container.ContainerUtil;
 import org.eclipse.net4j.util.container.IManagedContainer;
 import org.eclipse.net4j.util.container.IPluginContainer;
+import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
 import org.eclipse.net4j.util.om.OMPlatform;
 import org.eclipse.net4j.util.om.log.PrintLogHandler;
 import org.eclipse.net4j.util.om.trace.PrintTraceHandler;
@@ -39,15 +41,16 @@ import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Client prepares all necessary components for the physical connection to the server, and provides some functionality
  * to start a new session, for example.
+ * <p>
+ * Refer also to the factory {@link CdoClients} for creating an instance.
  *
  * @author Dominik Grzelak
+ * @see CdoClients
  */
 public class CdoClient {
 
@@ -59,6 +62,7 @@ public class CdoClient {
     private final CdoCredentials cdoCredentials;
 
     protected final transient IManagedContainer container;
+    public final transient List<IConnector> connectors = new ArrayList<>();
 
     static {
         OMPlatform.INSTANCE.setDebugging(true);
@@ -68,6 +72,8 @@ public class CdoClient {
         //registry (OSGi/Equinox) is running
         Net4jUtil.prepareContainer(IPluginContainer.INSTANCE); // Prepare the Net4j kernel
         TCPUtil.prepareContainer(IPluginContainer.INSTANCE); // Prepare the TCP support
+        HTTPUtil.prepareContainer(IPluginContainer.INSTANCE); // Prepare the HTTP support
+        CDONet4jUtil.prepareContainer(IPluginContainer.INSTANCE); // Prepare the CDO server
         CDONet4jServerUtil.prepareContainer(IPluginContainer.INSTANCE); // Prepare the CDO server
     }
 
@@ -131,15 +137,19 @@ public class CdoClient {
         if (Objects.isNull(connector)) {
             connector = createConnector(addr);
         }
-        config.setConnector(connector);
+        connectors.add(connector);
 
+        config.setConnector(connector);
         config.setRepositoryName(repoName);
         config.setActivateOnOpen(true);
 
         assert config.getRepositoryName() != null;
         assert config.getConnector() != null;
-
-        return new CdoClientSession(config.openNet4jSession()).setOptions(options);
+        CdoClientSession cdoClientSession = new CdoClientSession(config.openNet4jSession());
+//        if (options != null) {
+        cdoClientSession.setOptions(options);
+//        }
+        return cdoClientSession;
     }
 
 
@@ -154,7 +164,7 @@ public class CdoClient {
 
     protected CDONet4jSessionConfiguration createSessionConfiguration(CdoServerAddress connectorDescription) {
         IConnector connector = createConnector(connectorDescription);
-
+        connectors.add(connector);
         //        CDONet4jSessionConfiguration config = CDONet4jUtil.createNet4jSessionConfiguration();
         ReconnectingCDOSessionConfiguration config = CDONet4jUtil.createReconnectingSessionConfiguration(
                 connectorDescription.getFullConnectorDescription(),
@@ -174,19 +184,17 @@ public class CdoClient {
      * @return
      */
     protected IConnector createConnector(CdoServerAddress addr) {
-        IConnector connector = Net4jUtil.getConnector(container, addr.getTransportType(), addr.getFullConnectorDescription());
+        IConnector connector = Net4jUtil.getConnector(
+                container,
+                addr.getTransportType(),
+                addr.getFullConnectorDescription()
+        );
         //Net4jUtil.getConnector(IPluginContainer.INSTANCE, "tcp", "repos.foo.org:2036");
-        //OR:
-//        final IConnector connector = (IConnector) IPluginContainer.INSTANCE
-//                .getElement( //
-//                        addr.getProductGroup(), // Product group
-//                        addr.getType(), // Type
-//                        addr.getDescription() // Description
-//                );
+        //OR: createAcceptor()
         return connector;
     }
 
-    //TODO probably also used elswhere
+    //TODO probably also used elsewhere
     protected IRepositorySynchronizer createRepositorySynchronizer(CdoServerAddress addr) {
         CDOSessionConfigurationFactory factory = createSessionConfigurationFactory(addr);
         IRepositorySynchronizer synchronizer = CDOServerUtil.createRepositorySynchronizer(factory);
@@ -210,16 +218,39 @@ public class CdoClient {
         transaction.commit();
     }
 
+    /**
+     * Closes all connections from the CDO repository.
+     * <p>
+     * It removes all created containers, connectors, etc. that were created by the client.
+     */
+    //TODO also remove/close sessions
     public void close() {
-//        container.clearElements(); (?)
+        for (int i = connectors.size() - 1; i >= 0; i--) {
+            connectors.get(i).close();
+            connectors.remove(i);
+        }
+        container.clearElements();
         //        this.serverSessionPool.close();
         //        this.cluster.close();C
+    }
+
+    /**
+     * Checks if at least one IConnector created by this client is active.
+     *
+     * @return {@code true}, if at least one IConnector is active, otherwise {@code false}
+     */
+    public boolean isConnected() {
+        for (int i = 0; i < connectors.size(); i++) {
+            LifecycleUtil.waitForActive(connectors.get(i), 1000);
+            if (LifecycleUtil.isActive(connectors.get(i)))
+                return true;
+        }
+        return false;
     }
 
     public void closeSession(CdoClientSession session) {
         session.getDelegate().close();
     }
-
 
     IRepository createRepository(String repoName) {
         IStore store = createStore(repoName);
@@ -235,6 +266,7 @@ public class CdoClient {
         return null;
     }
 
+    //TODO implement createStore()
     private static IStore createStore(String name) {
 //        JdbcDataSource dataSource = new JdbcDataSource();
 //        dataSource.setURL("jdbc:h2:database/" + name);
@@ -243,6 +275,20 @@ public class CdoClient {
         IDBAdapter dbAdapter = new H2Adapter();
 //        IDBConnectionProvider dbConnectionProvider = dbAdapter.createConnectionProvider(dataSource);
         return null; //CDODBUtil.createStore(mappingStrategy, dbAdapter, dbConnectionProvider);
+    }
+
+    private IStore createMemStore() {
+        return org.eclipse.emf.cdo.server.mem.MEMStoreUtil.createMEMStore();
+    }
+
+    private IRepository createRepository(IStore store, String repositoryName) {
+        Map<String, String> props = new HashMap<>();
+        props.put(IRepository.Props.SUPPORTING_AUDITS, "true");
+        props.put(IRepository.Props.SUPPORTING_BRANCHES, "true");
+//		props.put(Props.VERIFYING_REVISIONS, "false");
+
+        IRepository repo = CDOServerUtil.createRepository(repositoryName, store, props);
+        return repo;
     }
 
     public static Map<String, String> createRepositoryProperties(String name) {
@@ -254,10 +300,11 @@ public class CdoClient {
     }
 
     public static IManagedContainer createContainer() {
-//        IPluginContainer.INSTANCE; //also a managed container
+        //IPluginContainer.INSTANCE; // also a managed container - ^is already prepared statically above^
         IManagedContainer container = ContainerUtil.createContainer();
         Net4jUtil.prepareContainer(container); // Register Net4j factories
         TCPUtil.prepareContainer(container); // Register TCP factories
+        HTTPUtil.prepareContainer(container); // Register HTTP factories
         CDONet4jUtil.prepareContainer(container); // Register CDO client factories
         CDONet4jServerUtil.prepareContainer(container); // Register CDO server factories
         container.activate();
@@ -266,9 +313,9 @@ public class CdoClient {
 
     protected IAcceptor createAcceptor(CdoServerAddress addr) {
         return (IAcceptor) container.getElement(
-                addr.getProductGroup(),
-                addr.getTransportType(),
-                addr.getDescription() + ":" + addr.getPort()
+                addr.getProductGroup(), //e.g., "org.eclipse.net4j.acceptors"
+                addr.getTransportType(), //e.g., "tcp"
+                addr.getFullConnectorDescription() //addr.getDescription() + ":" + addr.getPort() //ip:port
         );
     }
 

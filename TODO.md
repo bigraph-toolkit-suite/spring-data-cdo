@@ -1,5 +1,12 @@
 TODO:
 
+    Savepoints with Rollback:
+        https://slideplayer.com/slide/8943980/
+    
+    SQL query support:
+        https://slideplayer.com/slide/8943980/
+    
+
     throw DataAccessResourceFailureException for can't connect to CDO
 
     [UNSURE] //TODO valid resourcepath also: cdo://repo1/sample

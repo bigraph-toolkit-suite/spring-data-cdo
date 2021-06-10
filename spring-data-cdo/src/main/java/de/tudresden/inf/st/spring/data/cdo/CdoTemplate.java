@@ -90,7 +90,6 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
     private static final Collection<String> ITERABLE_CLASSES;
 
     static {
-
         Set<String> iterableClasses = new HashSet<>();
         iterableClasses.add(List.class.getName());
         iterableClasses.add(Collection.class.getName());
@@ -103,7 +102,7 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
     private final PersistenceExceptionTranslator exceptionTranslator;
 
     private boolean publishEvents = true;
-    private CdoDbFactory cdoDbFactory;
+    private final CdoDbFactory cdoDbFactory;
     private final Objenesis objenesis;
 
     private MappingContext<? extends CdoPersistentEntity<?>, CdoPersistentProperty> mappingContext;

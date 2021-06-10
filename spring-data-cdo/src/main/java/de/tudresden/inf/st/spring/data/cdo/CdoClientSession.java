@@ -6,7 +6,8 @@ import org.eclipse.emf.cdo.net4j.CDONet4jSession;
 /**
  * wrapper object for {@link CDONet4jSession} to encapsulate the internal object
  * <p>
- * "A CDOSession is your connection to a single repository on a CDO server. Before you can do anything with CDO you need to open a session. "
+ * "A CDOSession is your connection to a single repository on a CDO server.
+ * Before you can do anything with CDO you need to open a session."
  *
  * @author Dominik Grzelak
  */
