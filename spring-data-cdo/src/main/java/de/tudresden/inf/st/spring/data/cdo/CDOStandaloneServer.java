@@ -142,7 +142,7 @@ public class CDOStandaloneServer extends OSGiApplication {
 
             TransportConfigurator net4jConfigurator = new TransportConfigurator(
                     IPluginContainer.INSTANCE);
-
+            this.container = net4jConfigurator.getContainer();
             TCPUtil.prepareContainer(net4jConfigurator.getContainer());
             HTTPUtil.prepareContainer(net4jConfigurator.getContainer());
             Net4jUtil.prepareContainer(net4jConfigurator.getContainer());
@@ -194,6 +194,33 @@ public class CDOStandaloneServer extends OSGiApplication {
                 "tcp",
                 "0.0.0.0:2036"
         );
+    }
+
+    public boolean isActiveAndRunning() {
+        boolean isActive = true;
+        boolean hasProcessedAnything = false;
+        if (connector != null) {
+            isActive = isActive & LifecycleUtil.isActive(connector);
+            hasProcessedAnything = true;
+        }
+        if (acceptors != null) {
+            for (IAcceptor acceptor : acceptors) {
+                isActive = isActive & LifecycleUtil.isActive(acceptor);
+                hasProcessedAnything = true;
+            }
+        }
+        if (container != null) {
+            isActive = isActive & LifecycleUtil.isActive(container);
+            hasProcessedAnything = true;
+        }
+        if (repositories != null) {
+            for (IRepository repository : repositories) {
+                isActive = isActive & LifecycleUtil.isActive(repository);
+                hasProcessedAnything = true;
+            }
+        }
+
+        return isActive & hasProcessedAnything;
     }
 
     public IConnector initializeConnector(IStore store) {
