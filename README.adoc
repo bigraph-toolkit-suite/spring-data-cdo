@@ -173,7 +173,7 @@ For more information see link:https://github.com/spring-projects/spring-data-bui
 
 [source,bash]
 ----
- $ mvn package deploy -DskipTests -Pdeploy -Dusername=USERNAME -Dpassword=HASHED-PASSWORD
+ $ mvn clean deploy -DskipTests -pl '!spring-data-cdo-distribution' -Pdeploy -Dusername=USERNAME -Dpassword=HASHED-PASSWORD
 ----
 
 == Code of Conduct
