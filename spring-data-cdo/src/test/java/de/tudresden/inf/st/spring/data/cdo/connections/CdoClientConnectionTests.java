@@ -24,7 +24,7 @@ public class CdoClientConnectionTests {
         assert !cdoClient.isConnected();
         CdoClientSession cdoClientSession = cdoClient.startSession(options);
         assert cdoClient.isConnected();
-        CDORepositoryInfo repositoryInfo = cdoClientSession.getDelegate().getRepositoryInfo();
+        CDORepositoryInfo repositoryInfo = cdoClientSession.getCdoSession().getRepositoryInfo();
         System.out.println(repositoryInfo.getName());
         cdoClient.close();
         assert !cdoClient.isConnected();

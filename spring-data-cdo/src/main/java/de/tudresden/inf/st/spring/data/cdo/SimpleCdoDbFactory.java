@@ -50,6 +50,5 @@ public class SimpleCdoDbFactory extends CdoDbFactorySupport<CdoClient> implement
     protected void closeClient() {
         getCdoClient().close();
 //        session.close();
-//        connector.disconnect();
     }
 }

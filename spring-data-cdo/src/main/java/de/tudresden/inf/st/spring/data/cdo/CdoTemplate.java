@@ -211,7 +211,7 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
     @Override
     public CDOPackageRegistry getCDOPackageRegistry() {
         return execute(session -> {
-            return session.getDelegate().getPackageRegistry();
+            return session.getCdoSession().getPackageRegistry();
         });
     }
 
@@ -283,9 +283,9 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
                 CDORevision currentRevision = objectToUpdate.cdoRevision();
                 if (Objects.nonNull(currentRevision)) {
                     // PartialCollectionLoadingNotSupportedException: List contains proxy elements
-                    session.getDelegate().options().setCollectionLoadingPolicy(CDOUtil.createCollectionLoadingPolicy(0, 300));
+                    session.getCdoSession().options().setCollectionLoadingPolicy(CDOUtil.createCollectionLoadingPolicy(0, 300));
                     CDOBranchVersion branchVersion = currentRevision.getBranch().getVersion(currentRevision.getVersion());
-                    CDORevision oldRevision = session.getDelegate().getRevisionManager()
+                    CDORevision oldRevision = session.getCdoSession().getRevisionManager()
                             .getRevisionByVersion(cdoid, branchVersion, 0, true);
                     CDORevisionDelta delta = currentRevision.compare(oldRevision);
 
@@ -363,9 +363,22 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
     }
 
     private CDOTransaction openTransaction(CdoClientSession session) {
-        CDOTransaction trans = session.getDelegate().openTransaction();
+        CDOTransaction trans = session.getCdoSession().openTransaction();
         trans.getSession().options().setLockNotificationMode(CDOCommonSession.Options.LockNotificationMode.ALWAYS);
         trans.getSession().options().setGeneratedPackageEmulationEnabled(session.getOptions().isGeneratedPackageEmulationEnabled());
+        trans.options().setAutoReleaseLocksEnabled(true);
+        trans.options().setLockNotificationEnabled(true);
+        //This should be passed from the user's session option
+//        CDOMergingConflictResolver resolver = new CDOMergingConflictResolver() {
+//
+//            @Override
+//            public void resolveConflicts(Set<CDOObject> conflicts) {
+//                super.resolveConflicts(conflicts);
+//                System.out.println("resolve conflicts");
+//            }
+//
+//        };
+//        transaction.options().addConflictResolver(resolver);
         return trans;
     }
 
@@ -387,7 +400,7 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
             CDOView cdoView = null;
             EObject object;
             try {
-                cdoView = session.getDelegate().openView();
+                cdoView = session.getCdoSession().openView();
                 object = cdoView.getObject(cdoid);
                 if (Objects.isNull(object))
                     throw new DataNotFoundException("Data couldn't be retrieved with id=" + cdoid);
@@ -422,7 +435,7 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
 
         return execute(session -> {
             List<T> collection = new LinkedList<>();
-            CDOView cdoView = session.getDelegate().openView();
+            CDOView cdoView = session.getCdoSession().openView();
             CdoPersistentProperty persistentProperty;
             Class classFor;
             if (!explicitCDOObject && !isLegacy) {
@@ -522,7 +535,7 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
             CDOBranch head = transaction.getBranch().getHead().getBranch();
             for (int version = cdoRevision.getVersion(); version > 0; version--) {
                 CDORevision revisionByVersion = CDOUtil.getRevisionByVersion(latestObject, head, version);
-                CDOObject object = session.getDelegate().openView(revisionByVersion).getObject(cdoid);
+                CDOObject object = session.getCdoSession().openView(revisionByVersion).getObject(cdoid);
 //                CDOObject object = session.getDelegate().openView(head, CDOBranchPoint.UNSPECIFIED_DATE, latestObject.cdoResource().getResourceSet()).getObject(cdoid);
                 if (explicitCDOObject || isLegacy) {
                     if (object instanceof CDOLegacyAdapter) {
@@ -561,7 +574,7 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
             CDOView cdoView = null;
             String className = null;
             try {
-                cdoView = session.getDelegate().openView();
+                cdoView = session.getCdoSession().openView();
 
                 CDOQuery oclQuery = null;
                 if (!persistentEntity.isNativeCdoOrLegacyMode()) {
@@ -1134,7 +1147,7 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
 
     protected <T extends CdoSessionActionDelegate<?>> DefaultCdoSessionListener attachListener(@Nullable CdoListenerFilter filter, T... actions) {
         return execute(session -> {
-            CDOView view = session.getDelegate().openView();
+            CDOView view = session.getCdoSession().openView();
             applyCDOViewOptions(view);
             view.getSession().options().setPassiveUpdateEnabled(true);
             view.getSession().options().setPassiveUpdateMode(CDOCommonSession.Options.PassiveUpdateMode.INVALIDATIONS);

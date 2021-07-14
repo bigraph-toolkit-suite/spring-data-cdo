@@ -2,6 +2,7 @@ package de.tudresden.inf.st.spring.data.cdo;
 
 import de.tudresden.inf.st.spring.data.cdo.config.CdoClientSessionOptions;
 import org.eclipse.emf.cdo.net4j.CDONet4jSession;
+import org.eclipse.emf.cdo.session.CDOSession;
 
 /**
  * wrapper object for {@link CDONet4jSession} to encapsulate the internal object
@@ -20,7 +21,7 @@ public class CdoClientSession {
         this.delegate = delegate;
     }
 
-    public CDONet4jSession getDelegate() {
+    public CDOSession getCdoSession() {
         return delegate;
     }
 

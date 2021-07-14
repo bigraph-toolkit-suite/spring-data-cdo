@@ -6,6 +6,7 @@ import de.tudresden.inf.st.spring.data.cdo.config.CdoCredentials;
 import de.tudresden.inf.st.spring.data.cdo.repository.CdoDatabase;
 import de.tudresden.inf.st.spring.data.cdo.repository.CdoDatabaseImpl;
 import org.eclipse.emf.cdo.common.CDOCommonSession;
+import org.eclipse.emf.cdo.common.model.CDOPackageRegistryPopulator;
 import org.eclipse.emf.cdo.common.revision.CDORevisionCache;
 import org.eclipse.emf.cdo.common.revision.CDORevisionUtil;
 import org.eclipse.emf.cdo.net4j.CDONet4jSessionConfiguration;
@@ -147,6 +148,7 @@ public class CdoClient {
         assert config.getConnector() != null;
         CdoClientSession cdoClientSession = new CdoClientSession(config.openNet4jSession());
         cdoClientSession.setOptions(options);
+        CDOPackageRegistryPopulator.populate(cdoClientSession.getCdoSession().getPackageRegistry());
         return cdoClientSession;
     }
 
@@ -205,12 +207,12 @@ public class CdoClient {
     }
 
     public CDOTransaction openTransaction(CdoClientSession session, ResourceSet resourceSet) {
-        CDOTransaction transaction = session.getDelegate().openTransaction(resourceSet);
+        CDOTransaction transaction = session.getCdoSession().openTransaction(resourceSet);
         return transaction;
     }
 
     public CDOTransaction openNewTransaction(CdoClientSession session) {
-        CDOTransaction transaction = session.getDelegate().openTransaction();
+        CDOTransaction transaction = session.getCdoSession().openTransaction();
         return transaction;
     }
 
@@ -230,8 +232,16 @@ public class CdoClient {
             connectors.remove(i);
         }
         container.clearElements();
+        try {
+            Exception deactivate = container.deactivate();
+            if (deactivate != null) {
+                throw deactivate;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         //        this.serverSessionPool.close();
-        //        this.cluster.close();C
+        //        this.cluster.close();
     }
 
     /**
@@ -249,7 +259,7 @@ public class CdoClient {
     }
 
     public void closeSession(CdoClientSession session) {
-        session.getDelegate().close();
+        session.getCdoSession().close();
     }
 
     IRepository createRepository(String repoName) {
