@@ -5,6 +5,7 @@ import de.tudresden.inf.st.spring.data.cdo.config.CdoClientSessionOptions;
 import de.tudresden.inf.st.spring.data.cdo.config.CdoCredentials;
 import de.tudresden.inf.st.spring.data.cdo.repository.CdoDatabase;
 import de.tudresden.inf.st.spring.data.cdo.repository.CdoDatabaseImpl;
+import org.eclipse.emf.cdo.common.CDOCommonSession;
 import org.eclipse.emf.cdo.common.revision.CDORevisionCache;
 import org.eclipse.emf.cdo.common.revision.CDORevisionUtil;
 import org.eclipse.emf.cdo.net4j.CDONet4jSessionConfiguration;
@@ -133,22 +134,19 @@ public class CdoClient {
     }
 
     public CdoClientSession startSession(CDONet4jSessionConfiguration config, CdoClientSessionOptions options, String repoName) {
-        IConnector connector = config.getConnector();
-        if (Objects.isNull(connector)) {
-            connector = createConnector(addr);
+        if (config.getConnector() == null) {
+            IConnector connector = createConnector(addr);
+            config.setConnector(connector);
+            connectors.add(connector);
         }
-        connectors.add(connector);
 
-        config.setConnector(connector);
         config.setRepositoryName(repoName);
         config.setActivateOnOpen(true);
 
         assert config.getRepositoryName() != null;
         assert config.getConnector() != null;
         CdoClientSession cdoClientSession = new CdoClientSession(config.openNet4jSession());
-//        if (options != null) {
         cdoClientSession.setOptions(options);
-//        }
         return cdoClientSession;
     }
 
@@ -165,14 +163,16 @@ public class CdoClient {
     protected CDONet4jSessionConfiguration createSessionConfiguration(CdoServerAddress connectorDescription) {
         IConnector connector = createConnector(connectorDescription);
         connectors.add(connector);
-        //        CDONet4jSessionConfiguration config = CDONet4jUtil.createNet4jSessionConfiguration();
+        // CDONet4jSessionConfiguration config = CDONet4jUtil.createNet4jSessionConfiguration();
         ReconnectingCDOSessionConfiguration config = CDONet4jUtil.createReconnectingSessionConfiguration(
                 connectorDescription.getFullConnectorDescription(),
                 "", // (!) repository name has to be set later
-                IPluginContainer.INSTANCE);
-        config.setMaxReconnectAttempts(5);
-
+                this.container);
         config.setConnector(connector);
+        config.setMaxReconnectAttempts(5);
+        config.setPassiveUpdateEnabled(true);
+        config.setPassiveUpdateMode(CDOCommonSession.Options.PassiveUpdateMode.ADDITIONS);
+
         config.setRevisionManager(CDORevisionUtil.createRevisionManager(CDORevisionCache.NOOP)); //CDORevisionCache.NOOP
         return config;
     }
@@ -185,7 +185,7 @@ public class CdoClient {
      */
     protected IConnector createConnector(CdoServerAddress addr) {
         IConnector connector = Net4jUtil.getConnector(
-                container,
+                this.container,
                 addr.getTransportType(),
                 addr.getFullConnectorDescription()
         );
@@ -302,6 +302,7 @@ public class CdoClient {
     public static IManagedContainer createContainer() {
         //IPluginContainer.INSTANCE; // also a managed container - ^is already prepared statically above^
         IManagedContainer container = ContainerUtil.createContainer();
+        ContainerUtil.prepareContainer(container);
         Net4jUtil.prepareContainer(container); // Register Net4j factories
         TCPUtil.prepareContainer(container); // Register TCP factories
         HTTPUtil.prepareContainer(container); // Register HTTP factories

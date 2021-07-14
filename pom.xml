@@ -26,7 +26,7 @@
 
     <properties>
         <project.type>multi</project.type>
-        <java.version>1.8</java.version>
+        <java.version>11</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <dist.id>spring-data-cdo</dist.id>
         <eclipse.mirror>http://download.eclipse.org/</eclipse.mirror>
@@ -193,7 +193,7 @@
                     <plugin>
                         <groupId>org.jfrog.buildinfo</groupId>
                         <artifactId>artifactory-maven-plugin</artifactId>
-                        <version>3.0.0</version>
+                        <version>3.2.3</version>
                         <inherited>false</inherited>
                         <executions>
                             <execution>
