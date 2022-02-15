@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.springframework.data.build</groupId>
         <artifactId>spring-data-parent</artifactId>
-        <version>2.4.1</version>
+        <version>2.6.1</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
@@ -26,8 +26,10 @@
 
     <properties>
         <project.type>multi</project.type>
-        <java.version>11</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <java.version>11</java.version>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
         <dist.id>spring-data-cdo</dist.id>
         <eclipse.mirror>http://download.eclipse.org/</eclipse.mirror>
         <!-- Versions: EMF -->
@@ -39,7 +41,7 @@
         <emf.cdo.version>4.7.0</emf.cdo.version>
         <!-- Versions: Other -->
         <spring.data.commons.version>2.4.1</spring.data.commons.version>
-        <guava.version>28.0-jre</guava.version>
+        <guava.version>31.0.1-jre</guava.version>
         <junit-jupiter.version>5.4.2</junit-jupiter.version>
     </properties>
 

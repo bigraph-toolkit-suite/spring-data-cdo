@@ -23,7 +23,9 @@
     </properties>
 
     <dependencies>
-        <!-- Spring -->
+        <!-- ************   -->
+        <!-- Spring         -->
+        <!-- ************   -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-tx</artifactId>
@@ -56,14 +58,20 @@
             <artifactId>spring-data-commons</artifactId>
             <version>${spring.data.commons.version}</version>
         </dependency>
-
+        <!-- ************   -->
+        <!-- Eclipse        -->
+        <!-- ************   -->
+        <!-- Eclipse Platform -->
         <dependency>
-            <groupId>javax.annotation</groupId>
-            <artifactId>jsr250-api</artifactId>
-            <version>1.0</version>
-            <optional>true</optional>
+            <groupId>org.eclipse.platform</groupId>
+            <artifactId>org.eclipse.core.runtime</artifactId>
+            <version>3.24.0</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.eclipse.platform</groupId>
+            <artifactId>org.eclipse.equinox.common</artifactId>
+            <version>3.15.100</version>
+        </dependency>
         <!-- EMF -->
         <dependency>
             <groupId>org.eclipse.emf</groupId>
@@ -204,18 +212,26 @@
             <artifactId>org.eclipse.ocl.common</artifactId>
             <version>1.2.0.v20140610-0641</version>
         </dependency>
-        <!-- for ocl -->
+        <!-- OCL -->
         <dependency>
             <groupId>org.eclipse.acceleo</groupId>
             <artifactId>lpg.runtime.java</artifactId>
             <version>2.0.17.v201004271640</version>
         </dependency>
+        <!-- ************   -->
+        <!-- Misc           -->
+        <!-- ************   -->
         <dependency>
             <groupId>com.google.inject</groupId>
             <artifactId>guice</artifactId>
             <version>4.2.2</version>
         </dependency>
-
+        <dependency>
+            <groupId>javax.annotation</groupId>
+            <artifactId>jsr250-api</artifactId>
+            <version>1.0</version>
+            <optional>true</optional>
+        </dependency>
         <dependency>
             <groupId>org.openjdk.jmh</groupId>
             <artifactId>jmh-core</artifactId>
@@ -226,19 +242,19 @@
             <artifactId>jmh-generator-annprocess</artifactId>
             <version>1.19</version>
         </dependency>
-
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>${guava.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>3.9</version>
         </dependency>
-
+        <!-- ************   -->
+        <!-- Test           -->
+        <!-- ************   -->
         <!-- CDI -->
         <dependency>
             <groupId>javax.interceptor</groupId>
@@ -259,7 +275,6 @@
             <version>${javax-annotation-api}</version>
             <scope>test</scope>
         </dependency>
-
         <!-- JSR 303 Validation -->
         <dependency>
             <groupId>javax.validation</groupId>
@@ -267,42 +282,36 @@
             <version>${validation}</version>
             <optional>true</optional>
         </dependency>
-
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-validator</artifactId>
             <version>5.2.4.Final</version>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>
             <version>${jodatime}</version>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>jul-to-slf4j</artifactId>
             <version>${slf4j}</version>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>edu.umd.cs.mtc</groupId>
             <artifactId>multithreadedtc</artifactId>
             <version>${multithreadedtc}</version>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>javax.transaction</groupId>
             <artifactId>jta</artifactId>
             <version>1.1</version>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-test</artifactId>
@@ -321,7 +330,7 @@
             <version>${junit-jupiter.version}</version>
             <scope>test</scope>
         </dependency>
-        <!-- Needed by junit -->
+        <!-- Needed by JUnit -->
         <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest-all</artifactId>
@@ -361,16 +370,6 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
             </plugin>
-            <!-- Deployment -->
-<!--            <plugin>-->
-<!--                <groupId>org.apache.maven.plugins</groupId>-->
-<!--                <artifactId>maven-deploy-plugin</artifactId>-->
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        <id>bintray-deploy</id>-->
-<!--                    </execution>-->
-<!--                </executions>-->
-<!--            </plugin>-->
         </plugins>
 
     </build>
