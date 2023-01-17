@@ -30,7 +30,7 @@ import org.eclipse.net4j.acceptor.IAcceptor;
 import org.eclipse.net4j.connector.IConnector;
 import org.eclipse.net4j.db.IDBAdapter;
 import org.eclipse.net4j.db.h2.H2Adapter;
-import org.eclipse.net4j.http.HTTPUtil;
+//import org.eclipse.net4j.http.HTTPUtil;
 import org.eclipse.net4j.tcp.TCPUtil;
 import org.eclipse.net4j.util.container.ContainerUtil;
 import org.eclipse.net4j.util.container.IManagedContainer;
@@ -74,7 +74,7 @@ public class CdoClient {
         //registry (OSGi/Equinox) is running
         Net4jUtil.prepareContainer(IPluginContainer.INSTANCE); // Prepare the Net4j kernel
         TCPUtil.prepareContainer(IPluginContainer.INSTANCE); // Prepare the TCP support
-        HTTPUtil.prepareContainer(IPluginContainer.INSTANCE); // Prepare the HTTP support
+//        HTTPUtil.prepareContainer(IPluginContainer.INSTANCE); // Prepare the HTTP support
         CDONet4jUtil.prepareContainer(IPluginContainer.INSTANCE); // Prepare the CDO server
         CDONet4jServerUtil.prepareContainer(IPluginContainer.INSTANCE); // Prepare the CDO server
     }
@@ -315,7 +315,7 @@ public class CdoClient {
         ContainerUtil.prepareContainer(container);
         Net4jUtil.prepareContainer(container); // Register Net4j factories
         TCPUtil.prepareContainer(container); // Register TCP factories
-        HTTPUtil.prepareContainer(container); // Register HTTP factories
+//        HTTPUtil.prepareContainer(container); // Register HTTP factories
         CDONet4jUtil.prepareContainer(container); // Register CDO client factories
         CDONet4jServerUtil.prepareContainer(container); // Register CDO server factories
         container.activate();

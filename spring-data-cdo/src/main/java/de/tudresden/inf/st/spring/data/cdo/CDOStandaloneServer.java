@@ -18,8 +18,8 @@ import org.eclipse.net4j.Net4jUtil;
 import org.eclipse.net4j.TransportConfigurator;
 import org.eclipse.net4j.acceptor.IAcceptor;
 import org.eclipse.net4j.connector.IConnector;
-import org.eclipse.net4j.http.HTTPUtil;
-import org.eclipse.net4j.http.internal.server.HTTPAcceptor;
+//import org.eclipse.net4j.http.HTTPUtil;
+//import org.eclipse.net4j.http.internal.server.HTTPAcceptor;
 import org.eclipse.net4j.internal.tcp.TCPAcceptor;
 import org.eclipse.net4j.tcp.TCPUtil;
 import org.eclipse.net4j.util.container.IManagedContainer;
@@ -144,9 +144,9 @@ public class CDOStandaloneServer extends OSGiApplication {
                     IPluginContainer.INSTANCE);
             this.container = net4jConfigurator.getContainer();
             TCPUtil.prepareContainer(net4jConfigurator.getContainer());
-            HTTPUtil.prepareContainer(net4jConfigurator.getContainer());
+//            HTTPUtil.prepareContainer(net4jConfigurator.getContainer());
             Net4jUtil.prepareContainer(net4jConfigurator.getContainer());
-            net4jConfigurator.getContainer().registerFactory(new HTTPAcceptor.DescriptionParserFactory());
+//            net4jConfigurator.getContainer().registerFactory(new HTTPAcceptor.DescriptionParserFactory());
             net4jConfigurator.getContainer().registerFactory(new TCPAcceptor.DescriptionParserFactory());
             CDONet4jUtil.prepareContainer(net4jConfigurator.getContainer());
             CDONet4jServerUtil.prepareContainer(net4jConfigurator.getContainer());
@@ -231,7 +231,7 @@ public class CDOStandaloneServer extends OSGiApplication {
             CDONet4jUtil.prepareContainer(container);
             CDONet4jServerUtil.prepareContainer(container);
             TCPUtil.prepareContainer(container);
-            HTTPUtil.prepareContainer(container);
+//            HTTPUtil.prepareContainer(container);
             container.registerFactory(oclFactory);
 
             // Initialize Acceptor

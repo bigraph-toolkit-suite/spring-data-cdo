@@ -52,69 +52,69 @@
                                     <p2>
                                         <!-- We have to use the version of the plugin of the respective p2 repository-->
                                         <artifact>
-                                            <id>org.eclipse.emf.cdo:4.11.0.v20200902-0811</id>
+                                            <id>org.eclipse.emf.cdo:4.20.0.v20221124-1637</id>
                                             <source>false</source>
                                         </artifact>
                                         <artifact>
-                                            <id>org.eclipse.emf.cdo.net4j:4.3.1.v20200825-1015</id>
+                                            <id>org.eclipse.emf.cdo.net4j:4.6.0.v20221118-1832</id>
                                             <source>false</source>
                                         </artifact>
                                         <artifact>
-                                            <id>org.eclipse.emf.cdo.common:4.11.0.v20200901-0616</id>
+                                            <id>org.eclipse.emf.cdo.common:4.20.0.v20221106-0628</id>
                                             <source>false</source>
                                         </artifact>
                                         <artifact>
-                                            <id>org.eclipse.emf.cdo.compare:4.4.0.v20200311-1912</id>
+                                            <id>org.eclipse.emf.cdo.compare:4.7.1.v20221117-1804</id>
                                             <source>false</source>
                                         </artifact>
                                         <artifact>
-                                            <id>org.eclipse.emf.cdo.server:4.10.0.v20200825-1015</id>
+                                            <id>org.eclipse.emf.cdo.server:4.19.0.v20221125-0832</id>
                                             <source>false</source>
                                         </artifact>
                                         <artifact>
-                                            <id>org.eclipse.emf.cdo.server.db:4.9.1.v20200901-0616</id>
+                                            <id>org.eclipse.emf.cdo.server.db:4.12.0.v20220907-1437</id>
                                             <source>false</source>
                                         </artifact>
                                         <artifact>
-                                            <id>org.eclipse.net4j:4.10.1.v20200901-1413</id>
+                                            <id>org.eclipse.net4j:4.16.0.v20220907-1437</id>
                                             <source>false</source>
                                         </artifact>
                                         <artifact>
-                                            <id>org.eclipse.net4j.util:3.12.0.v20200901-0616</id>
+                                            <id>org.eclipse.net4j.util:3.21.0.v20221123-1721</id>
                                             <source>false</source>
                                         </artifact>
                                         <artifact>
-                                            <id>org.eclipse.net4j.db.h2:4.4.0.v20200412-0425</id>
+                                            <id>org.eclipse.net4j.db.h2:4.5.2.v20220505-0518</id>
                                             <source>false</source>
                                         </artifact>
                                         <artifact>
-                                            <id>org.eclipse.emf.cdo.server.ocl:4.3.0.v20200311-1912</id>
+                                            <id>org.eclipse.emf.cdo.server.ocl:4.4.2.v20220515-1607</id>
                                             <source>false</source>
                                         </artifact>
                                         <artifact>
-                                            <id>org.eclipse.emf.cdo.server.net4j:4.2.1.v20200825-1015</id>
+                                            <id>org.eclipse.emf.cdo.server.net4j:4.5.4.v20221105-0823</id>
                                             <source>false</source>
                                         </artifact>
                                         <artifact>
-                                            <id>org.eclipse.net4j.tcp:4.2.1.v20200825-0442</id>
+                                            <id>org.eclipse.net4j.tcp:4.4.0.v20220907-1437</id>
                                             <source>false</source>
                                         </artifact>
                                         <artifact>
-                                            <id>org.eclipse.net4j.db:4.9.0.v20200610-0352</id>
+                                            <id>org.eclipse.net4j.db:4.11.2.v20221108-1656</id>
                                             <source>false</source>
                                         </artifact>
                                         <artifact>
-                                            <id>org.eclipse.net4j.jvm:4.2.1.v20200528-0542</id>
+                                            <id>org.eclipse.net4j.jvm:4.3.0.v20220505-0518</id>
                                             <source>false</source>
                                         </artifact>
-                                        <artifact>
-                                            <id>org.eclipse.net4j.http:4.1.1.v20200528-0542</id>
-                                            <source>false</source>
-                                        </artifact>
-                                        <artifact>
-                                            <id>org.eclipse.net4j.http.server:4.1.1.v20200528-0542</id>
-                                            <source>false</source>
-                                        </artifact>
+<!--                                        <artifact>-->
+<!--                                            <id>org.eclipse.net4j.http:4.1.1.v20200528-0542</id>-->
+<!--                                            <source>false</source>-->
+<!--                                        </artifact>-->
+<!--                                        <artifact>-->
+<!--                                            <id>org.eclipse.net4j.http.server:4.1.1.v20200528-0542</id>-->
+<!--                                            <source>false</source>-->
+<!--                                        </artifact>-->
                                     </p2>
                                 </configuration>
                             </execution>
@@ -125,7 +125,7 @@
                         <artifactId>maven-install-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>org.eclipse.emf.cdo.server.ocl:4.3.0.v20200311-1912</id>
+                                <id>org.eclipse.emf.cdo.server.ocl:4.4.2.v20220515-1607</id>
                                 <phase>validate</phase>
                                 <goals>
                                     <goal>install-file</goal>
@@ -133,50 +133,50 @@
                                 <configuration>
                                     <groupId>org.eclipse.emf.cdo.server.ocl</groupId>
                                     <artifactId>org.eclipse.emf.cdo.server.ocl</artifactId>
-                                    <version>4.3.0.v20200311-1912</version>
+                                    <version>4.4.2.v20220515-1607</version>
                                     <packaging>jar</packaging>
                                     <file>
-                                        ${basedir}/target/repository/plugins/org.eclipse.emf.cdo.server.ocl_4.3.0.v20200311-1912.jar
+                                        ${basedir}/target/repository/plugins/org.eclipse.emf.cdo.server.ocl_4.4.2.v20220515-1607.jar
                                     </file>
                                     <generatePom>true</generatePom>
                                 </configuration>
                             </execution>
+<!--                            <execution>-->
+<!--                                <id>org.eclipse.net4j.http.server:4.1.1.v20200528-0542</id>-->
+<!--                                <phase>validate</phase>-->
+<!--                                <goals>-->
+<!--                                    <goal>install-file</goal>-->
+<!--                                </goals>-->
+<!--                                <configuration>-->
+<!--                                    <groupId>org.eclipse.net4j.http.server</groupId>-->
+<!--                                    <artifactId>org.eclipse.net4j.http.server</artifactId>-->
+<!--                                    <version>4.1.1.v20200528-0542</version>-->
+<!--                                    <packaging>jar</packaging>-->
+<!--                                    <file>-->
+<!--                                        ${basedir}/target/repository/plugins/org.eclipse.net4j.http.server_4.1.1.v20200528-0542.jar-->
+<!--                                    </file>-->
+<!--                                    <generatePom>true</generatePom>-->
+<!--                                </configuration>-->
+<!--                            </execution>-->
+<!--                            <execution>-->
+<!--                                <id>org.eclipse.net4j.http:4.1.1.v20200528-0542</id>-->
+<!--                                <phase>validate</phase>-->
+<!--                                <goals>-->
+<!--                                    <goal>install-file</goal>-->
+<!--                                </goals>-->
+<!--                                <configuration>-->
+<!--                                    <groupId>org.eclipse.net4j.http</groupId>-->
+<!--                                    <artifactId>org.eclipse.net4j.http</artifactId>-->
+<!--                                    <version>4.1.1.v20200528-0542</version>-->
+<!--                                    <packaging>jar</packaging>-->
+<!--                                    <file>-->
+<!--                                        ${basedir}/target/repository/plugins/org.eclipse.net4j.http_4.1.1.v20200528-0542.jar-->
+<!--                                    </file>-->
+<!--                                    <generatePom>true</generatePom>-->
+<!--                                </configuration>-->
+<!--                            </execution>-->
                             <execution>
-                                <id>org.eclipse.net4j.http.server:4.1.1.v20200528-0542</id>
-                                <phase>validate</phase>
-                                <goals>
-                                    <goal>install-file</goal>
-                                </goals>
-                                <configuration>
-                                    <groupId>org.eclipse.net4j.http.server</groupId>
-                                    <artifactId>org.eclipse.net4j.http.server</artifactId>
-                                    <version>4.1.1.v20200528-0542</version>
-                                    <packaging>jar</packaging>
-                                    <file>
-                                        ${basedir}/target/repository/plugins/org.eclipse.net4j.http.server_4.1.1.v20200528-0542.jar
-                                    </file>
-                                    <generatePom>true</generatePom>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>org.eclipse.net4j.http:4.1.1.v20200528-0542</id>
-                                <phase>validate</phase>
-                                <goals>
-                                    <goal>install-file</goal>
-                                </goals>
-                                <configuration>
-                                    <groupId>org.eclipse.net4j.http</groupId>
-                                    <artifactId>org.eclipse.net4j.http</artifactId>
-                                    <version>4.1.1.v20200528-0542</version>
-                                    <packaging>jar</packaging>
-                                    <file>
-                                        ${basedir}/target/repository/plugins/org.eclipse.net4j.http_4.1.1.v20200528-0542.jar
-                                    </file>
-                                    <generatePom>true</generatePom>
-                                </configuration>
-                            </execution>
-                            <execution>
-                                <id>org.eclipse.net4j.jvm:4.2.1.v20200528-0542</id>
+                                <id>org.eclipse.net4j.jvm:4.3.0.v20220505-0518</id>
                                 <phase>validate</phase>
                                 <goals>
                                     <goal>install-file</goal>
@@ -184,16 +184,16 @@
                                 <configuration>
                                     <groupId>org.eclipse.net4j.jvm</groupId>
                                     <artifactId>org.eclipse.net4j.jvm</artifactId>
-                                    <version>4.2.1.v20200528-0542</version>
+                                    <version>4.3.0.v20220505-0518</version>
                                     <packaging>jar</packaging>
                                     <file>
-                                        ${basedir}/target/repository/plugins/org.eclipse.net4j.jvm_4.2.1.v20200528-0542.jar
+                                        ${basedir}/target/repository/plugins/org.eclipse.net4j.jvm_4.3.0.v20220505-0518.jar
                                     </file>
                                     <generatePom>true</generatePom>
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>org.eclipse.emf.cdo.compare:4.4.0.v20200311-1912</id>
+                                <id>org.eclipse.emf.cdo.compare:4.7.1.v20221117-1804</id>
                                 <phase>validate</phase>
                                 <goals>
                                     <goal>install-file</goal>
@@ -201,16 +201,16 @@
                                 <configuration>
                                     <groupId>org.eclipse.emf.cdo.compare</groupId>
                                     <artifactId>org.eclipse.emf.cdo.compare</artifactId>
-                                    <version>4.4.0.v20200311-1912</version>
+                                    <version>4.7.1.v20221117-1804</version>
                                     <packaging>jar</packaging>
                                     <file>
-                                        ${basedir}/target/repository/plugins/org.eclipse.emf.cdo.compare_4.4.0.v20200311-1912.jar
+                                        ${basedir}/target/repository/plugins/org.eclipse.emf.cdo.compare_4.7.1.v20221117-1804.jar
                                     </file>
                                     <generatePom>true</generatePom>
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>org.eclipse.net4j.db:4.9.0.v20200610-0352</id>
+                                <id>org.eclipse.net4j.db:4.11.2.v20221108-1656</id>
                                 <phase>validate</phase>
                                 <goals>
                                     <goal>install-file</goal>
@@ -218,16 +218,16 @@
                                 <configuration>
                                     <groupId>org.eclipse.net4j.db</groupId>
                                     <artifactId>org.eclipse.net4j.db</artifactId>
-                                    <version>4.9.0.v20200610-0352</version>
+                                    <version>4.11.2.v20221108-1656</version>
                                     <packaging>jar</packaging>
                                     <file>
-                                        ${basedir}/target/repository/plugins/org.eclipse.net4j.db_4.9.0.v20200610-0352.jar
+                                        ${basedir}/target/repository/plugins/org.eclipse.net4j.db_4.11.2.v20221108-1656.jar
                                     </file>
                                     <generatePom>true</generatePom>
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>org.eclipse.net4j.tcp:4.2.1.v20200825-0442</id>
+                                <id>org.eclipse.net4j.tcp:4.4.0.v20220907-1437</id>
                                 <phase>validate</phase>
                                 <goals>
                                     <goal>install-file</goal>
@@ -235,10 +235,10 @@
                                 <configuration>
                                     <groupId>org.eclipse.net4j.tcp</groupId>
                                     <artifactId>org.eclipse.net4j.tcp</artifactId>
-                                    <version>4.2.1.v20200825-0442</version>
+                                    <version>4.4.0.v20220907-1437</version>
                                     <packaging>jar</packaging>
                                     <file>
-                                        ${basedir}/target/repository/plugins/org.eclipse.net4j.tcp_4.2.1.v20200825-0442.jar
+                                        ${basedir}/target/repository/plugins/org.eclipse.net4j.tcp_4.4.0.v20220907-1437.jar
                                     </file>
                                     <generatePom>true</generatePom>
                                 </configuration>
@@ -252,10 +252,10 @@
                                 <configuration>
                                     <groupId>org.eclipse.emf.cdo.server.net4j</groupId>
                                     <artifactId>org.eclipse.emf.cdo.server.net4j</artifactId>
-                                    <version>4.2.1.v20200825-1015</version>
+                                    <version>4.5.4.v20221105-0823</version>
                                     <packaging>jar</packaging>
                                     <file>
-                                        ${basedir}/target/repository/plugins/org.eclipse.emf.cdo.server.net4j_4.2.1.v20200825-1015.jar
+                                        ${basedir}/target/repository/plugins/org.eclipse.emf.cdo.server.net4j_4.5.4.v20221105-0823.jar
                                     </file>
                                     <generatePom>true</generatePom>
                                 </configuration>
@@ -269,10 +269,10 @@
                                 <configuration>
                                     <groupId>org.eclipse.emf.cdo.server.db</groupId>
                                     <artifactId>org.eclipse.emf.cdo.server.db</artifactId>
-                                    <version>4.9.1.v20200901-0616</version>
+                                    <version>4.12.0.v20220907-1437</version>
                                     <packaging>jar</packaging>
                                     <file>
-                                        ${basedir}/target/repository/plugins/org.eclipse.emf.cdo.server.db_4.9.1.v20200901-0616.jar
+                                        ${basedir}/target/repository/plugins/org.eclipse.emf.cdo.server.db_4.12.0.v20220907-1437.jar
                                     </file>
                                     <generatePom>true</generatePom>
                                 </configuration>
@@ -286,16 +286,16 @@
                                 <configuration>
                                     <groupId>org.eclipse.emf.cdo.server</groupId>
                                     <artifactId>org.eclipse.emf.cdo.server</artifactId>
-                                    <version>4.10.0.v20200825-1015</version>
+                                    <version>4.19.0.v20221125-0832</version>
                                     <packaging>jar</packaging>
                                     <file>
-                                        ${basedir}/target/repository/plugins/org.eclipse.emf.cdo.server_4.10.0.v20200825-1015.jar
+                                        ${basedir}/target/repository/plugins/org.eclipse.emf.cdo.server_4.19.0.v20221125-0832.jar
                                     </file>
                                     <generatePom>true</generatePom>
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>org.eclipse.net4j.util:3.12.0.v20200901-0616</id>
+                                <id>org.eclipse.net4j.util:3.21.0.v20221123-1721</id>
                                 <phase>validate</phase>
                                 <goals>
                                     <goal>install-file</goal>
@@ -303,16 +303,16 @@
                                 <configuration>
                                     <groupId>org.eclipse.net4j.util</groupId>
                                     <artifactId>org.eclipse.net4j.util</artifactId>
-                                    <version>3.12.0.v20200901-0616</version>
+                                    <version>3.21.0.v20221123-1721</version>
                                     <packaging>jar</packaging>
                                     <file>
-                                        ${basedir}/target/repository/plugins/org.eclipse.net4j.util_3.12.0.v20200901-0616.jar
+                                        ${basedir}/target/repository/plugins/org.eclipse.net4j.util_3.21.0.v20221123-1721.jar
                                     </file>
                                     <generatePom>true</generatePom>
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>org.eclipse.net4j:4.10.1.v20200901-1413</id>
+                                <id>org.eclipse.net4j:4.16.0.v20220907-1437</id>
                                 <phase>validate</phase>
                                 <goals>
                                     <goal>install-file</goal>
@@ -320,16 +320,16 @@
                                 <configuration>
                                     <groupId>org.eclipse.emf.cdo</groupId>
                                     <artifactId>org.eclipse.net4j</artifactId>
-                                    <version>4.10.1-SNAPSHOT</version>
+                                    <version>4.16.0.v20220907-1437</version>
                                     <packaging>jar</packaging>
                                     <file>
-                                        ${basedir}/target/repository/plugins/org.eclipse.net4j_4.10.1.v20200901-1413.jar
+                                        ${basedir}/target/repository/plugins/org.eclipse.net4j_4.16.0.v20220907-1437.jar
                                     </file>
                                     <generatePom>true</generatePom>
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>org.eclipse.emf.cdo.common:4.11.0.v20200901-0616</id>
+                                <id>org.eclipse.emf.cdo.common:4.20.0.v20221106-0628</id>
                                 <phase>validate</phase>
                                 <goals>
                                     <goal>install-file</goal>
@@ -337,16 +337,16 @@
                                 <configuration>
                                     <groupId>org.eclipse.emf.cdo.common</groupId>
                                     <artifactId>org.eclipse.emf.cdo.common</artifactId>
-                                    <version>4.11.0.v20200901-0616</version>
+                                    <version>4.20.0.v20221106-0628</version>
                                     <packaging>jar</packaging>
                                     <file>
-                                        ${basedir}/target/repository/plugins/org.eclipse.emf.cdo.common_4.11.0.v20200901-0616.jar
+                                        ${basedir}/target/repository/plugins/org.eclipse.emf.cdo.common_4.20.0.v20221106-0628.jar
                                     </file>
                                     <generatePom>true</generatePom>
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>org.eclipse.net4j.db.h2:4.4.0.v20200412-0425</id>
+                                <id>org.eclipse.net4j.db.h2:4.5.2.v20220505-0518</id>
                                 <phase>validate</phase>
                                 <goals>
                                     <goal>install-file</goal>
@@ -354,16 +354,16 @@
                                 <configuration>
                                     <groupId>org.eclipse.net4j.db.h2</groupId>
                                     <artifactId>org.eclipse.net4j.db.h2</artifactId>
-                                    <version>4.4.0.v20200412-0425</version>
+                                    <version>4.5.2.v20220505-0518</version>
                                     <packaging>jar</packaging>
                                     <file>
-                                        ${basedir}/target/repository/plugins/org.eclipse.net4j.db.h2_4.4.0.v20200412-0425.jar
+                                        ${basedir}/target/repository/plugins/org.eclipse.net4j.db.h2_4.5.2.v20220505-0518.jar
                                     </file>
                                     <generatePom>true</generatePom>
                                 </configuration>
                             </execution>
                             <execution>
-                                <id>org.eclipse.emf.cdo.net4j:4.3.1.v20200825-1015</id>
+                                <id>org.eclipse.emf.cdo.net4j:4.6.0.v20221118-1832</id>
                                 <phase>validate</phase>
                                 <goals>
                                     <goal>install-file</goal>
@@ -371,10 +371,10 @@
                                 <configuration>
                                     <groupId>org.eclipse.emf.cdo.net4j</groupId>
                                     <artifactId>org.eclipse.emf.cdo.net4j</artifactId>
-                                    <version>4.3.1.v20200825-1015</version>
+                                    <version>4.6.0.v20221118-1832</version>
                                     <packaging>jar</packaging>
                                     <file>
-                                        ${basedir}/target/repository/plugins/org.eclipse.emf.cdo.net4j_4.3.1.v20200825-1015.jar
+                                        ${basedir}/target/repository/plugins/org.eclipse.emf.cdo.net4j_4.6.0.v20221118-1832.jar
                                     </file>
                                     <generatePom>true</generatePom>
                                 </configuration>
@@ -388,10 +388,10 @@
                                 <configuration>
                                     <groupId>org.eclipse.emf.cdo</groupId>
                                     <artifactId>org.eclipse.emf.cdo</artifactId>
-                                    <version>4.11.0.v20200902-0811</version>
+                                    <version>4.20.0.v20221124-1637</version>
                                     <packaging>jar</packaging>
                                     <file>
-                                        ${basedir}/target/repository/plugins/org.eclipse.emf.cdo_4.11.0.v20200902-0811.jar
+                                        ${basedir}/target/repository/plugins/org.eclipse.emf.cdo_4.20.0.v20221124-1637.jar
                                     </file>
                                     <generatePom>true</generatePom>
                                 </configuration>
