@@ -23,9 +23,12 @@ import org.eclipse.emf.cdo.common.model.CDOPackageRegistry;
 import org.eclipse.emf.cdo.common.revision.CDORevision;
 import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
 import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
+import org.eclipse.emf.cdo.common.util.CDODuplicateResourceException;
 import org.eclipse.emf.cdo.common.util.CDOException;
+import org.eclipse.emf.cdo.common.util.CDOResourceNodeNotFoundException;
 import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.eresource.CDOResourceFolder;
+import org.eclipse.emf.cdo.eresource.CDOResourceNode;
 import org.eclipse.emf.cdo.internal.common.revision.delta.CDORevisionDeltaImpl;
 import org.eclipse.emf.cdo.internal.common.revision.delta.CDOSetFeatureDeltaImpl;
 import org.eclipse.emf.cdo.session.CDOSession;
@@ -451,11 +454,15 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
             }
             try {
                 CDOResource resource = cdoView.getResource(repoResourcePath, true);
+//                if(resource.getFolder() != null) {
+//                    throw new IllegalStateException("Repository resource paths points to a resource folder: findAll() for folder is not yet implemented.");
+//                }
                 resource.getContents()
                         .forEach(eachObject -> {
 
                             if (explicitCDOObject || isLegacy) {
-                                if (ClassUtils.isAssignable(ClassUtils.getUserClass(eachObject), javaClassType)) { //TODO make this part of a Query
+                                if (ClassUtils.isAssignable(ClassUtils.getUserClass(eachObject), javaClassType) ||
+                                        javaClassType.isAssignableFrom(ClassUtils.getUserClass(eachObject))) { //TODO make this part of a Query
                                     collection.add((T) javaClassType.cast(eachObject));
 //                                    return javaClassType.cast(eachObject);
                                 }
@@ -469,7 +476,7 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
                             }
                         });
                 return collection;
-            } catch (InvalidURIException e) {
+            } catch (InvalidURIException | IllegalArgumentException e) {
                 e.printStackTrace();
                 return Collections.emptyList();
             }
@@ -756,13 +763,32 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
             CDOTransaction transaction = openTransaction(session);
             try {
                 System.out.println("CDOTransaction is = " + transaction);
-                CDOResource resource;
+                CDOResource resource = null;
+//                try {
+//                    resource = transaction.getResource(resourcePath, true);
+//                } catch (InvalidURIException e) {
+//                    resource = transaction.createResource(resourcePath);
+//                }
+                CDOResourceFolder resourceFolder;
                 try {
-                    resource = transaction.getResource(resourcePath, true);
-                } catch (InvalidURIException e) {
-                    resource = transaction.createResource(resourcePath);
+                    if (transaction.getResourceFolder(resourcePath) instanceof CDOResourceFolder) {
+                        resourceFolder = transaction.getResourceFolder(resourcePath);
+                        try {
+                            resource = resourceFolder.addResource(documents.get(0).eClass().getEPackage().getName());
+                        } catch (CDODuplicateResourceException e1) {
+                            resource = transaction.getResource(resourcePath + "/" + documents.get(0).eClass().getEPackage().getName());
+                        }
+                    }
+                } catch (CDOResourceNodeNotFoundException | ClassCastException e) {
+                    try {
+                        resource = transaction.getResource(resourcePath, true);
+                    } catch (InvalidURIException | CDOResourceNodeNotFoundException e2) {
+                        resource = transaction.createResource(resourcePath);
+                    }
                 }
-                resource.getContents().addAll(documents);
+                if (resource != null && documents.size() > 0) {
+                    resource.getContents().addAll(documents);
+                }
                 CDOCommitInfo commit = transaction.commit();
 
             } catch (CommitException e) {
@@ -803,32 +829,42 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
             CDOTransaction transaction = null;
             try {
 //                URI uri = EcoreUtil.getURI(internalValue);
-//                System.out.println("ecoreURI to save: " + uri);
 //                session.getDelegate().getPackageRegistry().putEPackage(cdoObject);
-//                System.out.println("Session is = " + session);
                 transaction = openTransaction(session);
-//                System.out.println("CDOTransaction is = " + transaction);
-//                boolean repoPathExists = true;
-                CDOResource resource;
+                CDOResource resource = null;
+                CDOResourceFolder resourceFolder;
                 try {
-                    resource = transaction.getResource(repoResourcePath, true);
-//                    System.out.println("Get resource: " + resource);
-                } catch (InvalidURIException e) {
-//                    repoPathExists = false;
-                    resource = transaction.createResource(repoResourcePath);
-//                    System.out.println("Create new resource: " + resource);
+                    if (transaction.getResourceFolder(repoResourcePath) instanceof CDOResourceFolder) {
+                        resourceFolder = transaction.getResourceFolder(repoResourcePath);
+                        try {
+                            resource = resourceFolder.addResource(internalValue.eClass().getEPackage().getName());
+                        } catch (CDODuplicateResourceException e1) {
+                            resource = transaction.getResource(repoResourcePath + "/" + internalValue.eClass().getEPackage().getName());
+                        }
+                    }
+                } catch (CDOResourceNodeNotFoundException | ClassCastException e) {
+//                    if (resource == null) {
+                    try {
+                        resource = transaction.getResource(repoResourcePath, true);
+                    } catch (InvalidURIException | CDOResourceNodeNotFoundException e2) {
+                        resource = transaction.createResource(repoResourcePath);
+                    }
+//                    }
                 }
 
 //                resource.getResourceSet().getPackageRegistry().put(null, internalValue);
 //                System.out.println("resource.cdoRevision().getID(): " + resource.cdoRevision().getID());
+                //TODO: resource.getFolder() != null -> getNodes().add(...)
 
+//                else {
                 resource.getContents().add(internalValue);
+//                }
+
                 CDOCommitInfo commit = transaction.commit();
 
                 // only for non-explicit CDOObjects or LegacyCDOObjects: set the CDOID manually for the custom class' ID attribute
                 if (!persistentEntity.isNativeCdoOrLegacyMode()) {
-                    GeneratingIdAccessor generatingIdAccessor;
-                    generatingIdAccessor = new GeneratingIdAccessor(
+                    GeneratingIdAccessor generatingIdAccessor = new GeneratingIdAccessor(
                             objectToSave,
                             persistentEntity,
                             DefaultIdentifierGenerator.INSTANCE,
@@ -883,12 +919,29 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
 //                resource.delete(Collections.emptyMap());
             } catch (InvalidURIException e) {
                 throw new EmptyResultDataAccessException("Resource path couldn't be created.", 1, e);
-            } catch (ConcurrentAccessException e) {
-                e.printStackTrace();
             } catch (CommitException e) {
                 e.printStackTrace();
             } catch (CDOException e) {
                 throw new CreateResourceFailedException("CDO resource path=" + resourcePath + " couldn't be created." +
+                        "Maybe some folder in the resource path already is a node in the repository.");
+            }
+            return null;
+        });
+    }
+
+    public void createResourceFolder(String resourceFolder) {
+        Assert.hasText(resourceFolder, "resourceFolder name must not be null or empty!");
+        execute(session -> {
+            try {
+                CDOTransaction cdoTransaction = openTransaction(session);
+                cdoTransaction.getOrCreateResourceFolder(resourceFolder);
+                cdoTransaction.commit();
+            } catch (InvalidURIException e) {
+                throw new EmptyResultDataAccessException("Resource path couldn't be created.", 1, e);
+            } catch (CommitException e) {
+                e.printStackTrace();
+            } catch (CDOException e) {
+                throw new CreateResourceFailedException("CDO resource path=" + resourceFolder + " couldn't be created." +
                         "Maybe some folder in the resource path already is a node in the repository.");
             }
             return null;
@@ -957,12 +1010,51 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
         return execute(session -> {
             try {
                 CDOTransaction cdoTransaction = openTransaction(session);
-                CDOResource resource = cdoTransaction.getResource(resourcePath);
-                resource.getContents().clear();
-                CDOCommitInfo commit = cdoTransaction.commit();
-                if (resource.getContents().size() == 0) {
-                    return CdoDeleteResult.acknowledged(commit.getDetachedObjects().size());
+//                CDOResource resource = cdoTransaction.getResource(resourcePath);
+                CDOResource resource = null;
+                CDOResourceFolder resourceFolder;
+                boolean cleaned = false;
+                try {
+                    if (cdoTransaction.getResourceFolder(resourcePath) instanceof CDOResourceFolder) {
+                        resourceFolder = cdoTransaction.getResourceFolder(resourcePath);
+                        try {
+                            if (resourceFolder.getFolder() != null) {
+                                for (CDOResourceNode each : resourceFolder.getFolder().getNodes()) {
+                                    if (each.getPath().equals(resourcePath)) {
+//                                    resource = each.cdoResource(); //resourceFolder.getFolder().cdoResource();
+                                        CDOObject remoteObj = cdoTransaction.getObject(each.cdoID());
+                                        each.getFolder().getNodes().remove(remoteObj);
+                                        cleaned = true;
+                                        break;
+                                    }
+                                }
+                            } else { // is root level folder resource
+                                resourceFolder.cdoResource().getContents().remove(resourceFolder.cdoID());
+                                cleaned = true;
+                            }
+                        } catch (CDODuplicateResourceException e1) {
+                            resource = cdoTransaction.getResource(resourcePath);
+                        } finally {
+                            if (resource == null) {
+                                resource = cdoTransaction.getResource(resourcePath);
+                            }
+                        }
+                    }
+                } catch (CDOResourceNodeNotFoundException | InvalidURIException | ClassCastException e) {
+                    try {
+                        resource = cdoTransaction.getResource(resourcePath, true);
+                    } catch (InvalidURIException | CDOResourceNodeNotFoundException e2) {
+                        throw e2;
+                    }
                 }
+
+                // Do cleaning for non-resourceFolders, e.g., ResourceNodes
+                if (!cleaned && resource != null) {
+                    resource.getContents().clear();
+                }
+
+                CDOCommitInfo commit = cdoTransaction.commit();
+                return CdoDeleteResult.acknowledged(commit.getDetachedObjects().size());
             } catch (InvalidURIException e) {
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug(String.format("The resource path %s couldn't be removed. Maybe it doesn't exists.", resourcePath), e);
