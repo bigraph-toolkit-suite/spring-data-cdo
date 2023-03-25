@@ -33,12 +33,14 @@
         <dist.id>spring-data-cdo</dist.id>
         <eclipse.mirror>http://download.eclipse.org/</eclipse.mirror>
         <!-- Versions: EMF -->
-        <emf.version>2.19.0</emf.version>
+        <emf.common.version>2.23.0</emf.common.version>
         <ecore.xmi.version>2.16.0</ecore.xmi.version>
-        <emf.ecore.version>2.22.0</emf.ecore.version>
+        <emf.ecore.version>2.25.0</emf.ecore.version>
+        <emf.codegen.version>2.22.0</emf.codegen.version>
+        <emf.cdo.version>4.20.0.v20221124-1637</emf.cdo.version>
+        <emf.cdo.common.version>4.20.0.v20221106-0628</emf.cdo.common.version>
+        <eclipse.core.runtime.version>3.26.100</eclipse.core.runtime.version>
         <emf.ecore.change.version>2.14.0</emf.ecore.change.version>
-        <emf.codegen.version>2.20.0</emf.codegen.version>
-        <emf.cdo.version>4.7.0</emf.cdo.version>
         <!-- Versions: Other -->
         <spring.data.commons.version>2.4.1</spring.data.commons.version>
         <guava.version>31.0.1-jre</guava.version>
@@ -83,7 +85,7 @@
         <repository>
             <id>emf-cdo</id>
             <!--            <url>https://download.eclipse.org/modeling/emf/cdo/drops/R20200610-0035/</url>-->
-<!--            <url>https://download.eclipse.org/modeling/emf/cdo/drops/R20200902-0430/</url>--> <!-- CDO protocol version 38 -->
+            <!--            <url>https://download.eclipse.org/modeling/emf/cdo/drops/R20200902-0430/</url>--> <!-- CDO protocol version 38 -->
             <url>https://download.eclipse.org/modeling/emf/cdo/drops/R20221130-2113/</url><!--CDO protocol version -->
             <layout>p2</layout>
         </repository>
