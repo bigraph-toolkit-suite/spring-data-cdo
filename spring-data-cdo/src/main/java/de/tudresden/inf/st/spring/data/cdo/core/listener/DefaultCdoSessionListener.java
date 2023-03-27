@@ -1,16 +1,14 @@
 package de.tudresden.inf.st.spring.data.cdo.core.listener;
 
 import de.tudresden.inf.st.spring.data.cdo.core.listener.filter.CdoListenerFilter;
+import de.tudresden.inf.st.spring.data.cdo.core.listener.filter.FilterCriteria;
 import org.eclipse.emf.cdo.common.revision.CDOIDAndVersion;
 import org.eclipse.emf.cdo.common.revision.CDORevisionKey;
 import org.eclipse.emf.cdo.session.CDOSessionInvalidationEvent;
 import org.eclipse.net4j.util.event.IEvent;
 import org.eclipse.net4j.util.event.IListener;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author Dominik Grzelak
@@ -95,12 +93,35 @@ final public class DefaultCdoSessionListener implements IListener {
                     event instanceof CDOSessionInvalidationEvent) {
                 CDOSessionInvalidationEvent invalidationEvent = (CDOSessionInvalidationEvent) event;
                 List<CDORevisionKey> changedObjects = invalidationEvent.getChangedObjects();
-                ((CdoChangedObjectsActionDelegate) delegate).perform(changedObjects);
+                if (changedObjects.size() > 0) {
+                    Set<String> repoPaths = new HashSet<>();
+                    HashMap<String, Object> props = new HashMap<>();
+                    for (CDORevisionKey eachNewObject : changedObjects) {
+                        String path = invalidationEvent.getSource().getViews(invalidationEvent.getBranch())[0].getObject(eachNewObject.getID()).cdoResource().getPath();
+                        repoPaths.add(path);
+                    }
+                    if (repoPaths.size() == 1) {
+                        props.put(FilterCriteria.Key.REPOSITORY_PATH, repoPaths.stream().findFirst().get());
+                    }
+                    ((CdoChangedObjectsActionDelegate) delegate).perform(changedObjects, props);
+                }
+//                ((CdoChangedObjectsActionDelegate) delegate).perform(changedObjects);
             } else if (delegate instanceof CdoNewObjectsActionDelegate &&
                     event instanceof CDOSessionInvalidationEvent) {
                 CDOSessionInvalidationEvent invalidationEvent = (CDOSessionInvalidationEvent) event;
                 List<CDOIDAndVersion> newObjects = invalidationEvent.getNewObjects();
-                ((CdoNewObjectsActionDelegate) delegate).perform(newObjects);
+                if (newObjects.size() > 0) {
+                    Set<String> repoPaths = new HashSet<>();
+                    HashMap<String, Object> props = new HashMap<>();
+                    for (CDOIDAndVersion eachNewObject : newObjects) {
+                        String path = invalidationEvent.getSource().getViews(invalidationEvent.getBranch())[0].getObject(eachNewObject.getID()).cdoResource().getPath();
+                        repoPaths.add(path);
+                    }
+                    if (repoPaths.size() == 1) {
+                        props.put(FilterCriteria.Key.REPOSITORY_PATH, repoPaths.stream().findFirst().get());
+                    }
+                    ((CdoNewObjectsActionDelegate) delegate).perform(newObjects, props);
+                }
             }
         }
     }

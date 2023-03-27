@@ -80,6 +80,7 @@ public class CdoTemplateBookStoreUnitTest {
         Thread.sleep(50);
 //        CdoDeleteResult cdoDeleteResult = template.removeAll(TEST_RESOURCE_PATH);
         CdoDeleteResult cdoDeleteResult2 = template.removeAll(FALLBACK_RESOURCE_PATH);
+        System.out.println("CdoDeleteResult: " + cdoDeleteResult2);
 //        CdoDeleteResult cdoDeleteResult3 = template.removeAll(BOOK_TEST_RESOURCE_PATH);
 //        CdoDeleteResult cdoDeleteResult4 = template.removeAll(BOOKSTORE_RESOURCE_PATH);
     }

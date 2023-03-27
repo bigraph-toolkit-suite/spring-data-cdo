@@ -125,7 +125,12 @@ public class BasicCdoPersistentEntity<T> extends BasicPersistentEntity<T, CdoPer
     //Source: https://stackoverflow.com/a/49532492
     private void tryFindEPackage(Class ePackageClass) {
         if (ePackageClass.equals(EcorePackage.class)) {
-            ePackage = EcorePackage.eINSTANCE;
+            if (!nsUri.isEmpty()) {
+                ePackage = EPackage.Registry.INSTANCE.getEPackage(this.nsUri);
+            }
+            if (ePackage == null) {
+                ePackage = EcorePackage.eINSTANCE;
+            }
         } else if (!ePackageClass.equals(Class.class)) {
             ePackage = EPackage.Registry.INSTANCE.getEPackage(this.nsUri);
             if (Objects.isNull(ePackage)) {

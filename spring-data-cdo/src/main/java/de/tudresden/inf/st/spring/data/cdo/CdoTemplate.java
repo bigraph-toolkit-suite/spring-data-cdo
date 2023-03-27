@@ -4,7 +4,6 @@ import de.tudresden.inf.st.spring.data.cdo.annotation.EObjectModel;
 import de.tudresden.inf.st.spring.data.cdo.config.CdoClientSessionOptions;
 import de.tudresden.inf.st.spring.data.cdo.core.*;
 import de.tudresden.inf.st.spring.data.cdo.core.event.*;
-import de.tudresden.inf.st.spring.data.cdo.core.listener.CdoNewObjectsActionDelegate;
 import de.tudresden.inf.st.spring.data.cdo.core.listener.CdoSessionActionDelegate;
 import de.tudresden.inf.st.spring.data.cdo.core.listener.DefaultCdoSessionListener;
 import de.tudresden.inf.st.spring.data.cdo.core.listener.ResourceContentAdapter;
@@ -21,7 +20,7 @@ import org.eclipse.emf.cdo.common.commit.CDOCommitInfo;
 import org.eclipse.emf.cdo.common.id.CDOID;
 import org.eclipse.emf.cdo.common.model.CDOPackageRegistry;
 import org.eclipse.emf.cdo.common.revision.CDORevision;
-import org.eclipse.emf.cdo.common.revision.delta.CDOFeatureDelta;
+import org.eclipse.emf.cdo.common.revision.CDORevisionUtil;
 import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
 import org.eclipse.emf.cdo.common.util.CDODuplicateResourceException;
 import org.eclipse.emf.cdo.common.util.CDOException;
@@ -29,8 +28,6 @@ import org.eclipse.emf.cdo.common.util.CDOResourceNodeNotFoundException;
 import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.eresource.CDOResourceFolder;
 import org.eclipse.emf.cdo.eresource.CDOResourceNode;
-import org.eclipse.emf.cdo.internal.common.revision.delta.CDORevisionDeltaImpl;
-import org.eclipse.emf.cdo.internal.common.revision.delta.CDOSetFeatureDeltaImpl;
 import org.eclipse.emf.cdo.session.CDOSession;
 import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevision;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
@@ -39,7 +36,10 @@ import org.eclipse.emf.cdo.view.CDOAdapterPolicy;
 import org.eclipse.emf.cdo.view.CDOInvalidationPolicy;
 import org.eclipse.emf.cdo.view.CDOQuery;
 import org.eclipse.emf.cdo.view.CDOView;
-import org.eclipse.emf.ecore.*;
+import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.emf.ecore.InternalEObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.internal.cdo.object.CDOLegacyAdapter;
 import org.eclipse.emf.internal.cdo.view.CDOStateMachine;
@@ -264,7 +264,6 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
                         });
             } else {
                 internalValue = (EObject) cdoConverter.getInternalValue(persistentEntity, entity, EObjectModel.class);
-//                String uriFragment = EcoreUtil.getURI(internalValue).fragment(); //resource.getURIFragment(internalValue);
                 CdoPersistentProperty requiredIdProperty = persistentEntity.getRequiredIdProperty();
                 Object idObject = persistentEntity.getPropertyAccessor(entity).getProperty(requiredIdProperty);
                 cdoid = ensureIDisCDOID(Optional.ofNullable(idObject).<IllegalStateException>orElseThrow(() -> {
@@ -279,73 +278,96 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
             CDOTransaction transaction = null;
             try {
                 //see: https://www.eclipse.org/forums/index.php/t/203394/
-
                 //Compute delta first between the current object and the latest revision in the store
                 CDOObject objectToUpdate = CDOUtil.getCDOObject(internalValue);
-                //objectToUpdate.cdoResource().getURI();repoResourcePath.split("/").equals(objectToUpdate.cdoResource().getURI().segments())
                 CDORevision currentRevision = objectToUpdate.cdoRevision();
                 if (Objects.nonNull(currentRevision)) {
                     // PartialCollectionLoadingNotSupportedException: List contains proxy elements
-                    session.getCdoSession().options().setCollectionLoadingPolicy(CDOUtil.createCollectionLoadingPolicy(0, 300));
+                    session.getCdoSession().options().setCollectionLoadingPolicy(CDOUtil.createCollectionLoadingPolicy(0, 500));
                     CDOBranchVersion branchVersion = currentRevision.getBranch().getVersion(currentRevision.getVersion());
                     CDORevision oldRevision = session.getCdoSession().getRevisionManager()
                             .getRevisionByVersion(cdoid, branchVersion, 0, true);
-                    CDORevisionDelta delta = currentRevision.compare(oldRevision);
+                    try {
 
-                    // safest approach taken to update the historical object:
-                    // Open a second audit view that gets the latest object
-                    transaction = (CDOTransaction) objectToUpdate.cdoView();
-                    CDOSession session2 = transaction.getSession();
-                    CDOView audit = session2.openView(currentRevision);
-                    EObject historicalObject = audit.getObject(objectToUpdate);
-                    // Lock the object in question and perform the update
-                    // We must copy selected features over determined by the delta above
-                    // Note/Question: not all feature delta types makes sense or must be supported (?)
-                    transaction.lockObjects(Collections.singleton(CDOUtil.getCDOObject(historicalObject)),
-                            IRWLockManager.LockType.WRITE, session.getOptions().getWriteLockoutTimeout());
-                    for (Map.Entry<EStructuralFeature, CDOFeatureDelta> featureDelta : ((CDORevisionDeltaImpl) delta).getFeatureDeltaMap().entrySet()) {
-                        Object newValue = ((CDOSetFeatureDeltaImpl) featureDelta.getValue()).getValue();
-                        switch (featureDelta.getValue().getType()) {
-                            case SET:
-                                historicalObject.eSet(featureDelta.getKey(), newValue);
-                                break;
-                            case UNSET:
-                                historicalObject.eSet(featureDelta.getKey(), null);
-                                break;
-                            case REMOVE:
-                                EcoreUtil.remove(historicalObject, featureDelta.getKey(), newValue);
-                                break;
-                            case ADD:
-                            case LIST:
-                            case MOVE:
-                            case CONTAINER:
-                            case CLEAR:
-                                throw new UnsupportedOperationException();
-                            default:
-                                continue;
+                        // safest approach taken to update the historical object:
+                        // Open a second audit view that gets the latest object
+                        transaction = (CDOTransaction) objectToUpdate.cdoView();
+                        CDOSession session2 = transaction.getSession();
+                        CDOView audit = session2.openView(currentRevision);
+                        EObject historicalObject = audit.getObject(objectToUpdate);
+                        // Lock the object in question and perform the update
+                        transaction.lockObjects(Collections.singleton(CDOUtil.getCDOObject(historicalObject)),
+                                IRWLockManager.LockType.WRITE, session.getOptions().getWriteLockoutTimeout());
+                        transaction.getResource(repoResourcePath, true).getContents().add(objectToUpdate);
+
+                        // We must copy selected features over determined by the delta above
+                        // Note/Question: not all feature delta types makes sense or must be supported (?)
+                        // (!) May throw a proxy exception ... especially for dynamic EMF models
+                        CDORevisionDelta delta = currentRevision.compare(oldRevision);
+                        currentRevision.merge(delta);
+//                        for (Map.Entry<EStructuralFeature, CDOFeatureDelta> featureDelta : ((CDORevisionDeltaImpl) delta).getFeatureDeltaMap().entrySet()) {
+//                            Object newValue = ((CDOSetFeatureDeltaImpl) featureDelta.getValue()).getValue();
+//                            switch (featureDelta.getValue().getType()) {
+//                                case SET:
+//                                    historicalObject.eSet(featureDelta.getKey(), newValue);
+//                                    break;
+//                                case UNSET:
+//                                    historicalObject.eSet(featureDelta.getKey(), null);
+//                                    break;
+//                                case REMOVE:
+//                                    EcoreUtil.remove(historicalObject, featureDelta.getKey(), newValue);
+//                                    break;
+//                                case ADD:
+//                                case LIST:
+//                                case MOVE:
+//                                case CONTAINER:
+//                                case CLEAR:
+//                                    throw new UnsupportedOperationException();
+//                                default:
+//                                    continue;
+//                            }
+//                        }
+                        transaction.unlockObjects();
+                        transaction.commit();
+                        closeView(audit);
+                    } catch (Exception e) {
+                        if (transaction != null) {
+                            currentRevision.merge(CDORevisionUtil.createDelta(currentRevision));
+                            transaction.unlockObjects();
+                            transaction.commit();
                         }
                     }
                 } else {
+                    // if no revision information is available, just add another object at the current resource
+                    // This happens with dynamically created EMF models
+                    // If a model is just exchanged instead of modifying the model's attributes with EMF's reflective API
                     transaction = openTransaction(session);
                     CDOResource resource = transaction.getResource(repoResourcePath, true);
-                    CDOObject object = transaction.getObject(cdoid);
-                    transaction.lockObjects(Collections.singleton(CDOUtil.getCDOObject(object)),
-                            IRWLockManager.LockType.WRITE, session.getOptions().getWriteLockoutTimeout());
-                    resource.getContents().remove(object);
                     resource.getContents().add(objectToUpdate);
+                    transaction.commit();
                 }
                 // not necessary, automatic unlock after commit
 //                CDOUtil.getCDOObject(oldDBObject).cdoWriteLock().unlock();
-                transaction.commit();
+
+//                    transaction = openTransaction(session);
+//                    CDOResource resource = transaction.getResource(repoResourcePath, true);
+//                    CDOObject object = transaction.getObject(cdoid);
+//                    transaction.lockObjects(Collections.singleton(CDOUtil.getCDOObject(object)),
+//                            IRWLockManager.LockType.WRITE, session.getOptions().getWriteLockoutTimeout());
+//                    resource.getContents().remove(object);
+//                    resource.getContents().add(objectToUpdate);
+
             } catch (NullPointerException e) {
                 throw new InvalidDataAccessResourceUsageException(e.toString());
             } catch (CommitException e) {
                 throw new DataIntegrityViolationException(e.toString());
-            } catch (InterruptedException e) {
-                throw new OptimisticLockingFailureException(
-                        String.format("Cannot save entity with ID %s to repository %s. Has it been modified meanwhile?",
-                                Objects.nonNull(cdoid) ? cdoid.toURIFragment() : "NULL", repoResourcePath), e);
-            } finally {
+            }
+//            catch (InterruptedException e) {
+//                throw new OptimisticLockingFailureException(
+//                        String.format("Cannot save entity with ID %s to repository %s. Has it been modified meanwhile?",
+//                                Objects.nonNull(cdoid) ? cdoid.toURIFragment() : "NULL", repoResourcePath), e);
+//            }
+            finally {
                 closeTransaction(transaction);
             }
             return (T) entity;
@@ -357,6 +379,12 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
         return savedResult;
     }
 
+    // TODO: we cannot close a transaction right now
+    // "Each CDOObject is managed by a CDOView for the entire (local) lifetime. When the view is closed all objects managed by
+    // that view become unusable. The same applies for objects managed by a CDOTransaction, which is a subtype of CDOView. You
+    // must either keep the view/tx open until you no longer need to access the objects or copy the objects with
+    // EcoreUtil.copy() before you close the view/tx."
+    // see: https://www.eclipse.org/forums/index.php/t/446975/
     private void closeTransaction(@Nullable CDOTransaction transaction) {
 //        Optional.ofNullable(transaction).filter(x -> !x.isClosed()).ifPresent(Closeable::close);
     }
@@ -827,6 +855,7 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
         return execute(session -> {
             CDOID identifier = null;
             CDOTransaction transaction = null;
+            CDOCommitInfo commit = null;
             try {
 //                URI uri = EcoreUtil.getURI(internalValue);
 //                session.getDelegate().getPackageRegistry().putEPackage(cdoObject);
@@ -860,7 +889,7 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
                 resource.getContents().add(internalValue);
 //                }
 
-                CDOCommitInfo commit = transaction.commit();
+                commit = transaction.commit();
 
                 // only for non-explicit CDOObjects or LegacyCDOObjects: set the CDOID manually for the custom class' ID attribute
                 if (!persistentEntity.isNativeCdoOrLegacyMode()) {
@@ -1044,7 +1073,10 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
                     try {
                         resource = cdoTransaction.getResource(resourcePath, true);
                     } catch (InvalidURIException | CDOResourceNodeNotFoundException e2) {
-                        throw e2;
+                        if (LOGGER.isDebugEnabled()) {
+                            LOGGER.debug(e2.getMessage(), e);
+                        }
+                        return CdoDeleteResult.unacknowledged(e);
                     }
                 }
 
@@ -1250,8 +1282,8 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
             }
 
             // Assign actions to specific filters if possible
+            Set<String> repositoryPaths = new LinkedHashSet<>();
             if (filter != null) {
-                Set<String> repositoryPaths = new LinkedHashSet<>();
                 for (FilterCriteria filterCriteria : filter.getCriteria().values()) {
                     String repositoryPath = filterCriteria.getRepositoryPath();
                     if (repositoryPath != null) {
@@ -1260,16 +1292,17 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
                 }
                 if (repositoryPaths.size() > 0) {
                     // Repository Path filter can only process 'CdoNewObjectsActionDelegate' actions
-                    List<CdoNewObjectsActionDelegate> suitableActions = actionApplied.keySet().stream()
-                            .filter(x -> x instanceof CdoNewObjectsActionDelegate)
-                            .map(x -> {
-                                actionApplied.replace(x, true);
-                                return (CdoNewObjectsActionDelegate) x;
-                            })
-                            .collect(Collectors.toCollection(ArrayList<CdoNewObjectsActionDelegate>::new));
+//                    List<CdoSessionActionDelegate> suitableActions = actionApplied.keySet().stream()
+////                            .filter(x -> x instanceof CdoNewObjectsActionDelegate)
+//                            .map(x -> {
+//                                actionApplied.replace(x, true);
+//                                return (CdoNewObjectsActionDelegate) x;
+//                            })
+//                            .collect(Collectors.toCollection(ArrayList<CdoSessionActionDelegate>::new));
+                    List<T> suitableActions = Arrays.asList(actions);
                     if (suitableActions.size() > 0) {
                         for (String repoPath : repositoryPaths) {
-                            ResourceContentAdapter resourceContentAdapter = new ResourceContentAdapter(suitableActions);
+                            ResourceContentAdapter resourceContentAdapter = new ResourceContentAdapter((List<CdoSessionActionDelegate<?>>) suitableActions);
                             if (repoPath != null) {
                                 CDOResource resource = null;
                                 // This is necessary in case the listeners are added before an actual object is stored within a specific repository path
@@ -1281,6 +1314,7 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
                                         CDOTransaction cdoTransaction = openTransaction(session);
                                         resource = cdoTransaction.getOrCreateResource(repoPath);
                                         cdoTransaction.commit();
+//                                        closeTransaction(cdoTransaction);
                                         resource = view.getResource(repoPath, true);
                                     } catch (CommitException commitException) {
                                         throw new RuntimeException(commitException);
@@ -1288,6 +1322,7 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
                                 } finally {
                                     assert resource != null;
                                 }
+                                resourceContentAdapter.setTarget(resource);
                                 resourceContentAdapter.getProperties().put(FilterCriteria.Key.REPOSITORY_PATH, repoPath);
                                 resource.eAdapters().add(resourceContentAdapter);
                             }
@@ -1296,25 +1331,35 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
                 }
             }
 
+//            closeView(view);
+
             DefaultCdoSessionListener cdoSessionListener = filter != null ?
                     new DefaultCdoSessionListener(filter, "") :
                     new DefaultCdoSessionListener("");
 //            cdoSessionListener.setAction(Arrays.asList(actions));
             // Collect the remainder actions that were not previously "consumed" by the filters
-            List<T> collect = actionApplied.entrySet().stream().filter(x -> !x.getValue()).map(Map.Entry::getKey).collect(Collectors.toList());
-            cdoSessionListener.setAction((List<CdoSessionActionDelegate<?>>) collect);
+//            List<T> collect = actionApplied.entrySet().stream().filter(x -> !x.getValue()).map(Map.Entry::getKey).collect(Collectors.toList());
+//            cdoSessionListener.setAction((List<CdoSessionActionDelegate<?>>) collect);
+//            cdoSessionListener.setAction((List<CdoSessionActionDelegate<?>>) actionApplied.keySet().stream().collect(Collectors.toList()));
+            cdoSessionListener.setAction(Arrays.asList(actions));
+//            repositoryPaths.forEach(p -> {
+//                cdoSessionListener.getProperties().put(FilterCriteria.Key.REPOSITORY_PATH, p);
+//            });
             view.getSession().addListener(cdoSessionListener);
-
+//            session.getCdoSession().addListener(cdoSessionListener);
+//            session.getCdoSession().options().addListener(cdoSessionListener);
             return cdoSessionListener;
         });
     }
 
     private void applyCDOViewOptions(CDOView view) {
         view.options().addChangeSubscriptionPolicy(CDOAdapterPolicy.ALL);
+        view.options().removeChangeSubscriptionPolicy(CDOAdapterPolicy.ALL);
+        view.options().setInvalidationPolicy(CDOInvalidationPolicy.DEFAULT);
+        view.options().setClearAdapterPolicy(CDOAdapterPolicy.ALL);
         view.options().setInvalidationNotificationEnabled(true);
         view.options().setLoadNotificationEnabled(true);
         view.options().setDetachmentNotificationEnabled(true);
-        view.options().setInvalidationPolicy(CDOInvalidationPolicy.DEFAULT);
         view.options().setLockNotificationEnabled(true);
     }
 

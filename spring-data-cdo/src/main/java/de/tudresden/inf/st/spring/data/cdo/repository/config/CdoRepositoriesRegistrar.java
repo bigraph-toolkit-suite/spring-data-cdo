@@ -14,7 +14,7 @@ import java.lang.annotation.Annotation;
 public class CdoRepositoriesRegistrar extends RepositoryBeanDefinitionRegistrarSupport {
 
     public CdoRepositoriesRegistrar() {
-        System.out.println("CdoRepositoriesRegistrar");
+//        System.out.println("CdoRepositoriesRegistrar");
     }
 
     @Override

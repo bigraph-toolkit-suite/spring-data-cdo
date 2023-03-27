@@ -4,8 +4,8 @@ import de.tudresden.inf.st.ecore.models.bookstoreDomainModel.BookstoreDomainMode
 import de.tudresden.inf.st.spring.data.cdo.CDORevisionHolder;
 import de.tudresden.inf.st.spring.data.cdo.CdoDbFactory;
 import de.tudresden.inf.st.spring.data.cdo.CdoTemplate;
-import de.tudresden.inf.st.spring.data.cdo.core.listener.CdoChangedObjectsActionDelegate;
 import de.tudresden.inf.st.spring.data.cdo.core.listener.CdoAnyEventActionDelegate;
+import de.tudresden.inf.st.spring.data.cdo.core.listener.CdoChangedObjectsActionDelegate;
 import de.tudresden.inf.st.spring.data.cdo.core.listener.CdoNewObjectsActionDelegate;
 import de.tudresden.inf.st.spring.data.cdo.core.listener.filter.CdoListenerFilter;
 import de.tudresden.inf.st.spring.data.cdo.core.listener.filter.FilterCriteria;
@@ -64,7 +64,7 @@ public class CdoActionListenerUnitTest {
         AtomicInteger cnt = new AtomicInteger(0);
         AtomicInteger changeCounter = new AtomicInteger(0);
 
-        CdoAnyEventActionDelegate f = event2 -> {
+        CdoAnyEventActionDelegate f = (event2, prop) -> {
             System.out.println("Event received: " + event2);
             cnt.incrementAndGet();
             changeCounter.incrementAndGet();
@@ -132,7 +132,7 @@ public class CdoActionListenerUnitTest {
 
         AtomicInteger cnt = new AtomicInteger(0);
 
-        CdoChangedObjectsActionDelegate actionDelegate1 = changedObjects -> {
+        CdoChangedObjectsActionDelegate actionDelegate1 = (changedObjects, props) -> {
             for (CDORevisionKey each : changedObjects) {
                 try {
                     CDORevisionHolder<Object> revisionById = template.getRevisionById(each.getID(), "junit/test/books");
@@ -190,7 +190,7 @@ public class CdoActionListenerUnitTest {
             registry.put(BookstoreDomainModelPackage.eNS_URI, BookstoreDomainModelPackage.eINSTANCE);
         }
 
-        final BookAnnotated bookRev = new BookAnnotated("A book title");
+        final BookAnnotated bookRev = new BookAnnotated("A book title3");
 
         CdoListenerFilter filter = CdoListenerFilter
                 .filter(
@@ -200,7 +200,7 @@ public class CdoActionListenerUnitTest {
 
         AtomicInteger cnt = new AtomicInteger(0);
 
-        CdoChangedObjectsActionDelegate actionDelegate1 = changedObjects -> {
+        CdoChangedObjectsActionDelegate actionDelegate1 = (changedObjects, props) -> {
             for (CDORevisionKey each : changedObjects) {
                 try {
                     CDORevisionHolder<Object> revisionById = template.getRevisionById(each.getID(), "junit/test/books");
@@ -260,6 +260,7 @@ public class CdoActionListenerUnitTest {
         System.out.println("Inserted=" + inserted + " with ID= " + CDOUtil.getCDOObject(inserted.getModel()).cdoID());
         assert inserted.getId() == CDOUtil.getCDOObject(inserted.getModel()).cdoID();
         Thread.sleep(2500);
+        System.out.println("Cnt: " + cnt.get());
 //        assert cnt.get() == 4;
     }
 }

@@ -6,6 +6,7 @@ import de.tudresden.inf.st.spring.data.cdo.core.listener.filter.CdoListenerFilte
 import de.tudresden.inf.st.spring.data.cdo.repository.CdoPersistentEntity;
 import de.tudresden.inf.st.spring.data.cdo.repository.CdoPersistentProperty;
 import org.eclipse.emf.cdo.common.model.CDOPackageRegistry;
+import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.net4j.util.event.IListener;
 import org.springframework.beans.factory.DisposableBean;

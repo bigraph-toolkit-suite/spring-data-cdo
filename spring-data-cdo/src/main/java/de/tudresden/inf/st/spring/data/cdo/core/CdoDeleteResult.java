@@ -38,6 +38,13 @@ public abstract class CdoDeleteResult {
         public long getDeletedCount() {
             return deletedCount;
         }
+
+        @Override
+        public String toString() {
+            return "AcknowledgedCdoDeleteResult{" +
+                    "deletedCount=" + deletedCount +
+                    '}';
+        }
     }
 
     public static class UnacknowledgedCdoDeleteResult extends CdoDeleteResult {
@@ -63,6 +70,13 @@ public abstract class CdoDeleteResult {
         @Override
         public long getDeletedCount() {
             return 0;
+        }
+
+        @Override
+        public String toString() {
+            return "UnacknowledgedCdoDeleteResult{" +
+                    "reason=" + reason.getMessage() +
+                    '}';
         }
     }
 }
