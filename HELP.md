@@ -23,7 +23,8 @@ Otherwise an exception is thrown ala
 - After fetching all Eclipse CDO dependencies, they shall be deployed to Artifactory
   - First, deploy the JARs inside the `spring-data-cdo-distribution/target/repository/plugins/` folder
     - via the UI, select "As Maven artifact"
-  - Second, replace the POM file of each artifact by the one in the local Maven repository under `~/.m2/` 
+  - Second, replace the POM file of each artifact in Artifactory by the one in the local Maven repository under `~/.m2/` 
+    - it might be necessary to modify the group id of the "installed pom file" in `~/.m2` -> this depends on where Artifactory places the first JAR
 
 ### Compatible Versions
 
