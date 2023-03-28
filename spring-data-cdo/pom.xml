@@ -130,7 +130,7 @@
             <version>${emf.cdo.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.eclipse.emf.cdo.common</groupId>
+            <groupId>org.eclipse.emf.cdo</groupId>
             <artifactId>org.eclipse.emf.cdo.common</artifactId>
             <version>${emf.cdo.common.version}</version>
         </dependency>

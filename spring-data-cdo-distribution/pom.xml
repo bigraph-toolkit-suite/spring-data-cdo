@@ -50,7 +50,7 @@
                                 </goals>
                                 <configuration>
                                     <p2>
-                                        <!-- We have to use the version of the plugin of the respective p2 repository-->
+                                        <!-- We have to use the version of the "plugins section" of the respective p2 repository -->
                                         <artifact>
                                             <id>org.eclipse.emf.cdo:4.20.0.v20221124-1637</id>
                                             <source>false</source>
@@ -107,14 +107,14 @@
                                             <id>org.eclipse.net4j.jvm:4.3.0.v20220505-0518</id>
                                             <source>false</source>
                                         </artifact>
-<!--                                        <artifact>-->
-<!--                                            <id>org.eclipse.net4j.http:4.1.1.v20200528-0542</id>-->
-<!--                                            <source>false</source>-->
-<!--                                        </artifact>-->
-<!--                                        <artifact>-->
-<!--                                            <id>org.eclipse.net4j.http.server:4.1.1.v20200528-0542</id>-->
-<!--                                            <source>false</source>-->
-<!--                                        </artifact>-->
+                                        <!--                                        <artifact>-->
+                                        <!--                                            <id>org.eclipse.net4j.http:4.1.1.v20200528-0542</id>-->
+                                        <!--                                            <source>false</source>-->
+                                        <!--                                        </artifact>-->
+                                        <!--                                        <artifact>-->
+                                        <!--                                            <id>org.eclipse.net4j.http.server:4.1.1.v20200528-0542</id>-->
+                                        <!--                                            <source>false</source>-->
+                                        <!--                                        </artifact>-->
                                     </p2>
                                 </configuration>
                             </execution>
@@ -141,40 +141,40 @@
                                     <generatePom>true</generatePom>
                                 </configuration>
                             </execution>
-<!--                            <execution>-->
-<!--                                <id>org.eclipse.net4j.http.server:4.1.1.v20200528-0542</id>-->
-<!--                                <phase>validate</phase>-->
-<!--                                <goals>-->
-<!--                                    <goal>install-file</goal>-->
-<!--                                </goals>-->
-<!--                                <configuration>-->
-<!--                                    <groupId>org.eclipse.net4j.http.server</groupId>-->
-<!--                                    <artifactId>org.eclipse.net4j.http.server</artifactId>-->
-<!--                                    <version>4.1.1.v20200528-0542</version>-->
-<!--                                    <packaging>jar</packaging>-->
-<!--                                    <file>-->
-<!--                                        ${basedir}/target/repository/plugins/org.eclipse.net4j.http.server_4.1.1.v20200528-0542.jar-->
-<!--                                    </file>-->
-<!--                                    <generatePom>true</generatePom>-->
-<!--                                </configuration>-->
-<!--                            </execution>-->
-<!--                            <execution>-->
-<!--                                <id>org.eclipse.net4j.http:4.1.1.v20200528-0542</id>-->
-<!--                                <phase>validate</phase>-->
-<!--                                <goals>-->
-<!--                                    <goal>install-file</goal>-->
-<!--                                </goals>-->
-<!--                                <configuration>-->
-<!--                                    <groupId>org.eclipse.net4j.http</groupId>-->
-<!--                                    <artifactId>org.eclipse.net4j.http</artifactId>-->
-<!--                                    <version>4.1.1.v20200528-0542</version>-->
-<!--                                    <packaging>jar</packaging>-->
-<!--                                    <file>-->
-<!--                                        ${basedir}/target/repository/plugins/org.eclipse.net4j.http_4.1.1.v20200528-0542.jar-->
-<!--                                    </file>-->
-<!--                                    <generatePom>true</generatePom>-->
-<!--                                </configuration>-->
-<!--                            </execution>-->
+                            <!--                            <execution>-->
+                            <!--                                <id>org.eclipse.net4j.http.server:4.1.1.v20200528-0542</id>-->
+                            <!--                                <phase>validate</phase>-->
+                            <!--                                <goals>-->
+                            <!--                                    <goal>install-file</goal>-->
+                            <!--                                </goals>-->
+                            <!--                                <configuration>-->
+                            <!--                                    <groupId>org.eclipse.net4j.http.server</groupId>-->
+                            <!--                                    <artifactId>org.eclipse.net4j.http.server</artifactId>-->
+                            <!--                                    <version>4.1.1.v20200528-0542</version>-->
+                            <!--                                    <packaging>jar</packaging>-->
+                            <!--                                    <file>-->
+                            <!--                                        ${basedir}/target/repository/plugins/org.eclipse.net4j.http.server_4.1.1.v20200528-0542.jar-->
+                            <!--                                    </file>-->
+                            <!--                                    <generatePom>true</generatePom>-->
+                            <!--                                </configuration>-->
+                            <!--                            </execution>-->
+                            <!--                            <execution>-->
+                            <!--                                <id>org.eclipse.net4j.http:4.1.1.v20200528-0542</id>-->
+                            <!--                                <phase>validate</phase>-->
+                            <!--                                <goals>-->
+                            <!--                                    <goal>install-file</goal>-->
+                            <!--                                </goals>-->
+                            <!--                                <configuration>-->
+                            <!--                                    <groupId>org.eclipse.net4j.http</groupId>-->
+                            <!--                                    <artifactId>org.eclipse.net4j.http</artifactId>-->
+                            <!--                                    <version>4.1.1.v20200528-0542</version>-->
+                            <!--                                    <packaging>jar</packaging>-->
+                            <!--                                    <file>-->
+                            <!--                                        ${basedir}/target/repository/plugins/org.eclipse.net4j.http_4.1.1.v20200528-0542.jar-->
+                            <!--                                    </file>-->
+                            <!--                                    <generatePom>true</generatePom>-->
+                            <!--                                </configuration>-->
+                            <!--                            </execution>-->
                             <execution>
                                 <id>org.eclipse.net4j.jvm:4.3.0.v20220505-0518</id>
                                 <phase>validate</phase>
@@ -335,7 +335,7 @@
                                     <goal>install-file</goal>
                                 </goals>
                                 <configuration>
-                                    <groupId>org.eclipse.emf.cdo.common</groupId>
+                                    <groupId>org.eclipse.emf.cdo</groupId>
                                     <artifactId>org.eclipse.emf.cdo.common</artifactId>
                                     <version>4.20.0.v20221106-0628</version>
                                     <packaging>jar</packaging>

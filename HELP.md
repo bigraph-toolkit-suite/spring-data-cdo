@@ -20,6 +20,11 @@ Otherwise an exception is thrown ala
 
 - Installation: Possible via the Eclipse Installer (Select Eclipse CDO Server in the list and select the correct product version, see below)
 
+- After fetching all Eclipse CDO dependencies, they shall be deployed to Artifactory
+  - First, deploy the JARs inside the `spring-data-cdo-distribution/target/repository/plugins/` folder
+    - via the UI, select "As Maven artifact"
+  - Second, replace the POM file of each artifact by the one in the local Maven repository under `~/.m2/` 
+
 ### Compatible Versions
 
 These versions of the Eclipse CDO Server and Maven Dependencies are working together:

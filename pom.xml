@@ -112,6 +112,26 @@
             <id>spring-libs-milestone</id>
             <url>https://repo.spring.io/libs-milestone</url>
         </pluginRepository>
+        <pluginRepository>
+            <id>eclipse-maven-releases</id>
+            <url>https://repo.eclipse.org/content/repositories/releases</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+            <id>eclipse-maven-snapshots</id>
+            <url>https://repo.eclipse.org/content/repositories/snapshots</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </pluginRepository>
     </pluginRepositories>
 
     <distributionManagement>
