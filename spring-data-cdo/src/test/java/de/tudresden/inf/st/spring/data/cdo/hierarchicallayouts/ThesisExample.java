@@ -95,7 +95,7 @@ public class ThesisExample {
 
 
         BigraphFileModelManagement.Store.exportAsInstanceModel(bigraph, System.out);
-        registerPackages(bigraph.getModelPackage().getNsURI(), bigraph.getModelPackage(), template);
+        registerPackages(bigraph.getMetaModel().getNsURI(), bigraph.getMetaModel(), template);
 
         // Decompose bigraph
         PureBigraph p1 = pureBuilder(sig).createRoot().addChild("Basket", "x").down().addSite().createBigraph();
@@ -122,10 +122,10 @@ public class ThesisExample {
 
         template.createResourceFolder("/parent1/children");
         template.createResourceFolder("/parent2/children");
-        EObject inserted_p1 = template.insert(p1.getModel(), "/parent1");//TODO getInstanceModel:BigraphExt
-        EObject inserted_p2 = template.insert(p2.getModel(), "/parent2");
-        template.insertAll(children_p1.stream().map(x -> x.getModel()).collect(Collectors.toList()), "/parent1/children");
-        template.insertAll(children_p2.stream().map(x -> x.getModel()).collect(Collectors.toList()), "/parent2/children");
+        EObject inserted_p1 = template.insert(p1.getInstanceModel(), "/parent1");//TODO getInstanceModel:BigraphExt
+        EObject inserted_p2 = template.insert(p2.getInstanceModel(), "/parent2");
+        template.insertAll(children_p1.stream().map(x -> x.getInstanceModel()).collect(Collectors.toList()), "/parent1/children");
+        template.insertAll(children_p2.stream().map(x -> x.getInstanceModel()).collect(Collectors.toList()), "/parent2/children");
 
 //        template.insert(b11.getModel(), "/parent1/children");
 //        template.insert(b12.getModel(), "/parent1/children");
