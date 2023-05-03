@@ -22,12 +22,14 @@ import org.eclipse.emf.cdo.common.model.CDOPackageRegistry;
 import org.eclipse.emf.cdo.common.revision.CDORevision;
 import org.eclipse.emf.cdo.common.revision.CDORevisionUtil;
 import org.eclipse.emf.cdo.common.revision.delta.CDORevisionDelta;
+import org.eclipse.emf.cdo.common.util.CDOClassNotFoundException;
 import org.eclipse.emf.cdo.common.util.CDODuplicateResourceException;
 import org.eclipse.emf.cdo.common.util.CDOException;
 import org.eclipse.emf.cdo.common.util.CDOResourceNodeNotFoundException;
 import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.eresource.CDOResourceFolder;
 import org.eclipse.emf.cdo.eresource.CDOResourceNode;
+import org.eclipse.emf.cdo.eresource.impl.CDOResourceImpl;
 import org.eclipse.emf.cdo.session.CDOSession;
 import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevision;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
@@ -872,24 +874,24 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
                         }
                     }
                 } catch (CDOResourceNodeNotFoundException | ClassCastException e) {
-//                    if (resource == null) {
                     try {
                         resource = transaction.getResource(repoResourcePath, true);
                     } catch (InvalidURIException | CDOResourceNodeNotFoundException e2) {
                         resource = transaction.createResource(repoResourcePath);
                     }
-//                    }
                 }
 
-//                resource.getResourceSet().getPackageRegistry().put(null, internalValue);
-//                System.out.println("resource.cdoRevision().getID(): " + resource.cdoRevision().getID());
-                //TODO: resource.getFolder() != null -> getNodes().add(...)
+                if (resource != null) {
+                    if (resource.getResourceSet().getPackageRegistry().size() == 0) {
+                        resource.getResourceSet().getPackageRegistry().put(
+                                internalValue.eClass().getEPackage().getNsURI(),
+                                internalValue.eClass().getEPackage()
+                        );
+                    }
+                    resource.getContents().add(internalValue);
+                    commit = transaction.commit();
+                }
 
-//                else {
-                resource.getContents().add(internalValue);
-//                }
-
-                commit = transaction.commit();
 
                 // only for non-explicit CDOObjects or LegacyCDOObjects: set the CDOID manually for the custom class' ID attribute
                 if (!persistentEntity.isNativeCdoOrLegacyMode()) {
@@ -1071,7 +1073,7 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
                     }
                 } catch (CDOResourceNodeNotFoundException | InvalidURIException | ClassCastException e) {
                     try {
-                        resource = cdoTransaction.getResource(resourcePath, true);
+                        resource = cdoTransaction.getResource(resourcePath, true); // load on-demand
                     } catch (InvalidURIException | CDOResourceNodeNotFoundException e2) {
                         if (LOGGER.isDebugEnabled()) {
                             LOGGER.debug(e2.getMessage(), e);
@@ -1082,7 +1084,11 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
 
                 // Do cleaning for non-resourceFolders, e.g., ResourceNodes
                 if (!cleaned && resource != null) {
-                    resource.getContents().clear();
+                    try {
+                        resource.getContents().clear();
+                    } catch (IllegalStateException | StackOverflowError | CDOClassNotFoundException e) {
+                        resource.getResourceSet().getResources().remove(resource); // ((CDOResourceImpl) resource).removeFromResourceSet();
+                    }
                 }
 
                 CDOCommitInfo commit = cdoTransaction.commit();
