@@ -7,6 +7,8 @@ import org.eclipse.emf.cdo.server.IRepository;
 import org.eclipse.net4j.util.lifecycle.LifecycleException;
 import org.springframework.beans.factory.DisposableBean;
 
+import java.util.Optional;
+
 /**
  * Factory to create {@link IRepository} instances from a {@link CdoClient} instance.
  *
@@ -42,9 +44,17 @@ public class SimpleCdoDbFactory extends CdoDbFactorySupport<CdoClient> implement
         return getCdoClient().getRepository(getRepositoryName());
     }
 
+    Optional<CdoClientSession> instance = Optional.empty();
+
     public CdoClientSession getSession(CdoClientSessionOptions options) throws LifecycleException {
-        return getCdoClient().startSession(options);
+        //TODO use a session manager
+//        return getCdoClient().startSession(options);
+        if (instance.isEmpty()) {
+            instance = Optional.of(getCdoClient().startSession(options));
+        }
+        return instance.get();
     }
+
 
     @Override
     protected void closeClient() {
