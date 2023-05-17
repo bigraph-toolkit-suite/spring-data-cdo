@@ -141,6 +141,8 @@ public interface CdoOperations extends DisposableBean {
      * @param <ID>
      */
     @Nullable
+    <T, ID> T find(ID entityID, Class<T> javaClassType, final String resourcePath, boolean readOnly);
+    @Nullable
     <T, ID> T find(ID entityID, Class<T> javaClassType, final String resourcePath);
 
     <T> List<T> findAll(Class<T> javaClassType, final String resourcePath);

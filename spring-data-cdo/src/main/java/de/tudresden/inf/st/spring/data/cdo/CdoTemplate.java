@@ -29,7 +29,6 @@ import org.eclipse.emf.cdo.common.util.CDOResourceNodeNotFoundException;
 import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.eresource.CDOResourceFolder;
 import org.eclipse.emf.cdo.eresource.CDOResourceNode;
-import org.eclipse.emf.cdo.eresource.impl.CDOResourceImpl;
 import org.eclipse.emf.cdo.session.CDOSession;
 import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevision;
 import org.eclipse.emf.cdo.transaction.CDOTransaction;
@@ -415,9 +414,13 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
         return trans;
     }
 
+    public <T, ID> T find(final ID entityID, Class<T> javaClassType, final String resourcePath) {
+        return this.find(entityID, javaClassType, resourcePath, true);
+    }
+
     @Nullable
     @Override
-    public <T, ID> T find(final ID entityID, Class<T> javaClassType, final String resourcePath) {
+    public <T, ID> T find(final ID entityID, Class<T> javaClassType, final String resourcePath, boolean readOnly) {
         Assert.notNull(entityID, "ID of Entity meach.getID()ust not be null!");
         //TODO allow also string-typed ids and convert here accordingly
         ensureIDisCDOID(entityID);
@@ -433,8 +436,13 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
             CDOView cdoView = null;
             EObject object;
             try {
-                cdoView = session.getCdoSession().openView();
-                object = cdoView.getObject(cdoid);
+                if (readOnly) {
+                    cdoView = session.getCdoSession().openView();
+                    object = cdoView.getObject(cdoid);
+                } else {
+                    CDOTransaction cdoTransaction = openTransaction(session);
+                    object = cdoTransaction.getObject(cdoid);
+                }
                 if (Objects.isNull(object))
                     throw new DataNotFoundException("Data couldn't be retrieved with id=" + cdoid);
                 if (explicitCDOObject) {
