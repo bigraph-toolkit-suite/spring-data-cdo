@@ -2,41 +2,48 @@
 
 image::./src/main/asciidoc/images/spring-cdo-logo-white-background.png[width=50%,scalewidth=6cm]
 
-*inofficial release*
+*Current version:* 0.6.0-SNAPSHOT
 
-*Current version:* 0.5.0-SNAPSHOT
+*Supports CDO protocol version 48*
 
-Works with Eclipse IDE: Eclipse DSL Tools (includes Incubating components), Version: 2020-12 (4.18.0), Build id: 20201210-1552
-(for example, to inspect CDO Repositories inside the Eclipse IDE)
+----
 
 The primary goal of the https://projects.spring.io/spring-data[Spring Data] project is to make it easier to build Spring-powered applications that use new data access technologies such as non-relational databases, map-reduce frameworks, and cloud based data services.
 
 This module provides infrastructure components to build repository abstractions for stores dealing with the
-https://www.eclipse.org/cdo/[*Connected Data Objects (CDO) model repository*].
+https://www.eclipse.org/cdo/[*Connected Data Objects (CDO) model repository*] of Eclipse.
 
 == Getting Started
 
-The standard use case is to store and read native `CDOObjects` and `EObjects`.
-To be clear, the framework doesn't perform a transformation of standard Java POJOs to Ecore representatives.
-That would imply the generation of dynamic EMF models.
-Only native CDO objects or standard EObjects (and in legacy mode) are supported.
+The standard use case of this framework is to store and read native `CDOObject`s and standard `EObject`s.
+To be clear, the framework does not perform a transformation of standard Java POJOs to their Ecore representatives.
+Only Java objects of class type `CDOObject` or `EObject` (and in legacy mode) are supported.
 Legacy mode: Models that are not converted for CDO support.
 See also https://wiki.eclipse.org/CDO/Preparing_EMF_Models[Preparing EMF Models]
 
-Domain models should be defined using Eclipse EMF as usual.
-Then, domain classes can be created automatically.
-They can be used afterwards with *Spring Data CDO*.
+Your domain models should be defined using the Eclipse EMF Ecore metamodel as usual, or dynamically at runtime.
+Eclipse EMF support the generation of domain classes from Ecore models.
+They can also be used afterwards with *Spring Data CDO*.
+
+=== Working with Eclipse IDEs
+
+This framework provides a feature to start a standalone CDO server.
+To inspect the contents, use the Eclipse CDO Explorer to view and modify Ecore models:
+  - 1) Download CDO Explorer via the link:https://www.eclipse.org/downloads/packages/installer[Eclipse Installer]
+  Version `cdo-master-latest-release-2023-01` supporting CDO protocol version 48.
+  Eclipse IDE version 2023-09 supports only CDO protocol version 49.
+  - 2) Any Eclipse IDE with CDO support, must support **CDO protocol version 48**
 
 === Getting Started: Maven configuration
 
-Add the Maven dependency:
+Just add the following Maven dependency to your project's `pom.xml`:
 
 [source,xml]
 ----
 <dependency>
   <groupId>org.springframework.data</groupId>
   <artifactId>spring-data-cdo</artifactId>
-  <version>0.5.0-SNAPSHOT</version>
+  <version>0.6.0-SNAPSHOT</version>
 </dependency>
 
 <!-- Required for the CDO standalone server -->
@@ -47,7 +54,9 @@ Add the Maven dependency:
 </dependency>
 ----
 
-And include the required repository:
+==== SNAPSHOT Releases
+
+For SNAPSHOT releases also include the following repository:
 
 [source,xml]
 ----
@@ -56,24 +65,23 @@ And include the required repository:
         <snapshots>
             <enabled>true</enabled>
         </snapshots>
-        <id>STFactory</id>
-        <name>st-tu-dresden-artifactory</name>
-        <url>https://stgroup.jfrog.io/artifactory/st-tu-dresden-maven-repository/</url>
+        <id>ossrh</id>
+        <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
     </repository>
 </repositories>
 ----
 
 === Example
 
-The following examples show some possible configurations and usage scenarios.
+The following examples show some possible configuration and usage scenarios.
 
 ==== Domain classes
 
-The framework works with native EMF models:
+The framework can handle native EMF models:
 
 [source,java]
 ----
-// any auto-generated EMF model or native CDO model
+// any auto-generated object of an EMF model or native CDO model
 interface Person extends EObject {}
 interface Person extends CDOObject {}
 ----
@@ -150,18 +158,24 @@ Events are implemented for Delete, Save and Insert operations, including "after"
 
 == Building from Source
 
-You don’t need to build from source to use Spring Data (binaries in https://repo.spring.io[repo.spring.io]), but if you want to try out the latest and greatest, Spring Data can be easily built with the https://github.com/takari/maven-wrapper[maven wrapper].
-You also need JDK 1.8.
+You do not need to build from source to use Spring Data for CDO (dependencies are deployed to the https://repo.spring.io[Central Repository]).
+But if you want to try out the latest and greatest, Spring Data for CDO can be easily built with the regular `mvn` command,
+or by using the https://github.com/takari/maven-wrapper[maven wrapper].
+If you want to build with the regular `mvn` command, you will need https://maven.apache.org/download.cgi[Maven v3.8.3 or above].
 
-[source,bash]
+You also need JDK 17.
+
+To build Spring Data for CDO, execute the following commands in the terminal:
+
+[source,shell]
 ----
 # get all needed Eclipse dependencies first (need only to be executed once)
-$ ./mvnw clean validate -f ./spring-data-cdo-distribution/pom.xml -PfetchEclipseDependencies
+./mvnw clean validate -f ./spring-data-cdo-distribution/pom.xml -PfetchEclipseDependencies
 # package and install the actual 'spring-data-cdo' dependency
-$ ./mvnw clean install -DskipTests
+./mvnw clean install -DskipTests
 ----
 
-If you want to build with the regular `mvn` command, you will need https://maven.apache.org/run-maven/index.html[Maven v3.5.0 or above].
+The dependencies are deployed to your local Maven repository usually located at `~/.m2/`.
 
 === Building reference documentation
 
@@ -178,9 +192,11 @@ For more information see link:https://github.com/spring-projects/spring-data-bui
 
 === Deploy
 
-[source,bash]
+The Java artifacts are deployed to the Central Repository:
+
+[source,shell]
 ----
- $ mvn clean deploy -DskipTests -pl '!spring-data-cdo-distribution' -Pdeploy -Dusername=dominik.grzelak@tu-dresden.de -Dpassword=HASHED-PASSWORD
+mvn clean deploy -DskipTests -pl '!spring-data-cdo-distribution' -P release
 ----
 
 == Code of Conduct

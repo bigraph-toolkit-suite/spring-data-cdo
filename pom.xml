@@ -10,14 +10,22 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
 
-    <groupId>org.springframework.data</groupId>
+    <groupId>org.bigraphs.springframework.data</groupId>
     <artifactId>spring-data-cdo-parent</artifactId>
-    <version>0.5.0-SNAPSHOT</version>
+    <version>0.6.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
-    <name>Spring Data CDO</name>
+    <name>Spring Data for CDO</name>
     <description>Eclipse CDO support for Spring Data</description>
-    <url>https://git-st.inf.tu-dresden.de/bigraphs/spring-data-cdo</url>
+    <url>https://github.com/bigraph-toolkit-suite/spring-data-cdo</url>
+
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <comments>Applies to Spring Data for CDO</comments>
+        </license>
+    </licenses>
 
     <modules>
         <module>spring-data-cdo</module>
@@ -26,8 +34,8 @@
 
     <properties>
         <project.type>multi</project.type>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>11</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <dist.id>spring-data-cdo</dist.id>
@@ -62,12 +70,23 @@
     </developers>
 
     <scm>
-        <connection>scm:git:https://git-st.inf.tu-dresden.de/bigraphs/spring-data-cdo.git</connection>
-        <developerConnection>scm:git@git-st.inf.tu-dresden.de:bigraphs/spring-data-cdo.git
+        <connection>scm:git:https://github.com/bigraph-toolkit-suite/spring-data-cdo.git</connection>
+        <developerConnection>scm:git@github.com:bigraph-toolkit-suite/spring-data-cdo.git
         </developerConnection>
-        <url>https://git-st.inf.tu-dresden.de/bigraphs/spring-data-cdo</url>
+        <url>https://github.com/bigraph-toolkit-suite/spring-data-cdo</url>
         <tag>HEAD</tag>
     </scm>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
 
     <repositories>
         <repository>
@@ -93,14 +112,14 @@
             <id>Eclipse-Maven-Repository</id>
             <url>https://repo.eclipse.org/content/groups/releases/</url>
         </repository>
-        <repository>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <id>STFactory</id>
-            <name>st-tu-dresden-artifactory</name>
-            <url>https://stgroup.jfrog.io/artifactory/st-tu-dresden-maven-repository/</url>
-        </repository>
+<!--        <repository>-->
+<!--            <snapshots>-->
+<!--                <enabled>true</enabled>-->
+<!--            </snapshots>-->
+<!--            <id>STFactory</id>-->
+<!--            <name>st-tu-dresden-artifactory</name>-->
+<!--            <url>https://stgroup.jfrog.io/artifactory/st-tu-dresden-maven-repository/</url>-->
+<!--        </repository>-->
     </repositories>
 
     <pluginRepositories>
@@ -134,19 +153,6 @@
         </pluginRepository>
     </pluginRepositories>
 
-    <distributionManagement>
-        <repository>
-            <id>central</id>
-            <name>STFactory-releases</name>
-            <url>https://stgroup.jfrog.io/artifactory/st-tu-dresden-maven-repository</url>
-        </repository>
-        <snapshotRepository>
-            <id>snapshots</id>
-            <name>STFactory-snapshots</name>
-            <url>https://stgroup.jfrog.io/artifactory/st-tu-dresden-maven-repository</url>
-        </snapshotRepository>
-    </distributionManagement>
-
     <build>
         <pluginManagement>
             <plugins>
@@ -157,7 +163,77 @@
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>3.3.0</version>
+                    <executions>
+                        <execution>
+                            <id>attach-sources</id>
+                            <goals>
+                                <goal>jar-no-fork</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>3.2.0</version>
+                    <executions>
+                        <execution>
+                            <id>attach-javadocs</id>
+                            <goals>
+                                <goal>jar</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.11.0</version>
+                    <configuration>
+                        <source>${java.version}</source>
+                        <target>${java.version}</target>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>3.3.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-install-plugin</artifactId>
+                    <version>3.1.1</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-gpg-plugin</artifactId>
+                    <version>3.1.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <version>3.1.1</version>
+                    <configuration>
+                        <!-- disable the default existing mapping -->
+                        <skip>true</skip>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.sonatype.plugins</groupId>
+                    <artifactId>nexus-staging-maven-plugin</artifactId>
+                    <version>1.6.13</version>
+                    <extensions>true</extensions>
+                    <configuration>
+                        <serverId>ossrh</serverId>
+                        <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
+                        <!-- With the property autoReleaseAfterClose set to false you can manually inspect the staging
+                        repository in the Nexus Repository Manager and trigger a release of the staging repository
+                        later with mvn nexus-staging:release If you find something went wrong you can drop the staging
+                        repository with mvn nexus-staging:drop -->
+                        <autoReleaseAfterClose>false</autoReleaseAfterClose>
+                    </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.reficio</groupId>
@@ -167,21 +243,13 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-assembly-plugin</artifactId>
+                    <version>3.6.0</version>
                 </plugin>
-                <plugin>
-                    <groupId>org.jfrog.buildinfo</groupId>
-                    <artifactId>artifactory-maven-plugin</artifactId>
-                    <version>3.2.3</version>
-                </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-deploy-plugin</artifactId>
-                    <version>2.8.2</version>
-                    <configuration>
-                        <!-- disable the default existing mapping -->
-                        <skip>true</skip>
-                    </configuration>
-                </plugin>
+                <!--                <plugin>-->
+                <!--                    <groupId>org.jfrog.buildinfo</groupId>-->
+                <!--                    <artifactId>artifactory-maven-plugin</artifactId>-->
+                <!--                    <version>3.2.3</version>-->
+                <!--                </plugin>-->
                 <plugin>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-maven-plugin</artifactId>
@@ -190,14 +258,17 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
+                    <version>3.1.2</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-site-plugin</artifactId>
+                    <version>3.12.1</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-report-plugin</artifactId>
+                    <version>3.0.0-M5</version>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -211,65 +282,4 @@
             </plugin>
         </plugins>
     </reporting>
-
-    <profiles>
-        <!-- ****************** -->
-        <!-- Deployment Profile -->
-        <!-- ****************** -->
-        <profile>
-            <id>deploy</id>
-            <modules>
-                <module>spring-data-cdo</module>
-            </modules>
-            <build>
-                <plugins>
-                    <plugin>
-                        <!-- see for help: -->
-                        <!-- https://www.jfrog.com/confluence/display/JFROG/Maven+Artifactory+Plugin -->
-                        <groupId>org.jfrog.buildinfo</groupId>
-                        <artifactId>artifactory-maven-plugin</artifactId>
-                        <inherited>false</inherited>
-                        <executions>
-                            <execution>
-                                <id>build-info</id>
-                                <goals>
-                                    <goal>publish</goal>
-                                </goals>
-                                <configuration>
-                                    <deployProperties>
-                                        <gradle>awesome</gradle>
-                                        <review.team>qa</review.team>
-                                        <groupId>${project.groupId}</groupId>
-                                        <artifactId>${project.artifactId}</artifactId>
-                                        <version>${project.version}</version>
-                                    </deployProperties>
-                                    <artifactory>
-                                        <includeEnvVars>false</includeEnvVars>
-                                        <envVarsExcludePatterns>*password*,*secret*,*key*,*token*,*passphrase*
-                                        </envVarsExcludePatterns>
-                                        <timeoutSec>60</timeoutSec>
-                                    </artifactory>
-                                    <publisher>
-                                        <contextUrl>https://stgroup.jfrog.io/artifactory/</contextUrl>
-                                        <!--suppress UnresolvedMavenProperty -->
-                                        <username>${username}</username>
-                                        <!--suppress UnresolvedMavenProperty -->
-                                        <password>${password}</password>
-                                        <!--                                        <excludePatterns>*-tests.jar,*cdo-distribution*-->
-                                        <!--                                        </excludePatterns>-->
-                                        <!-- Name of local repository in Artifactory @ stgroup.jfrog.io/ -->
-                                        <repoKey>st-tu-dresden-maven-repository</repoKey>
-                                        <snapshotRepoKey>st-tu-dresden-maven-repository</snapshotRepoKey>
-                                    </publisher>
-                                    <buildInfo>
-                                        <buildName>spring-data-cdo-builds</buildName>
-                                    </buildInfo>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 </project>

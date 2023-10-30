@@ -14,8 +14,8 @@ For further reference, please consider the following sections:
 
 - provides means to store/load bigraphical models to/from a CDO server
 
-Hint: net4j version of CDO Server must match with the maven dependency.
-Otherwise an exception is thrown ala 
+Hint: net4j version of the CDO Server itself must match with the Maven dependency used in this project.
+Otherwise an exception is thrown similar to: 
 `org.eclipse.net4j.channel.ChannelException: Failed to register channel with peer: Protocol version 37 does not match expected version 34`
 
 - Installation: Possible via the Eclipse Installer (Select Eclipse CDO Server in the list and select the correct product version, see below)
