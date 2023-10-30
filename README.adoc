@@ -42,7 +42,7 @@ Just add the following Maven dependency to your project's `pom.xml`:
 [source,xml]
 ----
 <dependency>
-  <groupId>org.springframework.data</groupId>
+  <groupId>org.bigraphs.springframework.data</groupId>
   <artifactId>spring-data-cdo</artifactId>
   <version>0.6.0-SNAPSHOT</version>
 </dependency>
