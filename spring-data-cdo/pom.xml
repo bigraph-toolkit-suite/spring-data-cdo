@@ -113,24 +113,24 @@
             <groupId>org.eclipse.emf</groupId>
             <artifactId>org.eclipse.emf.codegen</artifactId>
             <version>${emf.codegen.version}</version>
-<!--            <exclusions>-->
-<!--                <exclusion>-->
-<!--                    <groupId>org.slf4j</groupId>-->
-<!--                    <artifactId>slf4j-log4j12</artifactId>-->
-<!--                </exclusion>-->
-<!--                <exclusion>-->
-<!--                    <artifactId>logback-classic</artifactId>-->
-<!--                    <groupId>ch.qos.logback</groupId>-->
-<!--                </exclusion>-->
-<!--                <exclusion>-->
-<!--                    <groupId>org.springframework.boot</groupId>-->
-<!--                    <artifactId>spring-boot-starter-logging</artifactId>-->
-<!--                </exclusion>-->
-<!--                <exclusion>-->
-<!--                    <groupId>log4j</groupId>-->
-<!--                    <artifactId>log4j</artifactId>-->
-<!--                </exclusion>-->
-<!--            </exclusions>-->
+            <!--            <exclusions>-->
+            <!--                <exclusion>-->
+            <!--                    <groupId>org.slf4j</groupId>-->
+            <!--                    <artifactId>slf4j-log4j12</artifactId>-->
+            <!--                </exclusion>-->
+            <!--                <exclusion>-->
+            <!--                    <artifactId>logback-classic</artifactId>-->
+            <!--                    <groupId>ch.qos.logback</groupId>-->
+            <!--                </exclusion>-->
+            <!--                <exclusion>-->
+            <!--                    <groupId>org.springframework.boot</groupId>-->
+            <!--                    <artifactId>spring-boot-starter-logging</artifactId>-->
+            <!--                </exclusion>-->
+            <!--                <exclusion>-->
+            <!--                    <groupId>log4j</groupId>-->
+            <!--                    <artifactId>log4j</artifactId>-->
+            <!--                </exclusion>-->
+            <!--            </exclusions>-->
         </dependency>
         <dependency>
             <groupId>org.eclipse.ocl</groupId>
@@ -142,11 +142,11 @@
             <artifactId>org.eclipse.ocl.ecore</artifactId>
             <version>3.3.100.v20140610-0641</version>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.eclipse.acceleo</groupId>-->
-<!--            <artifactId>org.eclipse.ocl.common</artifactId>-->
-<!--            <version>1.2.0.v20140610-0641</version>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.eclipse.acceleo</groupId>-->
+        <!--            <artifactId>org.eclipse.ocl.common</artifactId>-->
+        <!--            <version>1.2.0.v20140610-0641</version>-->
+        <!--        </dependency>-->
         <dependency>
             <groupId>org.eclipse.ocl</groupId>
             <artifactId>org.eclipse.ocl.common</artifactId>
@@ -402,17 +402,6 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
-                    <includeSystemScope>true</includeSystemScope>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
             </plugin>
             <plugin>
@@ -427,9 +416,45 @@
                 <groupId>org.sonatype.plugins</groupId>
                 <artifactId>nexus-staging-maven-plugin</artifactId>
             </plugin>
-            <!-- TODO : SHADE PLUGIN -->
+            <!-- Shade P2 Eclipse Dependencies -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>shade-p2-eclipse-plugins</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <!-- <minimizeJar>true</minimizeJar> -->
+                            <createDependencyReducedPom>true</createDependencyReducedPom>
+                            <artifactSet>
+                                <includes>
+                                    <include>org.eclipse.emf.cdo:*</include>
+                                </includes>
+                            </artifactSet>
+                            <filters>
+                                <filter>
+                                    <artifact>org.eclipse.emf.cdo:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                        <exclude>.options</exclude>
+                                        <exclude>about.*</exclude>
+                                        <exclude>*.png</exclude>
+<!--                                        <exclude>plugin.properties</exclude>-->
+<!--                                        <exclude>plugin.xml</exclude>-->
+                                    </excludes>
+                                </filter>
+                            </filters>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
-
     </build>
 
     <profiles>

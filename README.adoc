@@ -186,7 +186,7 @@ You do not need to build from source to use Spring Data for CDO.
 The dependencies are deployed to the https://repo.spring.io[Central Repository].
 
 But if you want to try out the latest and greatest, Spring Data for CDO can be easily built with the regular `mvn` command,
-or by using the https://github.com/takari/maven-wrapper[maven wrapper].
+or by using the https://github.com/apache/maven-wrapper[maven wrapper].
 If you want to build with the regular `mvn` command, you will need https://maven.apache.org/download.cgi[Maven v3.8.3 or above].
 
 You also need JDK 17.
@@ -197,10 +197,10 @@ To build Spring Data for CDO, execute the following commands in the terminal fro
 [source,shell]
 ----
 # 1) Get all required Eclipse dependencies first. This step needs to be run only once:
-./mvnw clean validate -f ./spring-data-cdo-distribution/pom.xml -PfetchEclipseDependencies
+mvn clean validate -f ./spring-data-cdo-distribution/pom.xml -PfetchEclipseDependencies
 
 # 2) Package and install the 'spring-data-cdo' module containing the framework
-./mvnw clean install -DskipTests
+mvn clean install -DskipTests
 ----
 
 The dependencies are deployed to your local Maven repository usually located at `~/.m2/`.
@@ -211,7 +211,7 @@ Building the documentation builds also the project without running tests:
 
 [source,bash]
 ----
- $ ./mvnw clean install -DskipTests -Pdistribute
+mvn clean install -DskipTests -Pdistribute
 ----
 
 The generated documentation is available from `target/site/reference/html/index.html`.
