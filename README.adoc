@@ -6,8 +6,6 @@ image::./src/main/asciidoc/images/spring-cdo-logo-white-background.png[width=50%
 
 *Supports CDO protocol version 48*
 
-----
-
 The primary goal of the https://projects.spring.io/spring-data[Spring Data] project is to make it easier to build Spring-powered applications that use new data access technologies such as non-relational databases, map-reduce frameworks, and cloud based data services.
 
 This module provides infrastructure components to build repository abstractions for stores dealing with the
@@ -15,26 +13,29 @@ https://www.eclipse.org/cdo/[*Connected Data Objects (CDO) model repository*] of
 
 == Getting Started
 
-The standard use case of this framework is to store and read native `CDOObject`s and standard `EObject`s.
+The standard use case of this framework is to store and read native `CDOObject` and standard `EObject`.
 To be clear, the framework does not perform a transformation of standard Java POJOs to their Ecore representatives.
 Only Java objects of class type `CDOObject` or `EObject` (and in legacy mode) are supported.
 Legacy mode: Models that are not converted for CDO support.
 See also https://wiki.eclipse.org/CDO/Preparing_EMF_Models[Preparing EMF Models]
 
 Your domain models should be defined using the Eclipse EMF Ecore metamodel as usual, or dynamically at runtime.
-Eclipse EMF support the generation of domain classes from Ecore models.
+Eclipse EMF also supports the generation of an API from Ecore models.
 They can also be used afterwards with *Spring Data CDO*.
 
 === Working with Eclipse IDEs
 
 This framework provides a feature to start a standalone CDO server.
 To inspect the contents, use the Eclipse CDO Explorer to view and modify Ecore models:
-  - 1) Download CDO Explorer via the link:https://www.eclipse.org/downloads/packages/installer[Eclipse Installer]
-  Version `cdo-master-latest-release-2023-01` supporting CDO protocol version 48.
-  Eclipse IDE version 2023-09 supports only CDO protocol version 49.
-  - 2) Any Eclipse IDE with CDO support, must support **CDO protocol version 48**
 
-=== Getting Started: Maven configuration
+* 1) Download CDO Explorer via the link:https://www.eclipse.org/downloads/packages/installer[Eclipse Installer].
+  Use Eclipse Version 2022-12 (4.26.0), which supports CDO protocol version **48**.
+  Eclipse IDE version 2023-09 supports only CDO protocol version 49.
+* 2) Use any other Eclipse IDE with CDO support, must support CDO protocol version **48**.
+
+=== Getting Started
+
+==== Maven configuration
 
 Just add the following Maven dependency to your project's `pom.xml`:
 
@@ -71,7 +72,7 @@ For SNAPSHOT releases also include the following repository:
 </repositories>
 ----
 
-=== Example
+=== Usage Examples
 
 The following examples show some possible configuration and usage scenarios.
 
@@ -106,6 +107,10 @@ class PersonWrapper {
 They effectively work like a wrapper for internal members, which are of class `EObject` or `CDOObject`.
 Additionally, an ID must be specified of type `CDOID` using the `@Id` annotation feature of Spring.
 
+==== Configuration
+
+Enable....
+
 ==== Repository Definition
 
 [source,java]
@@ -115,7 +120,7 @@ public interface PersonRepository extends CdoRepository<PersonWrapper, CDOID> {
 }
 ----
 
-==== Some Remarks
+==== Ecore Package Initialization: Local and Remote
 
 With regard to EMF-related programming, the respective `EPackage` must be registered in the global package registry first (see https://download.eclipse.org/modeling/emf/emf/javadoc/2.9.0/[EPackage.Registry]).
 The registry provides a mapping from namespace URIs to `EPackage` instances.
@@ -158,28 +163,32 @@ Events are implemented for Delete, Save and Insert operations, including "after"
 
 == Building from Source
 
-You do not need to build from source to use Spring Data for CDO (dependencies are deployed to the https://repo.spring.io[Central Repository]).
+You do not need to build from source to use Spring Data for CDO.
+The dependencies are deployed to the https://repo.spring.io[Central Repository].
+
 But if you want to try out the latest and greatest, Spring Data for CDO can be easily built with the regular `mvn` command,
 or by using the https://github.com/takari/maven-wrapper[maven wrapper].
 If you want to build with the regular `mvn` command, you will need https://maven.apache.org/download.cgi[Maven v3.8.3 or above].
 
 You also need JDK 17.
+Check that the `JAVA_HOME` environment variable is pointing to the correct JDK.
 
-To build Spring Data for CDO, execute the following commands in the terminal:
+To build Spring Data for CDO, execute the following commands in the terminal from the root of this project:
 
 [source,shell]
 ----
-# get all needed Eclipse dependencies first (need only to be executed once)
+# 1) Get all required Eclipse dependencies first. This step needs to be run only once:
 ./mvnw clean validate -f ./spring-data-cdo-distribution/pom.xml -PfetchEclipseDependencies
-# package and install the actual 'spring-data-cdo' dependency
+
+# 2) Package and install the 'spring-data-cdo' module containing the framework
 ./mvnw clean install -DskipTests
 ----
 
 The dependencies are deployed to your local Maven repository usually located at `~/.m2/`.
 
-=== Building reference documentation
+=== Building the Reference Documentation
 
-Building the documentation builds also the project without running tests.
+Building the documentation builds also the project without running tests:
 
 [source,bash]
 ----
@@ -192,6 +201,8 @@ For more information see link:https://github.com/spring-projects/spring-data-bui
 
 === Deploy
 
+**Release Deployment**
+
 The Java artifacts are deployed to the Central Repository:
 
 [source,shell]
@@ -199,8 +210,55 @@ The Java artifacts are deployed to the Central Repository:
 mvn clean deploy -DskipTests -pl '!spring-data-cdo-distribution' -P release
 ----
 
+The staged artifacts have to be released manually.
+
+**Snapshot Deployment**
+
+Execute the following goals to deploy a SNAPSHOT release of this framework to the snapshot repository:
+
+```shell
+# Use the default settings.xml located at ~/.m2/
+# mvn clean deploy -P ossrh
+mvn clean deploy
+```
+
+**Settings**
+
+The Sonatype account details (username + password) for the deployment must be provided to the
+Maven Sonatype Plugin as used in the project's `pom.xml` file.
+
+The Maven GPG plugin is used to sign the components for the deployment.
+It relies on the gpg command being installed:
+```shell
+sudo apt install gnupg2
+```
+
+and the GPG credentials being available e.g. from `settings.xml`.
+
+More details can be found link:https://central.sonatype.org/publish/requirements/gpg/[here].
+
 == Code of Conduct
 
 This project is governed by the link:CODE_OF_CONDUCT.adoc[Spring Code of Conduct].
 By participating, you are expected to uphold this code of conduct.
 Please report unacceptable behavior to dominik.grzelak@tu-dresden.de.
+
+== License
+
+This library is Open Source software released under the Apache 2.0 license.
+
+```text
+   Copyright 2023 Dominik Grzelak
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+ http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+```

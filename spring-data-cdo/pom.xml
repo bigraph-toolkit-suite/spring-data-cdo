@@ -17,15 +17,15 @@
     <packaging>jar</packaging>
 
     <properties>
-        <java-module-name>spring.de.tudresden.inf.st.bifogtecture.data.cdo</java-module-name>
-        <project.root>${basedir}/..</project.root>
+<!--        <java-module-name>spring.de.tudresden.inf.st.bifogtecture.data.cdo</java-module-name>-->
+        <project.root>${project.basedir}/..</project.root>
         <multithreadedtc>1.01</multithreadedtc>
     </properties>
 
     <dependencies>
-        <!-- ************   -->
-        <!-- Spring         -->
-        <!-- ************   -->
+        <!-- ****** -->
+        <!-- Spring -->
+        <!-- ****** -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-tx</artifactId>
@@ -58,11 +58,19 @@
             <artifactId>spring-data-commons</artifactId>
             <version>${spring.data.commons.version}</version>
         </dependency>
-        <!-- ************   -->
-        <!-- Eclipse        -->
-        <!-- ************   -->
-        <!-- Eclipse Platform -->
-        <!-- Required for the CDO standalone server -->
+        <!-- Logging -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-nop</artifactId>
+        </dependency>
+        <!-- ******************************************************** -->
+        <!-- Eclipse Dependencies available at the Central Repository -->
+        <!-- ******************************************************** -->
+        <!-- Eclipse Platform : Required for the CDO standalone server -->
         <dependency>
             <groupId>org.eclipse.platform</groupId>
             <artifactId>org.eclipse.core.runtime</artifactId>
@@ -79,7 +87,6 @@
             <!--                </exclusion>-->
             <!--            </exclusions>-->
         </dependency>
-        <!-- EMF -->
         <dependency>
             <groupId>org.eclipse.emf</groupId>
             <artifactId>org.eclipse.emf.ecore.change</artifactId>
@@ -104,113 +111,25 @@
             <groupId>org.eclipse.emf</groupId>
             <artifactId>org.eclipse.emf.codegen</artifactId>
             <version>${emf.codegen.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-log4j12</artifactId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>logback-classic</artifactId>
-                    <groupId>ch.qos.logback</groupId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.springframework.boot</groupId>
-                    <artifactId>spring-boot-starter-logging</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>log4j</groupId>
-                    <artifactId>log4j</artifactId>
-                </exclusion>
-            </exclusions>
+<!--            <exclusions>-->
+<!--                <exclusion>-->
+<!--                    <groupId>org.slf4j</groupId>-->
+<!--                    <artifactId>slf4j-log4j12</artifactId>-->
+<!--                </exclusion>-->
+<!--                <exclusion>-->
+<!--                    <artifactId>logback-classic</artifactId>-->
+<!--                    <groupId>ch.qos.logback</groupId>-->
+<!--                </exclusion>-->
+<!--                <exclusion>-->
+<!--                    <groupId>org.springframework.boot</groupId>-->
+<!--                    <artifactId>spring-boot-starter-logging</artifactId>-->
+<!--                </exclusion>-->
+<!--                <exclusion>-->
+<!--                    <groupId>log4j</groupId>-->
+<!--                    <artifactId>log4j</artifactId>-->
+<!--                </exclusion>-->
+<!--            </exclusions>-->
         </dependency>
-        <!-- Eclipse CDO -->
-        <dependency>
-            <groupId>org.eclipse.emf.cdo</groupId>
-            <artifactId>org.eclipse.emf.cdo</artifactId>
-            <version>${emf.cdo.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.emf.cdo</groupId>
-            <artifactId>org.eclipse.emf.cdo.common</artifactId>
-            <version>${emf.cdo.common.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.emf.cdo.net4j</groupId>
-            <artifactId>org.eclipse.emf.cdo.net4j</artifactId>
-            <version>4.6.0.v20221118-1832</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.emf.cdo.compare</groupId>
-            <artifactId>org.eclipse.emf.cdo.compare</artifactId>
-            <version>4.7.1.v20221117-1804</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.emf.cdo.server</groupId>
-            <artifactId>org.eclipse.emf.cdo.server</artifactId>
-            <version>4.19.0.v20221125-0832</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.emf.cdo.server.db</groupId>
-            <artifactId>org.eclipse.emf.cdo.server.db</artifactId>
-            <version>4.12.0.v20220907-1437</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.emf.cdo</groupId>
-            <artifactId>org.eclipse.net4j</artifactId>
-            <version>4.16.0.v20220907-1437</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.net4j.util</groupId>
-            <artifactId>org.eclipse.net4j.util</artifactId>
-            <version>3.21.0.v20221123-1721</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.eclipse.platform</groupId>
-                    <artifactId>org.eclipse.core.runtime</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.net4j.db.h2</groupId>
-            <artifactId>org.eclipse.net4j.db.h2</artifactId>
-            <version>4.5.2.v20220505-0518</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.emf.cdo.server.ocl</groupId>
-            <artifactId>org.eclipse.emf.cdo.server.ocl</artifactId>
-            <version>4.4.2.v20220515-1607</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.emf.cdo.server.net4j</groupId>
-            <artifactId>org.eclipse.emf.cdo.server.net4j</artifactId>
-            <version>4.5.4.v20221105-0823</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.net4j.tcp</groupId>
-            <artifactId>org.eclipse.net4j.tcp</artifactId>
-            <version>4.4.0.v20220907-1437</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.net4j.db</groupId>
-            <artifactId>org.eclipse.net4j.db</artifactId>
-            <version>4.11.2.v20221108-1656</version>
-        </dependency>
-        <dependency>
-            <groupId>org.eclipse.net4j.jvm</groupId>
-            <artifactId>org.eclipse.net4j.jvm</artifactId>
-            <version>4.3.0.v20220505-0518</version>
-        </dependency>
-        <!--        <dependency>-->
-        <!--            <groupId>org.eclipse.net4j.http</groupId>-->
-        <!--            <artifactId>org.eclipse.net4j.http</artifactId>-->
-        <!--            <version>4.1.1.v20200528-0542</version>-->
-        <!--        </dependency>-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.eclipse.net4j.http.server</groupId>-->
-        <!--            <artifactId>org.eclipse.net4j.http.server</artifactId>-->
-        <!--            <version>4.1.1.v20200528-0542</version>-->
-        <!--        </dependency>-->
-
         <dependency>
             <groupId>org.eclipse.ocl</groupId>
             <artifactId>org.eclipse.ocl</artifactId>
@@ -221,8 +140,13 @@
             <artifactId>org.eclipse.ocl.ecore</artifactId>
             <version>3.3.100.v20140610-0641</version>
         </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.eclipse.acceleo</groupId>-->
+<!--            <artifactId>org.eclipse.ocl.common</artifactId>-->
+<!--            <version>1.2.0.v20140610-0641</version>-->
+<!--        </dependency>-->
         <dependency>
-            <groupId>org.eclipse.acceleo</groupId>
+            <groupId>org.eclipse.ocl</groupId>
             <artifactId>org.eclipse.ocl.common</artifactId>
             <version>1.2.0.v20140610-0641</version>
         </dependency>
@@ -237,6 +161,98 @@
         <!--                    <artifactId>org.eclipse.core.runtime</artifactId>-->
         <!--                </exclusion>-->
         <!--            </exclusions>-->
+        <!--        </dependency>-->
+        <!-- ************************** -->
+        <!-- P2 Repository Dependencies -->
+        <!-- ************************** -->
+        <!-- Eclipse CDO -->
+        <!-- -->
+        <dependency>
+            <groupId>org.eclipse.emf.cdo</groupId>
+            <artifactId>org.eclipse.emf.cdo.common</artifactId>
+            <version>${emf.cdo.common.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.emf.cdo</groupId>
+            <artifactId>org.eclipse.emf.cdo.compare</artifactId>
+            <version>4.7.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.emf.cdo</groupId>
+            <artifactId>org.eclipse.emf.cdo.net4j</artifactId>
+            <version>4.6.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.emf.cdo</groupId>
+            <artifactId>org.eclipse.emf.cdo.server.db</artifactId>
+            <version>4.12.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.emf.cdo</groupId>
+            <artifactId>org.eclipse.emf.cdo.server.net4j</artifactId>
+            <version>4.5.4-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.emf.cdo</groupId>
+            <artifactId>org.eclipse.emf.cdo.server.ocl</artifactId>
+            <version>4.4.2-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.emf.cdo</groupId>
+            <artifactId>org.eclipse.emf.cdo.server</artifactId>
+            <version>4.19.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.emf.cdo</groupId>
+            <artifactId>org.eclipse.emf.cdo</artifactId>
+            <version>${emf.cdo.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.emf.cdo</groupId>
+            <artifactId>org.eclipse.net4j.db.h2</artifactId>
+            <version>4.5.2-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.emf.cdo</groupId>
+            <artifactId>org.eclipse.net4j.db</artifactId>
+            <version>4.11.2-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.emf.cdo</groupId>
+            <artifactId>org.eclipse.net4j.jvm</artifactId>
+            <version>4.3.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.emf.cdo</groupId>
+            <artifactId>org.eclipse.net4j.tcp</artifactId>
+            <version>4.4.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.emf.cdo</groupId>
+            <artifactId>org.eclipse.net4j.util</artifactId>
+            <version>3.21.0-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.eclipse.platform</groupId>
+                    <artifactId>org.eclipse.core.runtime</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.emf.cdo</groupId>
+            <artifactId>org.eclipse.net4j</artifactId>
+            <version>4.16.0-SNAPSHOT</version>
+        </dependency>
+        <!-- -->
+        <!--        <dependency>-->
+        <!--            <groupId>org.eclipse.net4j.http</groupId>-->
+        <!--            <artifactId>org.eclipse.net4j.http</artifactId>-->
+        <!--            <version>4.1.1.v20200528-0542</version>-->
+        <!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.eclipse.net4j.http.server</groupId>-->
+        <!--            <artifactId>org.eclipse.net4j.http.server</artifactId>-->
+        <!--            <version>4.1.1.v20200528-0542</version>-->
         <!--        </dependency>-->
         <!-- ************   -->
         <!-- Misc           -->
@@ -361,6 +377,7 @@
             <groupId>de.tudresden.inf.st.ecore.models</groupId>
             <artifactId>bookstore-api</artifactId>
             <version>1.0.1</version>
+            <type>jar</type>
             <scope>test</scope>
             <optional>true</optional>
         </dependency>
@@ -399,6 +416,14 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
             </plugin>
             <!-- TODO : SHADE PLUGIN -->
         </plugins>
