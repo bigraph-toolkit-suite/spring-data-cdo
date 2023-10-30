@@ -84,6 +84,7 @@ The framework can handle native EMF models:
 ----
 // any auto-generated object of an EMF model or native CDO model
 interface Person extends EObject {}
+
 interface Person extends CDOObject {}
 ----
 
@@ -91,32 +92,50 @@ Non-native EMF domain classes (i.e., classes that don't extend `EObject` or the 
 
 [source,java]
 ----
-@CDO(path = "your/repository/resource/path",
-        nsUri = "http://www.example.org/personDomainModel",
-        ePackage = PersonDomainModelPackage.class,
+@CDO(path = "your/repository/resource/path",    // CDO resource path
+        nsUri = "http://www.example.org/personDomainModel", // namespace of the Ecore model
+        ePackage = PersonDomainModelPackage.class,  // the EPackage of the model
         ePackageBaseClass = "org.example.ecore.personDomainModel.PersonDomainModelPackage"
 )
 class PersonWrapper {
+    // ID is mandatory
     @Id
     CDOID id;
+
+    // Provide here the actual EObject model that the framework can access
+    // because PersonWrapper does not extend EObject
     @EObjectModel(classFor=Person.class)
-    public Person model;
+    public Person model; // Person extends from EMF's EObject class
 }
 ----
 
 They effectively work like a wrapper for internal members, which are of class `EObject` or `CDOObject`.
 Additionally, an ID must be specified of type `CDOID` using the `@Id` annotation feature of Spring.
 
-==== Configuration
+==== Spring Configuration
 
-Enable....
+Enable the Spring repository support for CDO repositories:
+
+[source,java]
+----
+// Spring Configuration Class
+@Configuration
+@EnableCdoRepositories(basePackageClasses = PersonRepository.class)
+//@EnableCdoRepositories(basePackages = "org.example.repository") // Java package to repository interfaces
+public class CDOServerConfig {
+    // ...
+}
+----
 
 ==== Repository Definition
 
 [source,java]
 ----
+package org.example.repository;
+
 @Repository
 public interface PersonRepository extends CdoRepository<PersonWrapper, CDOID> {
+    // ...
 }
 ----
 
