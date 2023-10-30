@@ -200,7 +200,7 @@ To build Spring Data for CDO, execute the following commands in the terminal fro
 mvn clean validate -f ./spring-data-cdo-distribution/pom.xml -PfetchEclipseDependencies
 
 # 2) Package and install the 'spring-data-cdo' module containing the framework
-mvn clean install -DskipTests
+mvn install -DskipTests
 ----
 
 The dependencies are deployed to your local Maven repository usually located at `~/.m2/`.
@@ -211,7 +211,7 @@ Building the documentation builds also the project without running tests:
 
 [source,bash]
 ----
-mvn clean install -DskipTests -Pdistribute
+mvn install -DskipTests -Pdistribute
 ----
 
 The generated documentation is available from `target/site/reference/html/index.html`.
@@ -226,7 +226,8 @@ The Java artifacts are deployed to the Central Repository:
 
 [source,shell]
 ----
-mvn clean deploy -DskipTests -pl '!spring-data-cdo-distribution' -P release
+mvn deploy -DskipTests -P release -pl :spring-data-cdo-distribution
+# mvn deploy -DskipTests -P release # deploys all modules
 ----
 
 The staged artifacts have to be released manually.
@@ -237,8 +238,8 @@ Execute the following goals to deploy a SNAPSHOT release of this framework to th
 
 ```shell
 # Use the default settings.xml located at ~/.m2/
-# mvn clean deploy -P ossrh
-mvn clean deploy
+# mvn deploy -P ossrh
+mvn deploy -DskipTests -pl :spring-data-cdo-distribution
 ```
 
 **Settings**
