@@ -1,1 +1,1 @@
-org.springframework.data.repository.core.support.RepositoryFactorySupport=de.tudresden.inf.st.spring.data.cdo.repository.support.CdoRepositoryFactory
+org.springframework.data.repository.core.support.RepositoryFactorySupport=org.bigraphs.spring.data.cdo.repository.support.CdoRepositoryFactory

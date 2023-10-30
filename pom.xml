@@ -104,10 +104,6 @@
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
         </repository>
-<!--        <repository>-->
-<!--            <id>spring-libs-snapshot</id>-->
-<!--            <url>https://repo.spring.io/libs-snapshot</url>-->
-<!--        </repository>-->
         <repository>
             <id>eclipse-emf-cdo</id>
             <layout>p2</layout>
@@ -118,14 +114,6 @@
             <!--CDO protocol version 48 -->
             <url>https://download.eclipse.org/modeling/emf/cdo/drops/R20221130-2113</url>
         </repository>
-        <!--        <repository>-->
-        <!--            <snapshots>-->
-        <!--                <enabled>true</enabled>-->
-        <!--            </snapshots>-->
-        <!--            <id>STFactory</id>-->
-        <!--            <name>st-tu-dresden-artifactory</name>-->
-        <!--            <url>https://stgroup.jfrog.io/artifactory/st-tu-dresden-maven-repository/</url>-->
-        <!--        </repository>-->
     </repositories>
 
     <pluginRepositories>
@@ -185,27 +173,11 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-source-plugin</artifactId>
                     <version>3.3.0</version>
-                    <executions>
-                        <execution>
-                            <id>attach-sources</id>
-                            <goals>
-                                <goal>jar-no-fork</goal>
-                            </goals>
-                        </execution>
-                    </executions>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <version>3.2.0</version>
-                    <executions>
-                        <execution>
-                            <id>attach-javadocs</id>
-                            <goals>
-                                <goal>jar</goal>
-                            </goals>
-                        </execution>
-                    </executions>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
