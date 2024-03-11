@@ -226,8 +226,9 @@ The Java artifacts are deployed to the Central Repository:
 
 [source,shell]
 ----
-mvn deploy -DskipTests -P release -pl :spring-data-cdo-distribution
-# mvn deploy -DskipTests -P release # deploys all modules
+mvn deploy -DskipTests -P ossrh,release -pl :spring-data-cdo
+mvn deploy -DskipTests -P ossrh,release -pl :spring-data-cdo-distribution
+# mvn deploy -DskipTests -P ossrh,release # deploys all modules
 ----
 
 The staged artifacts have to be released manually.
@@ -238,14 +239,14 @@ Execute the following goals to deploy a SNAPSHOT release of this framework to th
 
 ```shell
 # Use the default settings.xml located at ~/.m2/
-# mvn deploy -P ossrh
-mvn deploy -DskipTests -pl :spring-data-cdo-distribution
+mvn deploy -P ossrh -DskipTests -pl :spring-data-cdo
+mvn deploy -P ossrh -DskipTests -pl :spring-data-cdo-distribution
 ```
 
-**Settings**
+Note: When `SNAPSHOT` prefix is present in the version name, a Snapshot Deployment is performed.
+Otherwise, a Release Deployment is performed and the artifacts must be released manually after review (see [here](https://central.sonatype.org/publish/release/)).
 
-The Sonatype account details (username + password) for the deployment must be provided to the
-Maven Sonatype Plugin as used in the project's `pom.xml` file.
+**Settings**
 
 The Maven GPG plugin is used to sign the components for the deployment.
 It relies on the gpg command being installed:
@@ -253,9 +254,15 @@ It relies on the gpg command being installed:
 sudo apt install gnupg2
 ```
 
-and the GPG credentials being available e.g. from `settings.xml`.
+and the GPG credentials being available e.g. from `settings.xml` (see [here](https://central.sonatype.org/publish/publish-maven/)).
+In `settings.xml` should be a profile and server configuration both with the `<id>ossrh</id>`.
 
-More details can be found link:https://central.sonatype.org/publish/requirements/gpg/[here].
+More information can be found [here](https://central.sonatype.org/publish/requirements/gpg/).
+
+Listing keys: `gpg --list-keys --keyid-format short`
+
+The `pom.xml` must also conform to the minimal requirements containing all relevant tags as required by Sonatype.
+
 
 == Code of Conduct
 

@@ -275,8 +275,8 @@
                                     <goal>sign</goal>
                                 </goals>
                                 <configuration>
-                                    <keyname>0x153DD2CF</keyname>
-                                    <passphraseServerId>0x153DD2CF</passphraseServerId>
+                                    <keyname>0x26A857F8</keyname>
+                                    <passphraseServerId>0x26A857F8</passphraseServerId>
                                     <gpgArguments>
                                         <arg>--pinentry-mode</arg>
                                         <arg>loopback</arg>
