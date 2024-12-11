@@ -19,6 +19,11 @@
     <description>Eclipse CDO support for Spring Data</description>
     <url>https://github.com/bigraph-toolkit-suite/spring-data-cdo</url>
 
+    <modules>
+        <module>spring-data-cdo</module>
+        <module>spring-data-cdo-distribution</module>
+    </modules>
+
     <licenses>
         <license>
             <name>The Apache License, Version 2.0</name>
@@ -26,35 +31,6 @@
             <comments>Applies to Spring Data for CDO</comments>
         </license>
     </licenses>
-
-    <modules>
-        <module>spring-data-cdo</module>
-        <module>spring-data-cdo-distribution</module>
-    </modules>
-
-    <properties>
-        <!-- Project-specific Settings -->
-        <project.type>multi</project.type>
-        <java.version>17</java.version>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.target>${java.version}</maven.compiler.target>
-        <maven.compiler.source>${java.version}</maven.compiler.source>
-        <dist.id>spring-data-cdo</dist.id>
-        <eclipse.mirror>http://download.eclipse.org/</eclipse.mirror>
-        <!-- Versions : EMF -->
-        <emf.common.version>2.23.0</emf.common.version>
-        <ecore.xmi.version>2.16.0</ecore.xmi.version>
-        <emf.ecore.version>2.25.0</emf.ecore.version>
-        <emf.codegen.version>2.22.0</emf.codegen.version>
-        <emf.cdo.version>4.20.0-SNAPSHOT</emf.cdo.version>
-        <emf.cdo.common.version>4.20.0-SNAPSHOT</emf.cdo.common.version>
-        <eclipse.core.runtime.version>3.26.100</eclipse.core.runtime.version>
-        <emf.ecore.change.version>2.14.0</emf.ecore.change.version>
-        <!-- Versions : Other -->
-        <spring.data.commons.version>2.4.1</spring.data.commons.version>
-        <guava.version>31.0.1-jre</guava.version>
-        <junit-jupiter.version>5.4.2</junit-jupiter.version>
-    </properties>
 
     <developers>
         <developer>
@@ -115,6 +91,33 @@
             <url>https://download.eclipse.org/modeling/emf/cdo/drops/R20221130-2113</url>
         </repository>
     </repositories>
+
+    <properties>
+        <!-- Project-specific Settings -->
+        <project.type>multi</project.type>
+        <java.version>17</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <dist.id>spring-data-cdo</dist.id>
+        <eclipse.mirror>http://download.eclipse.org/</eclipse.mirror>
+        <!-- Versions: EMF -->
+        <emf.ecore.version>2.25.0</emf.ecore.version>
+        <ecore.xmi.version>2.38.0</ecore.xmi.version>
+        <emf.common.version>2.40.0</emf.common.version>
+        <emf.codegen.version>2.22.0</emf.codegen.version>
+        <!-- Should match with the version in Bigraph Framework + Bigraph Ecore Metamodel -->
+        <emf.cdo.version>4.20.0-SNAPSHOT</emf.cdo.version><!--4.20.0.v20221124-1637-->
+        <!-- Should match with the version in Bigraph Framework + Bigraph Ecore Metamodel -->
+        <emf.cdo.common.version>4.20.0-SNAPSHOT</emf.cdo.common.version><!--4.20.0.v20221106-0628-->
+        <eclipse.core.runtime.version>3.26.100</eclipse.core.runtime.version>
+        <emf.ecore.change.version>2.14.0</emf.ecore.change.version>
+        <!-- Versions: Other -->
+        <spring.data.commons.version>2.4.1</spring.data.commons.version>
+        <guava.version>31.0.1-jre</guava.version>
+<!--        <junit-jupiter.version>5.4.2</junit-jupiter.version>-->
+        <junit-jupiter.version>5.6.2</junit-jupiter.version>
+    </properties>
 
     <pluginRepositories>
         <pluginRepository>

@@ -2,9 +2,21 @@
 
 image::./src/main/asciidoc/images/spring-cdo-logo-white-background.png[width=50%,scalewidth=6cm]
 
-*Current version:* 0.6.0-SNAPSHOT
+Version Compatability
+|===
+|*Spring Data CDO* | *Eclipse Modeling Tools* | *CDO Protocol*
+|1.0.0
+|2024-09 (4.33.0)
+|51
 
-*Supports CDO protocol version 48*
+|0.7.0
+|https://www.eclipse.org/downloads/packages/release/2022-12/r/eclipse-modeling-tools[2022-12 (4.26.0)]
+|48
+
+|0.6.0-SNAPSHOT
+|https://www.eclipse.org/downloads/packages/release/2022-12/r/eclipse-modeling-tools[2022-12 (4.26.0)]
+|48
+|===
 
 The primary goal of the https://projects.spring.io/spring-data[Spring Data] project is to make it easier to build Spring-powered applications that use new data access technologies such as non-relational databases, map-reduce frameworks, and cloud based data services.
 
@@ -28,10 +40,9 @@ They can also be used afterwards with *Spring Data CDO*.
 This framework provides a feature to start a standalone CDO server.
 To inspect the contents, use the Eclipse CDO Explorer to view and modify Ecore models:
 
-* 1) Download CDO Explorer via the link:https://www.eclipse.org/downloads/packages/installer[Eclipse Installer].
+* Download CDO Explorer via the link:https://www.eclipse.org/downloads/packages/installer[Eclipse Installer].
   Use Eclipse Version 2022-12 (4.26.0), which supports CDO protocol version **48**.
   Eclipse IDE version 2023-09 supports only CDO protocol version 49.
-* 2) Use any other Eclipse IDE with CDO support, must support CDO protocol version **48**.
 
 === Getting Started
 
@@ -44,7 +55,7 @@ Just add the following Maven dependency to your project's `pom.xml`:
 <dependency>
   <groupId>org.bigraphs.springframework.data</groupId>
   <artifactId>spring-data-cdo</artifactId>
-  <version>0.6.0-SNAPSHOT</version>
+  <version>VERSION</version>
 </dependency>
 
 <!-- Required for the CDO standalone server -->
@@ -71,6 +82,8 @@ For SNAPSHOT releases also include the following repository:
     </repository>
 </repositories>
 ----
+
+
 
 === Usage Examples
 
@@ -180,7 +193,7 @@ When required, one can listen to specific events emitted by some repository acti
 Events are implemented for Delete, Save and Insert operations, including "after" and "before" notions for fine-grained control.
 
 
-== Building from Source
+== Development: Building from Source
 
 You do not need to build from source to use Spring Data for CDO.
 The dependencies are deployed to the https://repo.spring.io[Central Repository].
@@ -189,7 +202,7 @@ But if you want to try out the latest and greatest, Spring Data for CDO can be e
 or by using the https://github.com/apache/maven-wrapper[maven wrapper].
 If you want to build with the regular `mvn` command, you will need https://maven.apache.org/download.cgi[Maven v3.8.3 or above].
 
-You also need JDK 17.
+You also need JDK >=17.
 Check that the `JAVA_HOME` environment variable is pointing to the correct JDK.
 
 To build Spring Data for CDO, execute the following commands in the terminal from the root of this project:
