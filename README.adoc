@@ -41,12 +41,9 @@ This framework provides a feature to start a standalone CDO server.
 To inspect the contents, use the Eclipse CDO Explorer to view and modify Ecore models:
 
 * Download CDO Explorer via the link:https://www.eclipse.org/downloads/packages/installer[Eclipse Installer].
-  Use Eclipse Version 2022-12 (4.26.0), which supports CDO protocol version **48**.
-  Eclipse IDE version 2023-09 supports only CDO protocol version 49.
+  See table above to see which Eclipse Version to use.
 
-=== Getting Started
-
-==== Maven configuration
+=== Dependency Configuration (Maven)
 
 Just add the following Maven dependency to your project's `pom.xml`:
 
