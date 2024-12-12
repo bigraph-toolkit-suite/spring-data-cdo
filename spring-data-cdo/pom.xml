@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.bigraphs.springframework.data</groupId>
         <artifactId>spring-data-cdo-parent</artifactId>
-        <version>0.7.1</version>
+        <version>0.7.2</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -403,11 +403,11 @@
                         <configuration>
                             <!-- <minimizeJar>true</minimizeJar> -->
                             <createDependencyReducedPom>true</createDependencyReducedPom>
-                            <!--                            <artifactSet>-->
-                            <!--                                <includes>-->
-                            <!--                                    <include>org.eclipse.emf.cdo:*</include>-->
-                            <!--                                </includes>-->
-                            <!--                            </artifactSet>-->
+                            <artifactSet>
+                                <includes>
+                                    <include>org.eclipse.emf.cdo:*</include>
+                                </includes>
+                            </artifactSet>
                             <filters>
                                 <filter>
                                     <artifact>*:*</artifact>
