@@ -403,11 +403,11 @@
                         <configuration>
                             <!-- <minimizeJar>true</minimizeJar> -->
                             <createDependencyReducedPom>true</createDependencyReducedPom>
-                            <!--                            <artifactSet>-->
-                            <!--                                <includes>-->
-                            <!--                                    <include>org.eclipse.emf.cdo:*</include>-->
-                            <!--                                </includes>-->
-                            <!--                            </artifactSet>-->
+                            <artifactSet>
+                                <includes>
+                                    <include>org.eclipse.emf.cdo:*</include>
+                                </includes>
+                            </artifactSet>
                             <filters>
                                 <filter>
                                     <artifact>*:*</artifact>
