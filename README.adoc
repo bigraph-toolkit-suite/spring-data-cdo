@@ -9,7 +9,7 @@ Version Compatability
 |2024-09 (4.33.0)
 |51
 
-|0.7.1
+|0.7.2
 |https://www.eclipse.org/downloads/packages/release/2022-12/r/eclipse-modeling-tools[2022-12 (4.26.0)]
 |48
 
@@ -37,11 +37,11 @@ They can also be used afterwards with *Spring Data CDO*.
 
 === Working with Eclipse IDEs
 
-This framework provides a feature to start a standalone CDO server.
-To inspect the contents, use the Eclipse CDO Explorer to view and modify Ecore models:
+This framework includes functionality to launch a standalone CDO server.
+Use the Eclipse CDO Explorer, which allows you to easily view and interact with Ecore models hosted on the CDO server.
 
 * Download CDO Explorer via the link:https://www.eclipse.org/downloads/packages/installer[Eclipse Installer].
-  See table above to see which Eclipse Version to use.
+See table above to see which Eclipse Version to use.
 
 === Dependency Configuration (Maven)
 
@@ -54,12 +54,21 @@ Just add the following Maven dependency to your project's `pom.xml`:
   <artifactId>spring-data-cdo</artifactId>
   <version>VERSION</version>
 </dependency>
+----
 
-<!-- Required for the CDO standalone server -->
+These dependencies are required when you want to start the standalone CDO server that is shipped with this framework:
+
+[source,xml]
+----
 <dependency>
   <groupId>org.eclipse.platform</groupId>
   <artifactId>org.eclipse.core.runtime</artifactId>
   <version>3.26.100</version>
+</dependency>
+<dependency>
+    <groupId>org.eclipse.platform</groupId>
+    <artifactId>org.eclipse.equinox.common</artifactId>
+    <version>3.17.100</version>
 </dependency>
 ----
 
@@ -189,7 +198,15 @@ if (ePackage == null) {
 When required, one can listen to specific events emitted by some repository actions for adding extended behavior.
 Events are implemented for Delete, Save and Insert operations, including "after" and "before" notions for fine-grained control.
 
+=== Standalone CDO Server
 
+For testing purposes you can start a standalone CDO server like this:
+
+[source,java]
+----
+CDOStandaloneServer server = new CDOStandaloneServer("repo1");
+CDOStandaloneServer.start(server);
+----
 == Development: Building from Source
 
 You do not need to build from source to use Spring Data for CDO.
