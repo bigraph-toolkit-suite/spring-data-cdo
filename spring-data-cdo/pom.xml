@@ -73,22 +73,18 @@
         <!-- ******************************************************** -->
         <!-- Eclipse Dependencies available at the Central Repository -->
         <!-- ******************************************************** -->
-        <!-- Eclipse Platform : Required for the CDO standalone server -->
+        <!-- Eclipse Platform: Required for the CDO standalone server -->
         <dependency>
             <groupId>org.eclipse.platform</groupId>
             <artifactId>org.eclipse.core.runtime</artifactId>
             <version>${eclipse.core.runtime.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.eclipse.platform</groupId>
             <artifactId>org.eclipse.equinox.common</artifactId>
-            <version>3.17.100</version>
-            <!--            <exclusions>-->
-            <!--                <exclusion>-->
-            <!--                    <groupId>org.eclipse.platform</groupId>-->
-            <!--                    <artifactId>org.eclipse.core.runtime</artifactId>-->
-            <!--                </exclusion>-->
-            <!--            </exclusions>-->
+            <version>${eclipse.equinox.common.version}</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.eclipse.emf</groupId>
@@ -114,6 +110,12 @@
             <groupId>org.eclipse.emf</groupId>
             <artifactId>org.eclipse.emf.codegen</artifactId>
             <version>${emf.codegen.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.eclipse.platform</groupId>
+                    <artifactId>org.eclipse.core.runtime</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.eclipse.ocl</groupId>
@@ -125,28 +127,11 @@
             <artifactId>org.eclipse.ocl.ecore</artifactId>
             <version>3.3.100.v20140610-0641</version>
         </dependency>
-        <!--        <dependency>-->
-        <!--            <groupId>org.eclipse.acceleo</groupId>-->
-        <!--            <artifactId>org.eclipse.ocl.common</artifactId>-->
-        <!--            <version>1.2.0.v20140610-0641</version>-->
-        <!--        </dependency>-->
         <dependency>
             <groupId>org.eclipse.ocl</groupId>
             <artifactId>org.eclipse.ocl.common</artifactId>
             <version>1.2.0.v20140610-0641</version>
         </dependency>
-        <!-- OCL -->
-        <!--        <dependency>-->
-        <!--            <groupId>org.eclipse.acceleo</groupId>-->
-        <!--            <artifactId>lpg.runtime.java</artifactId>-->
-        <!--            <version>2.0.17.v201004271640</version>-->
-        <!--            <exclusions>-->
-        <!--                <exclusion>-->
-        <!--                    <groupId>org.eclipse.platform</groupId>-->
-        <!--                    <artifactId>org.eclipse.core.runtime</artifactId>-->
-        <!--                </exclusion>-->
-        <!--            </exclusions>-->
-        <!--        </dependency>-->
         <!-- ************************** -->
         <!-- P2 Repository Dependencies -->
         <!-- ************************** -->
@@ -216,12 +201,6 @@
             <groupId>org.eclipse.emf.cdo</groupId>
             <artifactId>org.eclipse.net4j.util</artifactId>
             <version>3.21.0-SNAPSHOT</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.eclipse.platform</groupId>
-                    <artifactId>org.eclipse.core.runtime</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.eclipse.emf.cdo</groupId>
@@ -424,25 +403,41 @@
                         <configuration>
                             <!-- <minimizeJar>true</minimizeJar> -->
                             <createDependencyReducedPom>true</createDependencyReducedPom>
-                            <artifactSet>
-                                <includes>
-                                    <include>org.eclipse.emf.cdo:*</include>
-                                </includes>
-                            </artifactSet>
+                            <!--                            <artifactSet>-->
+                            <!--                                <includes>-->
+                            <!--                                    <include>org.eclipse.emf.cdo:*</include>-->
+                            <!--                                </includes>-->
+                            <!--                            </artifactSet>-->
                             <filters>
                                 <filter>
-                                    <artifact>org.eclipse.emf.cdo:*</artifact>
+                                    <artifact>*:*</artifact>
                                     <excludes>
                                         <exclude>META-INF/*.SF</exclude>
                                         <exclude>META-INF/*.DSA</exclude>
                                         <exclude>META-INF/*.RSA</exclude>
-                                        <exclude>.options</exclude>
-                                        <exclude>about.*</exclude>
-                                        <exclude>*.png</exclude>
-<!--                                        <exclude>plugin.properties</exclude>-->
-<!--                                        <exclude>plugin.xml</exclude>-->
                                     </excludes>
                                 </filter>
+                                <filter>
+                                    <artifact>org.eclipse.emf.cdo:*</artifact>
+                                    <includes>
+                                        <include>META-INF/**</include>
+                                        <include>org/**</include>
+                                        <include>schema/**</include>
+                                    </includes>
+                                </filter>
+                                <!--                                <filter>-->
+                                <!--                                    <artifact>org.eclipse.emf.cdo:*</artifact>-->
+                                <!--                                    <excludes>-->
+                                <!--                                        <exclude>META-INF/*.SF</exclude>-->
+                                <!--                                        <exclude>META-INF/*.DSA</exclude>-->
+                                <!--                                        <exclude>META-INF/*.RSA</exclude>-->
+                                <!--                                        <exclude>.options</exclude>-->
+                                <!--                                        <exclude>about.*</exclude>-->
+                                <!--                                        <exclude>*.png</exclude>-->
+                                <!--&lt;!&ndash;                                        <exclude>plugin.properties</exclude>&ndash;&gt;-->
+                                <!--                                        <exclude>plugin.xml</exclude>-->
+                                <!--                                    </excludes>-->
+                                <!--                                </filter>-->
                             </filters>
                         </configuration>
                     </execution>
