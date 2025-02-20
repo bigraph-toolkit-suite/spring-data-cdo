@@ -302,7 +302,7 @@ Please report unacceptable behavior to dominik.grzelak@tu-dresden.de.
 This library is Open Source software released under the Apache 2.0 license.
 
 ```text
-   Copyright 2023 Dominik Grzelak
+   Copyright 2023-present Dominik Grzelak
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.

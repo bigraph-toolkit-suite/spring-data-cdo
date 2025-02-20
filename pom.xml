@@ -12,11 +12,11 @@
 
     <groupId>org.bigraphs.springframework.data</groupId>
     <artifactId>spring-data-cdo-parent</artifactId>
-    <version>0.7.2</version>
+    <version>0.7.3</version>
     <packaging>pom</packaging>
 
     <name>Spring Data for CDO - Parent</name>
-    <description>Eclipse CDO Support for Spring Data</description>
+    <description>Eclipse CDO support for Spring Data</description>
     <url>https://github.com/bigraph-toolkit-suite/spring-data-cdo</url>
 
     <modules>
