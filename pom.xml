@@ -12,7 +12,7 @@
 
     <groupId>org.bigraphs.springframework.data</groupId>
     <artifactId>spring-data-cdo-parent</artifactId>
-    <version>0.7.3</version>
+    <version>0.7.4</version>
     <packaging>pom</packaging>
 
     <name>Spring Data for CDO - Parent</name>
@@ -92,6 +92,8 @@
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <dist.id>spring-data-cdo</dist.id>
         <eclipse.mirror>http://download.eclipse.org/</eclipse.mirror>
+<!--        <nexus.skipDeploy>true</nexus.skipDeploy>-->
+        <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
         <!-- Versions: EMF -->
         <emf.ecore.version>2.25.0</emf.ecore.version>
         <ecore.xmi.version>2.38.0</ecore.xmi.version>
@@ -144,6 +146,42 @@
 
     <build>
         <plugins>
+            <!-- SOURCE -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- JAVADOC -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <javadocExecutable>${java.home}/bin/javadoc</javadocExecutable>
+                    <failOnError>false</failOnError>
+                    <release>${java.version}</release>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <!-- all, none, html-->
+                            <doclint>none</doclint>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <!-- COMPILER -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -191,11 +229,25 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-deploy-plugin</artifactId>
-                    <version>3.1.1</version>
+                    <version>3.3.1</version>
                     <configuration>
                         <!-- disable the default existing mapping -->
                         <skip>true</skip>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.sonatype.plugins</groupId>
+                    <artifactId>nexus-staging-maven-plugin</artifactId>
+<!--                    <version>1.6.13</version>-->
+                    <executions>
+                        <execution>
+                            <id>disable-nexus-staging</id>
+                            <phase>none</phase>
+                            <goals>
+                                <goal>deploy</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                 </plugin>
                 <plugin>
                     <groupId>org.sonatype.central</groupId>
@@ -299,6 +351,10 @@
                                 </goals>
                             </execution>
                         </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-deploy-plugin</artifactId>
                     </plugin>
                     <plugin>
                         <groupId>org.sonatype.central</groupId>
