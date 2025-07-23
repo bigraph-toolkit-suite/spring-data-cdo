@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.bigraphs.springframework.data</groupId>
         <artifactId>spring-data-cdo-parent</artifactId>
-        <version>0.7.3</version>
+        <version>1.0.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -251,6 +251,14 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>3.9</version>
+        </dependency>
+        <!-- ************   -->
+        <!-- Deployment           -->
+        <!-- ************   -->
+        <dependency>
+            <groupId>org.sonatype.central</groupId>
+            <artifactId>central-publishing-maven-plugin</artifactId>
+            <version>0.8.0</version>
         </dependency>
         <!-- ************   -->
         <!-- Test           -->
