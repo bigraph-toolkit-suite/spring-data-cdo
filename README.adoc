@@ -287,7 +287,6 @@ mvn deploy -P ossrh -DskipTests -pl :spring-data-cdo-distribution
 ```
 
 Note: When `SNAPSHOT` prefix is present in the version name, a Snapshot Deployment is performed.
-Otherwise, a Release Deployment is performed and the artifacts must be released manually after review (see [here](https://central.sonatype.org/publish/release/)).
 
 **Settings**
 
