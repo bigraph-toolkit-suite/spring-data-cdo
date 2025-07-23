@@ -9,7 +9,7 @@ Version Compatability
 // |2024-09 (4.33.0)
 // |51
 
-|0.7.4 (latest)
+|0.7.5 (latest)
 |https://www.eclipse.org/downloads/packages/release/2022-12/r/eclipse-modeling-tools[2022-12 (4.26.0)]
 |48
 
