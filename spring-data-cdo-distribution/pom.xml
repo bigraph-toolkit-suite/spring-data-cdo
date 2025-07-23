@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.bigraphs.springframework.data</groupId>
         <artifactId>spring-data-cdo-parent</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>0.7.3</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -39,10 +39,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

@@ -56,7 +56,7 @@ Just add the following Maven dependency to your project's `pom.xml`:
 <dependency>
   <groupId>org.bigraphs.springframework.data</groupId>
   <artifactId>spring-data-cdo</artifactId>
-  <version>VERSION</version>
+  <version>0.7.3</version>
 </dependency>
 ----
 
@@ -76,22 +76,22 @@ These dependencies are required when you want to start the standalone CDO server
 </dependency>
 ----
 
-==== SNAPSHOT Releases
-
-For SNAPSHOT releases also include the following repository:
-
-[source,xml]
-----
-<repositories>
-    <repository>
-        <snapshots>
-            <enabled>true</enabled>
-        </snapshots>
-        <id>ossrh</id>
-        <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
-    </repository>
-</repositories>
-----
+// ==== SNAPSHOT Releases
+//
+// For SNAPSHOT releases also include the following repository:
+//
+// [source,xml]
+// ----
+// <repositories>
+//     <repository>
+//         <snapshots>
+//             <enabled>true</enabled>
+//         </snapshots>
+//         <id>ossrh</id>
+//         <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+//     </repository>
+// </repositories>
+// ----
 
 
 
@@ -220,18 +220,27 @@ But if you want to try out the latest and greatest, Spring Data for CDO can be e
 or by using the https://github.com/apache/maven-wrapper[maven wrapper].
 If you want to build with the regular `mvn` command, you will need https://maven.apache.org/download.cgi[Maven v3.8.3 or above].
 
-You also need JDK >=17.
-Check that the `JAVA_HOME` environment variable is pointing to the correct JDK.
+You also need JDK 17.
+Check that the `JAVA_HOME` environment variable is pointing to the correct JDK, or use:
+
+[source,shell]
+----
+# (1) Select Java 17
+$ sudo update-alternatives --config java
+
+# (2) Check
+$ mvn --version
+----
 
 To build Spring Data for CDO, execute the following commands in the terminal from the root of this project:
 
 [source,shell]
 ----
-# 1) Get all required Eclipse dependencies first. This step needs to be run only once:
-mvn clean validate -f ./spring-data-cdo-distribution/pom.xml -PfetchEclipseDependencies
+# (1) Get all required Eclipse dependencies first. This step needs to be run only once:
+$ mvn clean validate -f ./spring-data-cdo-distribution/pom.xml -PfetchEclipseDependencies
 
-# 2) Package and install the 'spring-data-cdo' module containing the framework
-mvn install -DskipTests
+# (2) Package and install the 'spring-data-cdo' module containing the framework
+$ mvn install -DskipTests
 ----
 
 The dependencies are deployed to your local Maven repository usually located at `~/.m2/`.
@@ -289,7 +298,7 @@ sudo apt install gnupg2
 ```
 
 and the GPG credentials being available e.g. from `settings.xml` (see [here](https://central.sonatype.org/publish/publish-maven/)).
-In `settings.xml` should be a profile and server configuration both with the `<id>ossrh</id>`.
+In `settings.xml` should be a profile and server configuration both with the `<id>central</id>`.
 
 More information can be found [here](https://central.sonatype.org/publish/requirements/gpg/).
 
