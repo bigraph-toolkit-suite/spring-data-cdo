@@ -266,12 +266,12 @@ The Java artifacts are deployed to the Central Repository:
 
 [source,shell]
 ----
+# Deploy all modules
+$ mvn clean deploy -DskipTests -P release,central
+
 # Deploy single modules
 $ mvn clean deploy -DskipTests -P release,central -pl :spring-data-cdo
 $ mvn clean deploy -DskipTests -P release,central -pl :spring-data-cdo-distribution
-
-# Deploy all modules
-$ mvn clean deploy -DskipTests -P release,central
 ----
 
 The staged artifacts have to be released manually.
