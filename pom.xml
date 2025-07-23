@@ -56,21 +56,12 @@
 
     <distributionManagement>
         <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+            <id>central</id>
+            <url>https://central.sonatype.com</url>
         </snapshotRepository>
-        <repository>
-            <id>ossrh</id>
-            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
     </distributionManagement>
 
     <repositories>
-        <repository>
-            <id>central</id>
-            <name>Central Repository</name>
-            <url>https://repo1.maven.org/maven2/</url>
-        </repository>
         <repository>
             <id>eclipse-release</id>
             <name>Eclipse Releases Repository</name>
@@ -94,8 +85,8 @@
 
     <properties>
         <!-- Project-specific Settings -->
-        <project.type>multi</project.type>
         <java.version>17</java.version>
+        <project.type>multi</project.type>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <maven.compiler.source>${java.version}</maven.compiler.source>
@@ -209,18 +200,16 @@
                     </configuration>
                 </plugin>
                 <plugin>
-                    <groupId>org.sonatype.plugins</groupId>
-                    <artifactId>nexus-staging-maven-plugin</artifactId>
-                    <version>1.6.13</version>
+                    <groupId>org.sonatype.central</groupId>
+                    <artifactId>central-publishing-maven-plugin</artifactId>
+                    <version>0.8.0</version>
                     <extensions>true</extensions>
                     <configuration>
-                        <serverId>ossrh</serverId>
-                        <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
-                        <!-- With the property autoReleaseAfterClose set to false you can manually inspect the staging
-                        repository in the Nexus Repository Manager and trigger a release of the staging repository
-                        later with mvn nexus-staging:release If you find something went wrong you can drop the staging
-                        repository with mvn nexus-staging:drop -->
-                        <autoReleaseAfterClose>false</autoReleaseAfterClose>
+                        <publishingServerId>central</publishingServerId>
+                        <!--                        <autoPublish>true</autoPublish>-->
+                        <!--                        <waitUntil>published</waitUntil>-->
+                        <autoPublish>false</autoPublish>
+                        <waitUntil>validated</waitUntil>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -312,6 +301,10 @@
                                 </goals>
                             </execution>
                         </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
                     </plugin>
                 </plugins>
             </build>

@@ -242,7 +242,7 @@ Building the documentation builds also the project without running tests:
 
 [source,bash]
 ----
-mvn install -DskipTests -Pdistribute
+$ mvn install -DskipTests -Pdistribute
 ----
 
 The generated documentation is available from `target/site/reference/html/index.html`.
@@ -257,9 +257,12 @@ The Java artifacts are deployed to the Central Repository:
 
 [source,shell]
 ----
-mvn deploy -DskipTests -P ossrh,release -pl :spring-data-cdo
-mvn deploy -DskipTests -P ossrh,release -pl :spring-data-cdo-distribution
-# mvn deploy -DskipTests -P ossrh,release # deploys all modules
+# Deploy single modules
+$ mvn clean deploy -DskipTests -P release,central -pl :spring-data-cdo
+$ mvn clean deploy -DskipTests -P release,central -pl :spring-data-cdo-distribution
+
+# Deploy all modules
+$ mvn clean deploy -DskipTests -P release,central
 ----
 
 The staged artifacts have to be released manually.

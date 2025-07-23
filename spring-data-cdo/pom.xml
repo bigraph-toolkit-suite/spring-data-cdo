@@ -253,6 +253,14 @@
             <version>3.9</version>
         </dependency>
         <!-- ************   -->
+        <!-- Deployment           -->
+        <!-- ************   -->
+        <dependency>
+            <groupId>org.sonatype.central</groupId>
+            <artifactId>central-publishing-maven-plugin</artifactId>
+            <version>0.8.0</version>
+        </dependency>
+        <!-- ************   -->
         <!-- Test           -->
         <!-- ************   -->
         <dependency>
