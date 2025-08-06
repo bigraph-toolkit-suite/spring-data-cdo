@@ -56,7 +56,7 @@ Just add the following Maven dependency to your project's `pom.xml`:
 <dependency>
   <groupId>org.bigraphs.springframework.data</groupId>
   <artifactId>spring-data-cdo</artifactId>
-  <version>0.7.3</version>
+  <version>0.7.5</version>
 </dependency>
 ----
 
@@ -211,7 +211,10 @@ For testing purposes you can start a standalone CDO server like this:
 CDOStandaloneServer server = new CDOStandaloneServer("repo1");
 CDOStandaloneServer.start(server);
 ----
-== Development: Building from Source
+
+== Development
+
+=== Building from Source
 
 You do not need to build from source to use Spring Data for CDO.
 The dependencies are deployed to the https://repo.spring.io[Central Repository].
@@ -258,11 +261,11 @@ The generated documentation is available from `target/site/reference/html/index.
 The Maven profile `distribute` is provided by `spring-data-parent`.
 For more information see link:https://github.com/spring-projects/spring-data-build[https://github.com/spring-projects/spring-data-build] on how to set up the Asciidoc documentation.
 
-=== Deploy
+=== Deployment
 
 **Release Deployment**
 
-The Java artifacts are deployed to the Central Repository:
+The Java artifacts are deployed to the https://central.sonatype.com/[Maven Central Portal]:
 
 [source,shell]
 ----
@@ -276,35 +279,52 @@ $ mvn clean deploy -DskipTests -P release,central -pl :spring-data-cdo-distribut
 
 The staged artifacts have to be released manually.
 
-**Snapshot Deployment**
+// **Snapshot Deployment**
+//
+// Execute the following goals to deploy a SNAPSHOT release of this framework to the snapshot repository:
+//
+// ```shell
+// # Use the default settings.xml located at ~/.m2/
+// mvn deploy -P ossrh -DskipTests -pl :spring-data-cdo
+// mvn deploy -P ossrh -DskipTests -pl :spring-data-cdo-distribution
+// ```
+//
+// Note: When `SNAPSHOT` prefix is present in the version name, a Snapshot Deployment is performed.
 
-Execute the following goals to deploy a SNAPSHOT release of this framework to the snapshot repository:
+== Settings
 
-```shell
-# Use the default settings.xml located at ~/.m2/
-mvn deploy -P ossrh -DskipTests -pl :spring-data-cdo
-mvn deploy -P ossrh -DskipTests -pl :spring-data-cdo-distribution
-```
+This project uses the Maven GPG plugin to sign components before deployment.
+It requires the `gpg` command-line tool to be installed:
 
-Note: When `SNAPSHOT` prefix is present in the version name, a Snapshot Deployment is performed.
+[source,shell]
+----
+$ sudo apt install gnupg2
+----
 
-**Settings**
+GPG credentials must be configured in your Maven `settings.xml`.
+Refer to the official guide for details: https://central.sonatype.org/publish/publish-portal-maven/#credentials[Sonatype Credential Setup].
 
-The Maven GPG plugin is used to sign the components for the deployment.
-It relies on the gpg command being installed:
-```shell
-sudo apt install gnupg2
-```
+Ensure that `settings.xml` includes:
+- A `<profile>` with `<id>central</id>`
+- A corresponding `<server>` entry with the same `<id>central</id>`
 
-and the GPG credentials being available e.g. from `settings.xml` (see [here](https://central.sonatype.org/publish/publish-maven/)).
-In `settings.xml` should be a profile and server configuration both with the `<id>central</id>`.
+These configurations provide the passphrase and server authentication needed by `maven-gpg-plugin`.
 
-More information can be found [here](https://central.sonatype.org/publish/requirements/gpg/).
 
-Listing keys: `gpg --list-keys --keyid-format short`
+== FAQ
 
-The `pom.xml` must also conform to the minimal requirements containing all relevant tags as required by Sonatype.
-
+- The `pom.xml` must meet the minimum requirements specified by Sonatype, including all mandatory metadata tags.
+- GPG signing is required for artifact publishing. Refer to the official documentation for setup instructions: https://central.sonatype.org/publish/requirements/gpg/[Sonatype GPG Requirements].
+- Ensure the `maven-gpg-plugin` is correctly configured with the appropriate `keyname` and `passphraseServerId`.
+- To list available GPG keys with short key IDs, run:
++
+----
+$ gpg --list-keys --keyid-format short
+[...]
+pub   rsa3072/26A857F8 2024-02-07 [SC] [expires: 2026-02-06]
+      BAA38072FD25B089867CC85D1B40F84026A857F8
+----
+In this example, the `keyname` and `passphraseServerId` are both set to `0x26A857F8`.
 
 == Code of Conduct
 
@@ -317,7 +337,7 @@ Please report unacceptable behavior to dominik.grzelak@tu-dresden.de.
 This library is Open Source software released under the Apache 2.0 license.
 
 ```text
-   Copyright 2023-present Dominik Grzelak
+   Copyright 2023-present Bigraph Toolkit Developers
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
