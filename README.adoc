@@ -1,8 +1,20 @@
-= Spring Data CDO
-
 image::./src/main/asciidoc/images/spring-cdo-logo-white-background.png[width=50%,scalewidth=6cm]
 
-Version Compatability
+====
+Latest Version: *0.7.5*
+====
+
+'''
+
+= Spring Data CDO
+
+The primary goal of the https://projects.spring.io/spring-data[Spring Data] project is to make it easier to build Spring-powered applications that use new data access technologies such as non-relational databases, map-reduce frameworks, and cloud based data services.
+
+This module provides infrastructure components to build repository abstractions for stores dealing with the
+https://www.eclipse.org/cdo/[*Connected Data Objects (CDO) model repository*] of Eclipse.
+
+*Version Compatability*
+
 |===
 |*Spring Data CDO* | *Eclipse Modeling Tools* | *CDO Protocol*
 // |1.0.0
@@ -21,11 +33,6 @@ Version Compatability
 |https://www.eclipse.org/downloads/packages/release/2022-12/r/eclipse-modeling-tools[2022-12 (4.26.0)]
 |48
 |===
-
-The primary goal of the https://projects.spring.io/spring-data[Spring Data] project is to make it easier to build Spring-powered applications that use new data access technologies such as non-relational databases, map-reduce frameworks, and cloud based data services.
-
-This module provides infrastructure components to build repository abstractions for stores dealing with the
-https://www.eclipse.org/cdo/[*Connected Data Objects (CDO) model repository*] of Eclipse.
 
 == Getting Started
 
