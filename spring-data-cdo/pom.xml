@@ -7,7 +7,7 @@
     <parent>
         <groupId>org.bigraphs.springframework.data</groupId>
         <artifactId>spring-data-cdo-parent</artifactId>
-        <version>0.7.5</version>
+        <version>0.8.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -81,12 +81,6 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.eclipse.platform</groupId>
-            <artifactId>org.eclipse.equinox.common</artifactId>
-            <version>${eclipse.equinox.common.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
             <groupId>org.eclipse.emf</groupId>
             <artifactId>org.eclipse.emf.ecore.change</artifactId>
             <version>${emf.ecore.change.version}</version>
@@ -145,32 +139,32 @@
         <dependency>
             <groupId>org.eclipse.emf.cdo</groupId>
             <artifactId>org.eclipse.emf.cdo.compare</artifactId>
-            <version>4.7.1-SNAPSHOT</version>
+            <version>4.7.4-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.emf.cdo</groupId>
             <artifactId>org.eclipse.emf.cdo.net4j</artifactId>
-            <version>4.6.0-SNAPSHOT</version>
+            <version>4.8.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.emf.cdo</groupId>
             <artifactId>org.eclipse.emf.cdo.server.db</artifactId>
-            <version>4.12.0-SNAPSHOT</version>
+            <version>4.14.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.emf.cdo</groupId>
             <artifactId>org.eclipse.emf.cdo.server.net4j</artifactId>
-            <version>4.5.4-SNAPSHOT</version>
+            <version>4.8.3-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.emf.cdo</groupId>
             <artifactId>org.eclipse.emf.cdo.server.ocl</artifactId>
-            <version>4.4.2-SNAPSHOT</version>
+            <version>4.5.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.emf.cdo</groupId>
             <artifactId>org.eclipse.emf.cdo.server</artifactId>
-            <version>4.19.0-SNAPSHOT</version>
+            <version>4.25.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.emf.cdo</groupId>
@@ -180,44 +174,33 @@
         <dependency>
             <groupId>org.eclipse.emf.cdo</groupId>
             <artifactId>org.eclipse.net4j.db.h2</artifactId>
-            <version>4.5.2-SNAPSHOT</version>
+            <version>4.5.7-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.emf.cdo</groupId>
             <artifactId>org.eclipse.net4j.db</artifactId>
-            <version>4.11.2-SNAPSHOT</version>
+            <version>4.13.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.emf.cdo</groupId>
             <artifactId>org.eclipse.net4j.jvm</artifactId>
-            <version>4.3.0-SNAPSHOT</version>
+            <version>4.3.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.emf.cdo</groupId>
             <artifactId>org.eclipse.net4j.tcp</artifactId>
-            <version>4.4.0-SNAPSHOT</version>
+            <version>4.4.2-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.emf.cdo</groupId>
             <artifactId>org.eclipse.net4j.util</artifactId>
-            <version>3.21.0-SNAPSHOT</version>
+            <version>3.29.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.emf.cdo</groupId>
             <artifactId>org.eclipse.net4j</artifactId>
-            <version>4.16.0-SNAPSHOT</version>
+            <version>4.21.0-SNAPSHOT</version>
         </dependency>
-        <!-- -->
-        <!--        <dependency>-->
-        <!--            <groupId>org.eclipse.net4j.http</groupId>-->
-        <!--            <artifactId>org.eclipse.net4j.http</artifactId>-->
-        <!--            <version>4.1.1.v20200528-0542</version>-->
-        <!--        </dependency>-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.eclipse.net4j.http.server</groupId>-->
-        <!--            <artifactId>org.eclipse.net4j.http.server</artifactId>-->
-        <!--            <version>4.1.1.v20200528-0542</version>-->
-        <!--        </dependency>-->
         <!-- ************   -->
         <!-- Misc           -->
         <!-- ************   -->
@@ -253,7 +236,7 @@
             <version>3.9</version>
         </dependency>
         <!-- ************   -->
-        <!-- Deployment           -->
+        <!-- Deployment     -->
         <!-- ************   -->
         <dependency>
             <groupId>org.sonatype.central</groupId>

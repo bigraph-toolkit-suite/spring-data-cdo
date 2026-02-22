@@ -12,7 +12,7 @@
 
     <groupId>org.bigraphs.springframework.data</groupId>
     <artifactId>spring-data-cdo-parent</artifactId>
-    <version>0.7.5</version>
+    <version>0.8.0</version>
     <packaging>pom</packaging>
 
     <name>Spring Data for CDO - Parent</name>
@@ -27,7 +27,7 @@
     <licenses>
         <license>
             <name>The Apache License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
             <comments>Applies to Spring Data for CDO</comments>
         </license>
     </licenses>
@@ -63,23 +63,25 @@
 
     <repositories>
         <repository>
-            <id>eclipse-release</id>
-            <name>Eclipse Releases Repository</name>
-            <url>https://repo.eclipse.org/content/groups/releases/</url>
-        </repository>
-        <repository>
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
         </repository>
         <repository>
             <id>eclipse-emf-cdo</id>
             <layout>p2</layout>
-            <!-- CDO protocol version 37 -->
-            <!-- <url>https://download.eclipse.org/modeling/emf/cdo/drops/R20200610-0035/</url> -->
+            <!--CDO protocol version 54 (CD0 4.33.0) -->
+            <url>https://download.eclipse.org/modeling/emf/cdo/drops/R20251202-1653/</url>
+            <!--CDO protocol version 48 (CD0 4.26.0) -->
+            <!-- <url>https://download.eclipse.org/modeling/emf/cdo/drops/R20221130-2113</url>-->
             <!-- CDO protocol version 38 -->
             <!-- <url>https://download.eclipse.org/modeling/emf/cdo/drops/R20200902-0430/</url> -->
-            <!--CDO protocol version 48 -->
-            <url>https://download.eclipse.org/modeling/emf/cdo/drops/R20221130-2113</url>
+            <!-- CDO protocol version 37 -->
+            <!-- <url>https://download.eclipse.org/modeling/emf/cdo/drops/R20200610-0035/</url> -->
+        </repository>
+        <repository>
+            <id>eclipse-release</id>
+            <name>Eclipse Releases Repository</name>
+            <url>https://repo.eclipse.org/content/groups/releases/</url>
         </repository>
     </repositories>
 
@@ -91,7 +93,7 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <dist.id>spring-data-cdo</dist.id>
-        <eclipse.mirror>http://download.eclipse.org/</eclipse.mirror>
+        <eclipse.mirror>https://download.eclipse.org/</eclipse.mirror>
 <!--        <nexus.skipDeploy>true</nexus.skipDeploy>-->
         <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
         <!-- Versions: EMF -->
@@ -99,17 +101,15 @@
         <ecore.xmi.version>2.38.0</ecore.xmi.version>
         <emf.common.version>2.40.0</emf.common.version>
         <emf.codegen.version>2.22.0</emf.codegen.version>
-        <!-- Should match with the version in Bigraph Framework + Bigraph Ecore Metamodel -->
-        <emf.cdo.version>4.20.0-SNAPSHOT</emf.cdo.version><!--4.20.0.v20221124-1637-->
-        <!-- Should match with the version in Bigraph Framework + Bigraph Ecore Metamodel -->
-        <emf.cdo.common.version>4.20.0-SNAPSHOT</emf.cdo.common.version><!--4.20.0.v20221106-0628-->
-        <eclipse.core.runtime.version>3.26.100</eclipse.core.runtime.version>
-        <eclipse.equinox.common.version>3.17.100</eclipse.equinox.common.version>
         <emf.ecore.change.version>2.14.0</emf.ecore.change.version>
+        <!-- The Bigraph Framework and Bigraph Ecore Metamodel versions must be aligned with this CDO version -->
+        <emf.cdo.version>4.29.0-SNAPSHOT</emf.cdo.version><!--4.29.0.v20251117-1051 4.29.0-SNAPSHOT--> <!--4.20.0.v20221124-1637 4.20.0-SNAPSHOT-->
+        <!-- The Bigraph Framework and Bigraph Ecore Metamodel versions must be aligned with this CDO version -->
+        <emf.cdo.common.version>4.27.0-SNAPSHOT</emf.cdo.common.version><!-- 4.27.0.v20251202-0902 4.27.0-SNAPSHOT --> <!--4.20.0.v20221106-0628 4.20.0-SNAPSHOT-->
+        <eclipse.core.runtime.version>3.26.100</eclipse.core.runtime.version>
         <!-- Versions: Other -->
         <spring.data.commons.version>2.4.1</spring.data.commons.version>
         <guava.version>31.0.1-jre</guava.version>
-        <!--        <junit-jupiter.version>5.4.2</junit-jupiter.version>-->
         <junit-jupiter.version>5.6.2</junit-jupiter.version>
     </properties>
 
