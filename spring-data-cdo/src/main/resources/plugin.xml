@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<!--
+CHANGE NOTICE (Dominik Grzelak):
+
+- Merge product of plugin.xml of:
+    org.eclipse.net4j.tcp_4.4.2.v20250926-1543
+    org.eclipse.net4j_4.21.0.v20250926-1543
+- Added:
+    CDOServerProtocolFactory
+    ExecutorServiceFactory
+-->
+<!--
+	Copyright (c) 2006-2009, 2012, 2016, 2018, 2022, 2024 Eike Stepper (Loehne, Germany) and others.
+	All rights reserved. This program and the accompanying materials
+	are made available under the terms of the Eclipse Public License v1.0
+	which accompanies this distribution, and is available at
+	http://www.eclipse.org/legal/epl-v10.html
+
+	Contributors:
+	  Eike Stepper - initial API and implementation
+-->
+
+<plugin>
+
+    <extension point="org.eclipse.net4j.util.productGroups">
+        <productGroup id="org.eclipse.net4j.bufferProviders" name="%productGroup.name"/>
+        <productGroup id="org.eclipse.net4j.serverProtocols" name="%productGroup.name.0"/>
+        <productGroup id="org.eclipse.net4j.clientProtocols" name="%productGroup.name.1"/>
+        <productGroup id="org.eclipse.net4j.acceptorDescriptionParsers" name="%productGroup.name.2"/>
+        <productGroup id="org.eclipse.net4j.acceptors" name="%productGroup.name.3"/>
+        <productGroup id="org.eclipse.net4j.connectors" name="%productGroup.name.4"/>
+        <productGroup id="org.eclipse.net4j.selectors" name="%productGroup.name.5"/>
+    </extension>
+
+    <extension point="org.eclipse.net4j.util.factories">
+        <factory
+                class="org.eclipse.internal.net4j.buffer.BufferPoolFactory"
+                productGroup="org.eclipse.net4j.bufferProviders"
+                type="default"/>
+        <factory
+                class="org.eclipse.net4j.util.io.GZIPStreamWrapper$Factory"
+                productGroup="org.eclipse.net4j.streamWrappers"
+                type="gzip"/>
+        <factory
+                class="org.eclipse.net4j.signal.heartbeat.HeartBeatProtocol$Server$Factory"
+                productGroup="org.eclipse.net4j.serverProtocols"
+                type="heartbeat"/>
+        <factory
+                class="org.eclipse.emf.cdo.server.internal.net4j.protocol.CDOServerProtocolFactory"
+                productGroup="org.eclipse.net4j.serverProtocols"
+                type="cdo"/>
+        <factory
+                class="org.eclipse.net4j.internal.tcp.TCPSelectorFactory"
+                productGroup="org.eclipse.net4j.selectors"
+                type="tcp"/>
+        <factory
+                class="org.eclipse.net4j.internal.tcp.TCPAcceptor$DescriptionParserFactory"
+                productGroup="org.eclipse.net4j.acceptorDescriptionParsers"
+                type="tcp"/>
+        <factory
+                class="org.eclipse.net4j.internal.tcp.TCPAcceptorFactory"
+                productGroup="org.eclipse.net4j.acceptors"
+                type="tcp"/>
+        <factory
+                class="org.eclipse.net4j.internal.tcp.TCPConnectorFactory"
+                productGroup="org.eclipse.net4j.connectors"
+                type="tcp"/>
+        <factory
+                class="org.eclipse.net4j.internal.tcp.ssl.SSLAcceptor$DescriptionParserFactory"
+                productGroup="org.eclipse.net4j.acceptorDescriptionParsers"
+                type="ssl"/>
+        <factory
+                class="org.eclipse.net4j.internal.tcp.ssl.SSLAcceptorFactory"
+                productGroup="org.eclipse.net4j.acceptors"
+                type="ssl"/>
+        <factory
+                class="org.eclipse.net4j.internal.tcp.ssl.SSLConnectorFactory"
+                productGroup="org.eclipse.net4j.connectors"
+                type="ssl"/>
+        <factory
+                class="org.eclipse.net4j.util.concurrent.ExecutorServiceFactory"
+                productGroup="org.eclipse.net4j.executorServices"
+                type="default"/>
+    </extension>
+
+    <extension point="org.eclipse.net4j.util.elementProcessors">
+        <elementProcessor class="org.eclipse.net4j.TransportInjector"/>
+        <elementProcessor class="org.eclipse.net4j.signal.heartbeat.HeartBeatProtocol$Server$TimerInjector"/>
+        <elementProcessor
+                class="org.eclipse.net4j.internal.tcp.TCPSelectorInjector">
+        </elementProcessor>
+    </extension>
+
+</plugin>

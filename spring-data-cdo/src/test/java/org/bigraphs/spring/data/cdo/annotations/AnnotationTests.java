@@ -5,7 +5,6 @@ import org.bigraphs.spring.data.cdo.CdoOperations;
 import org.bigraphs.spring.data.cdo.CdoTemplate;
 import org.bigraphs.spring.data.cdo.annotation.CDO;
 import org.bigraphs.spring.data.cdo.config.AbstractCdoClientConfiguration;
-import lombok.RequiredArgsConstructor;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -101,11 +100,13 @@ public class AnnotationTests {
     public class TestCdo {
     }
 
-    // examplary test service with injected CdoOperations
-    @RequiredArgsConstructor
+    // Exemplary test service with injected CdoOperations
     static class TestCdoService {
 
         final CdoOperations operations;
 
+        public TestCdoService(CdoOperations operations) {
+            this.operations = operations;
+        }
     }
 }

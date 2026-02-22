@@ -18,12 +18,11 @@ import org.eclipse.net4j.Net4jUtil;
 import org.eclipse.net4j.TransportConfigurator;
 import org.eclipse.net4j.acceptor.IAcceptor;
 import org.eclipse.net4j.connector.IConnector;
-//import org.eclipse.net4j.http.HTTPUtil;
-//import org.eclipse.net4j.http.internal.server.HTTPAcceptor;
 import org.eclipse.net4j.internal.tcp.TCPAcceptor;
 import org.eclipse.net4j.tcp.TCPUtil;
 import org.eclipse.net4j.util.container.IManagedContainer;
 import org.eclipse.net4j.util.container.IPluginContainer;
+import org.eclipse.net4j.util.factory.FactoryKey;
 import org.eclipse.net4j.util.lifecycle.LifecycleUtil;
 import org.eclipse.net4j.util.om.OMPlatform;
 import org.eclipse.net4j.util.om.OSGiApplication;
@@ -128,32 +127,36 @@ public class CDOStandaloneServer extends OSGiApplication {
         } catch (FileNotFoundException ignored) { /* ignored */}
 
         if (Objects.nonNull(configFile) && configFile.exists()) {
-            OM.LOG.info("configure by file");
-            OCLQueryHandler.Factory oclFactory = new OCLQueryHandler.Factory();
-            RepositoryConfigurator repositoryConfigurator = new RepositoryConfigurator(
-                    IPluginContainer.INSTANCE);
+            OM.LOG.info("Configuration by file");
+            this.container = IPluginContainer.INSTANCE; // new ManagedContainer(); //
+
+            RepositoryConfigurator repositoryConfigurator = new RepositoryConfigurator(this.container);
             repositoryConfigurator.getStoreFactories().put("mem", new MEMStoreFactory());
             repositoryConfigurator.getRepositoryFactories().put("default", new RepositoryFactory());
-            repositoryConfigurator.getContainer().registerFactory(oclFactory);
+
+            CDOServerUtil.prepareContainer(this.container);
+            TCPUtil.prepareContainer(this.container);
+//            HTTPUtil.prepareContainer(this.container);
+            Net4jUtil.prepareContainer(this.container);
+            CDONet4jUtil.prepareContainer(this.container);
+            CDONet4jServerUtil.prepareContainer(this.container);
+
+            this.container.getFactoryRegistry().put(new FactoryKey("org.eclipse.net4j.executorServices", "default"), new org.eclipse.net4j.util.concurrent.ExecutorServiceFactory());
+            OCLQueryHandler.Factory oclFactory = new OCLQueryHandler.Factory();
+            this.container.registerFactory(oclFactory);
+            this.container.registerFactory(new TCPAcceptor.DescriptionParserFactory());
+//            net4jConfigurator.getContainer().registerFactory(new HTTPAcceptor.DescriptionParserFactory());
+
+//            this.container.activate();
             repositories = repositoryConfigurator.configure(configFile);
-            if (repositories == null || repositories.length == 0) {
+            if (repositories.length == 0) {
                 OM.LOG.warn("No repositories configured");
             }
 
-            TransportConfigurator net4jConfigurator = new TransportConfigurator(
-                    IPluginContainer.INSTANCE);
-            this.container = net4jConfigurator.getContainer();
-            TCPUtil.prepareContainer(net4jConfigurator.getContainer());
-//            HTTPUtil.prepareContainer(net4jConfigurator.getContainer());
-            Net4jUtil.prepareContainer(net4jConfigurator.getContainer());
-//            net4jConfigurator.getContainer().registerFactory(new HTTPAcceptor.DescriptionParserFactory());
-            net4jConfigurator.getContainer().registerFactory(new TCPAcceptor.DescriptionParserFactory());
-            CDONet4jUtil.prepareContainer(net4jConfigurator.getContainer());
-            CDONet4jServerUtil.prepareContainer(net4jConfigurator.getContainer());
-//            net4jConfigurator.getContainer().getFactoryRegistry().put(oclFactory.getKey(), oclFactory);
-//            net4jConfigurator.getContainer().registerFactory(oclFactory);
+            TransportConfigurator net4jConfigurator = new TransportConfigurator(container);
+//            System.out.println("Factories: " + container.getFactoryRegistry().keySet());
             acceptors = net4jConfigurator.configure(configFile);
-            if (acceptors == null || acceptors.length == 0) {
+            if (acceptors.length == 0) {
                 OM.LOG.warn("No acceptors configured");
             }
         } else {
@@ -225,8 +228,8 @@ public class CDOStandaloneServer extends OSGiApplication {
 
     public IConnector initializeConnector(IStore store) {
         if (connector == null) {
+            container = IPluginContainer.INSTANCE; // new ManagedContainer(); //
             OCLQueryHandler.Factory oclFactory = new OCLQueryHandler.Factory();
-            container = IPluginContainer.INSTANCE;
             Net4jUtil.prepareContainer(container);
             CDONet4jUtil.prepareContainer(container);
             CDONet4jServerUtil.prepareContainer(container);
@@ -234,6 +237,7 @@ public class CDOStandaloneServer extends OSGiApplication {
 //            HTTPUtil.prepareContainer(container);
             container.registerFactory(oclFactory);
 
+//            container.activate();
             // Initialize Acceptor
             if (acceptors == null) {
                 IAcceptor acceptor = createAcceptor(container);
