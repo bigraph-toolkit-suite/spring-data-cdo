@@ -88,12 +88,7 @@ public class CdoClient {
     }
 
     public CdoClient(String host, int port) {
-        this(new CdoServerAddress(
-                        CdoServerAddress.builder()
-                                .setDescription(host)
-                                .setPort(port)
-                )
-        );
+        this(new CdoServerAddress(CdoServerAddress.builder().setDescription(host).setPort(port)));
     }
 
     public CdoClient(@NonNull CdoServerAddress addr) {
@@ -104,8 +99,7 @@ public class CdoClient {
         this(addr, credentials, new CdoClientOptions());
     }
 
-    public CdoClient(@NonNull CdoServerAddress addr, @Nullable CdoCredentials cdoCredentials,
-                     @NonNull CdoClientOptions options) {
+    public CdoClient(@NonNull CdoServerAddress addr, @Nullable CdoCredentials cdoCredentials, @NonNull CdoClientOptions options) {
         this.addr = addr;
         this.cdoCredentials = cdoCredentials;
         this.cdoClientOptions = options;
@@ -166,9 +160,7 @@ public class CdoClient {
         IConnector connector = createConnector(connectorDescription);
         connectors.add(connector);
         // CDONet4jSessionConfiguration config = CDONet4jUtil.createNet4jSessionConfiguration();
-        ReconnectingCDOSessionConfiguration config = CDONet4jUtil.createReconnectingSessionConfiguration(
-                connectorDescription.getFullConnectorDescription(),
-                "", // (!) repository name has to be set later
+        ReconnectingCDOSessionConfiguration config = CDONet4jUtil.createReconnectingSessionConfiguration(connectorDescription.getFullConnectorDescription(), "", // (!) repository name has to be set later
                 this.container);
         config.setConnector(connector);
         config.setMaxReconnectAttempts(5);
@@ -186,11 +178,7 @@ public class CdoClient {
      * @return
      */
     protected IConnector createConnector(CdoServerAddress addr) {
-        IConnector connector = Net4jUtil.getConnector(
-                this.container,
-                addr.getTransportType(),
-                addr.getFullConnectorDescription()
-        );
+        IConnector connector = Net4jUtil.getConnector(this.container, addr.getTransportType(), addr.getFullConnectorDescription());
         //Net4jUtil.getConnector(IPluginContainer.INSTANCE, "tcp", "repos.foo.org:2036");
         //OR: createAcceptor()
         return connector;
@@ -225,8 +213,8 @@ public class CdoClient {
      * <p>
      * It removes all created containers, connectors, etc. that were created by the client.
      */
-    //TODO also remove/close sessions
     public void close() {
+        if (!container.isActive()) return;
         for (int i = connectors.size() - 1; i >= 0; i--) {
             connectors.get(i).close();
             connectors.remove(i);
@@ -252,8 +240,7 @@ public class CdoClient {
     public boolean isConnected() {
         for (int i = 0; i < connectors.size(); i++) {
             LifecycleUtil.waitForActive(connectors.get(i), 1000);
-            if (LifecycleUtil.isActive(connectors.get(i)))
-                return true;
+            if (LifecycleUtil.isActive(connectors.get(i))) return true;
         }
         return false;
     }
@@ -323,8 +310,7 @@ public class CdoClient {
     }
 
     protected IAcceptor createAcceptor(CdoServerAddress addr) {
-        return (IAcceptor) container.getElement(
-                addr.getProductGroup(), //e.g., "org.eclipse.net4j.acceptors"
+        return (IAcceptor) container.getElement(addr.getProductGroup(), //e.g., "org.eclipse.net4j.acceptors"
                 addr.getTransportType(), //e.g., "tcp"
                 addr.getFullConnectorDescription() //addr.getDescription() + ":" + addr.getPort() //ip:port
         );

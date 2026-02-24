@@ -56,11 +56,11 @@ The Java artifacts are deployed to the https://central.sonatype.com/[Maven Centr
 [source,shell]
 ----
 # Deploy all modules
-$ mvn clean deploy -DskipTests -P release,central
+$ mvn clean deploy -DskipTests -P release,central -DskipNexusStagingDeployMojo=true
 
 # Deploy single modules
-$ mvn clean deploy -DskipTests -P release,central -pl :spring-data-cdo
-$ mvn clean deploy -DskipTests -P release,central -pl :spring-data-cdo-distribution
+$ mvn clean deploy -DskipTests -P release,central -pl :spring-data-cdo -DskipNexusStagingDeployMojo=true
+$ mvn clean deploy -DskipTests -P release,central -pl :spring-data-cdo-distribution -DskipNexusStagingDeployMojo=true
 ----
 
 The staged artifacts have to be released manually.

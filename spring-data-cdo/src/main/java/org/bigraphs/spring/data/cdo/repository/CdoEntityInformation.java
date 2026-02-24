@@ -25,7 +25,4 @@ public interface CdoEntityInformation<T, ID> extends EntityInformation<T, ID> {
     }
 
     String getIdAttribute();
-
-//    EPackage getEPackage();
-
 }

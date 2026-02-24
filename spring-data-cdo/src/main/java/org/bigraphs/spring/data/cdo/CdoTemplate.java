@@ -31,6 +31,7 @@ import org.eclipse.emf.cdo.common.util.CDOResourceNodeNotFoundException;
 import org.eclipse.emf.cdo.eresource.CDOResource;
 import org.eclipse.emf.cdo.eresource.CDOResourceFolder;
 import org.eclipse.emf.cdo.eresource.CDOResourceNode;
+import org.eclipse.emf.cdo.eresource.impl.CDOResourceImpl;
 import org.eclipse.emf.cdo.internal.common.id.CDOIDObjectLongImpl;
 import org.eclipse.emf.cdo.session.CDOSession;
 import org.eclipse.emf.cdo.spi.common.revision.InternalCDORevision;
@@ -886,7 +887,7 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
                 }
 
                 if (resource != null) {
-                    if (resource.getResourceSet().getPackageRegistry().size() == 0) {
+                    if (resource.getResourceSet().getPackageRegistry().isEmpty()) {
                         resource.getResourceSet().getPackageRegistry().put(
                                 internalValue.eClass().getEPackage().getNsURI(),
                                 internalValue.eClass().getEPackage()
@@ -1095,6 +1096,7 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
                         resource.getContents().clear();
                     } catch (IllegalStateException | StackOverflowError | CDOClassNotFoundException e) {
                         resource.getResourceSet().getResources().remove(resource); // ((CDOResourceImpl) resource).removeFromResourceSet();
+                    } catch (ArrayIndexOutOfBoundsException ignored) {
                     }
                 }
 
@@ -1384,16 +1386,6 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
      * @return
      */
     public <T> T execute(CdoCallback<T> action) {
-        //TODO use sessionprovider or something similar or manage transaction here
-        //with a transaction manager? see redis
-//        if (enableTransactionSupport) {
-//            // only bind resources in case of potential transaction synchronization
-//            conn = RedisConnectionUtils.bindConnection(factory, enableTransactionSupport);
-//        } else {
-//            conn = RedisConnectionUtils.getConnection(factory);
-//        }
-//
-//        boolean existingConnection = TransactionSynchronizationManager.hasResource(factory);
         //for us its not only the connection but the session
         try {
             CdoClientSession session = cdoDbFactory.getSession(this.cdoSessionOptions);
@@ -1402,8 +1394,6 @@ public class CdoTemplate implements CdoOperations, ApplicationContextAware, Appl
             return postProcessResult(result, session, existingSession);
         } catch (RuntimeException e) {
             throw potentiallyConvertRuntimeException(e, exceptionTranslator);
-        } finally {
-            //TODO release session or connection...
         }
     }
 

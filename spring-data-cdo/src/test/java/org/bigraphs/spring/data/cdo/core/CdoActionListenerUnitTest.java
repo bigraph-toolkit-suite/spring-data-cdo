@@ -73,9 +73,9 @@ public class CdoActionListenerUnitTest {
             for (CDORevisionKey each : changedObjects) {
                 try {
                     CDORevisionHolder<Object> revisionById = template.getRevisionById(each.getID(), "junit/test/books");
-                    System.out.println("\tChanged object");
-                    System.out.println("ID: " + each.getID() + "// " + each.getBranch().getPathName());
-                    System.out.println("REVCOUNT: " + revisionById.getRevisionCount());
+                    System.out.println("\tChanged Object");
+                    System.out.println("\t\tID: " + each.getID() + "// " + each.getBranch().getPathName());
+                    System.out.println("\t\tRevision Count: " + revisionById.getRevisionCount());
                 } catch (Exception e) {
                     continue;
                 }
@@ -84,18 +84,12 @@ public class CdoActionListenerUnitTest {
             for (CDOIDAndVersion each : newObjects) {
                 try {
                     CDORevisionHolder<Object> revisionById = template.getRevisionById(each.getID(), "junit/test/books");
-                    System.out.println("\tNew object");
-                    System.out.println("ID: " + each.getID() + "// Version= " + each.getVersion());
-                    System.out.println("REVCOUNT: " + revisionById.getRevisionCount());
+                    System.out.println("\tNew Object");
+                    System.out.println("\t\tID: " + each.getID() + "// Version= " + each.getVersion());
+                    System.out.println("\t\tRevision Count: " + revisionById.getRevisionCount());
                 } catch (Exception e) {
                     continue;
                 }
-            }
-
-            if (cnt.get() >= 4) {
-                bookRev.changeISBN("1337");
-                template.save(bookRev);
-                cnt.set(0);
             }
         };
         template.addListener(filter, f);
@@ -105,6 +99,8 @@ public class CdoActionListenerUnitTest {
         bookRev.changeISBN("1112");
         template.save(bookRev);
         bookRev.changeISBN("1113");
+        template.save(bookRev);
+        bookRev.changeISBN("1337");
         template.save(bookRev);
 
         System.out.println("Inserted=" + bookRev + " with ID= " + CDOUtil.getCDOObject(bookRev.getModel()).cdoID());
@@ -251,16 +247,20 @@ public class CdoActionListenerUnitTest {
         template.addListeners(filter, actionDelegate2, actionDelegate1);
         template.addListener(filter3, actionDelegate3);
         BookAnnotated inserted = template.insert(bookRev);
+        Thread.sleep(500);
         inserted.changeISBN("1111");
         inserted = template.save(inserted);
+        Thread.sleep(500);
         inserted.changeISBN("1112");
         inserted = template.save(inserted);
+        Thread.sleep(500);
         inserted.changeISBN("1113");
         inserted = template.save(inserted);
+        Thread.sleep(500);
         System.out.println("Inserted=" + inserted + " with ID= " + CDOUtil.getCDOObject(inserted.getModel()).cdoID());
         assert inserted.getId() == CDOUtil.getCDOObject(inserted.getModel()).cdoID();
-        Thread.sleep(2500);
         System.out.println("Cnt: " + cnt.get());
+        Thread.sleep(1000);
 //        assert cnt.get() == 4;
     }
 }

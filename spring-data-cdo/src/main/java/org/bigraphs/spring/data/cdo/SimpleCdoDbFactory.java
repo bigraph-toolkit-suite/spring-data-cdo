@@ -47,8 +47,6 @@ public class SimpleCdoDbFactory extends CdoDbFactorySupport<CdoClient> implement
     Optional<CdoClientSession> instance = Optional.empty();
 
     public CdoClientSession getSession(CdoClientSessionOptions options) throws LifecycleException {
-        //TODO use a session manager
-//        return getCdoClient().startSession(options);
         if (instance.isEmpty()) {
             instance = Optional.of(getCdoClient().startSession(options));
         }

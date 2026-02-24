@@ -2,7 +2,6 @@ package org.bigraphs.spring.data.cdo.repository;
 
 import org.eclipse.emf.ecore.EPackage;
 import org.springframework.data.mapping.PersistentEntity;
-import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
 /**
@@ -29,7 +28,6 @@ public interface CdoPersistentEntity<T> extends PersistentEntity<T, CdoPersisten
     @Nullable
     CdoPersistentProperty getEObjectModelProperty();
 
-    @NonNull
     CdoPersistentProperty getRequiredEObjectModelProperty();
 
     /**

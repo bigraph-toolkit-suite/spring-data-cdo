@@ -15,6 +15,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -23,7 +24,9 @@ import org.springframework.data.annotation.Id;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.util.Arrays;
 import java.util.Objects;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -41,7 +44,6 @@ public class BookNotAnnotatedRepositoryIntegrationTest {
     public static void init() throws Exception {
         System.out.println("Register EPackage");
         // The package must be registered as it is later retrieved. Necessary for the CDO query.
-//        BookstoreDomainModelPackage eINSTANCE = BookstoreDomainModelPackage.eINSTANCE;
         BookstoreDomainModelPackageImpl.init();
     }
 
@@ -84,8 +86,9 @@ public class BookNotAnnotatedRepositoryIntegrationTest {
         assertThrows(IllegalArgumentException.class, () -> {
             bookRepository.save(bookD);
         });
-        //TODO:
-//        bookRepository.saveAll(Arrays.asList(bookA, bookB, bookC, bookD));
+        assertThrows(IllegalArgumentException.class, () -> {
+            bookRepository.saveAll(Arrays.asList(bookA, bookB, bookC, bookD));
+        });
     }
 
     @Test
@@ -103,7 +106,6 @@ public class BookNotAnnotatedRepositoryIntegrationTest {
 
     @Test
     public void count_entities() {
-        //TODO
 //        bookRepository.count();
     }
 

@@ -26,12 +26,7 @@ package org.bigraphs.spring.data.cdo.config;
 public abstract class BeanNames {
 
     public static final String MAPPING_CONTEXT_BEAN_NAME = "cdoMappingContext";
-
-    //	static final String INDEX_HELPER_BEAN_NAME = "indexCreationHelper";
-    static final String CDO_BEAN_NAME = "cdoClient";
-    static final String DB_FACTORY_BEAN_NAME = "cdoDbFactory";
-//	static final String IS_NEW_STRATEGY_FACTORY_BEAN_NAME = "isNewStrategyFactory";
-//	static final String DEFAULT_CONVERTER_BEAN_NAME = "mappingConverter";
+    public static final String CDO_BEAN_NAME = "cdoClient";
+    public static final String DB_FACTORY_BEAN_NAME = "cdoDbFactory";
     public static final String CDO_TEMPLATE_BEAN_NAME = "cdoTemplate";
-//	static final String GRID_FS_TEMPLATE_BEAN_NAME = "gridFsTemplate";
 }

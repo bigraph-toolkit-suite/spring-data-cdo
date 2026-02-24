@@ -3,8 +3,10 @@ package org.bigraphs.spring.data.cdo.repositories;
 import de.tudresden.inf.st.ecore.models.bookstoreDomainModel.Book;
 import de.tudresden.inf.st.ecore.models.bookstoreDomainModel.impl.BookstoreDomainModelPackageImpl;
 import org.bigraphs.spring.data.cdo.*;
+import org.bigraphs.spring.data.cdo.core.CdoDeleteResult;
 import org.bigraphs.spring.data.cdo.repository.config.EnableCdoRepositories;
 import org.eclipse.emf.cdo.util.CDOUtil;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -31,7 +33,6 @@ public class BookAnnotatedRepositoryIntegrationTest {
     public static void init() throws Exception {
         System.out.println("Register EPackage");
         // The package must be registered as it is later retrieved. Necessary for the CDO query.
-//        BookstoreDomainModelPackage eINSTANCE = BookstoreDomainModelPackage.eINSTANCE;
         BookstoreDomainModelPackageImpl.init();
     }
 
@@ -76,6 +77,11 @@ public class BookAnnotatedRepositoryIntegrationTest {
         bookRepository.save(bookRev);
     }
 
+    @After
+    public void tearDown() throws Exception {
+        bookRepository.deleteAll();
+    }
+
     @Test
     public void get_revisions_of_book() {
         bookRepository.save(bookRev);
@@ -94,7 +100,6 @@ public class BookAnnotatedRepositoryIntegrationTest {
         assertEquals(((Book) byId.get().model).getName(), ((Book) bookD.model).getName());
     }
 
-    //TODO: this causes a stackoverflow error when removing
     @Test
     public void save_multiple_times_has_no_effect() {
         String changeTitleTo = "Maven - HowTo";
@@ -116,5 +121,4 @@ public class BookAnnotatedRepositoryIntegrationTest {
         long count = bookRepository.count();
         assertEquals(5, count);
     }
-
 }

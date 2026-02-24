@@ -27,9 +27,5 @@ public interface CdoPersistentProperty extends PersistentProperty<CdoPersistentP
 
     EObjectModel getEPackageField();
 
-    /**
-     * TODO WIP
-     * @return
-     */
     Class<?> getEPackageType();
 }

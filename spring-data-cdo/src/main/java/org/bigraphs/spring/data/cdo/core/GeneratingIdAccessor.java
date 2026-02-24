@@ -28,11 +28,12 @@ import org.springframework.util.Assert;
 import java.util.Objects;
 
 /**
- * // * {@link IdentifierAccessor} adding a {} to automatically generate an identifier and
+ * {@link IdentifierAccessor} adding a {} to automatically generate an identifier and
  * set it on the underling bean instance.
  *
- * @author Oliver Gierke
- * @author Mark Paluch
+ * @author Oliver Gierke (Original)
+ * @author Mark Paluch (Original)
+ * @author Dominik Grzelak (Modification)
  */
 public class GeneratingIdAccessor implements IdentifierAccessor {
 

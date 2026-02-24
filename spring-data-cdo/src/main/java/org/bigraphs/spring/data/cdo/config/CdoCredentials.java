@@ -9,6 +9,10 @@ public class CdoCredentials {
     private final char[] password;
     private final String authSource;
 
+    public static CdoCredentials empty() {
+        return new CdoCredentials("", new char[]{}, "");
+    }
+
     public CdoCredentials(final String userName, final char[] password, final String authSource) {
         this.userName = userName;
         this.password = password != null ? password.clone() : null;

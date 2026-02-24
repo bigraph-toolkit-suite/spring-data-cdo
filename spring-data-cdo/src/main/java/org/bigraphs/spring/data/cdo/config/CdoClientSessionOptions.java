@@ -5,7 +5,7 @@ package org.bigraphs.spring.data.cdo.config;
  */
 public class CdoClientSessionOptions {
 
-    private String repository;
+    private final String repository;
     private boolean generatedPackageEmulationEnabled;
     private long writeLockoutTimeout;
 
@@ -33,6 +33,10 @@ public class CdoClientSessionOptions {
         private String repository;
         private boolean generatedPackageEmulationEnabled = true;
         private long writeLockoutTimeout = 10000L;
+
+        public CdoClientSessionOptionsBuilder() {
+            repository = "";
+        }
 
         public CdoClientSessionOptionsBuilder setRepository(String repository) {
             this.repository = repository;

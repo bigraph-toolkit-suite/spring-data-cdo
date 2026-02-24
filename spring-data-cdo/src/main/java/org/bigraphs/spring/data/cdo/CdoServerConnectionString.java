@@ -4,6 +4,7 @@ import org.bigraphs.spring.data.cdo.config.CdoCredentials;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -83,14 +84,14 @@ public class CdoServerConnectionString {
         }
 
         this.hosts = unmodifiableList(parseHosts(asList(hostIdentifier.split(","))));
-        if (this.hosts.size() > 0) {
+        if (!this.hosts.isEmpty()) {
             String[] splitted = this.hosts.get(0).split(":");
             this.host = splitted[0];
             this.port = Integer.parseInt(splitted[1]);
         }
 
         idx = unprocessedConnectionString.indexOf("/");
-        if (unprocessedConnectionString.length() == 0) {
+        if (unprocessedConnectionString.isEmpty()) {
             throw new IllegalArgumentException("The connection string contains no repository details.");
         }
 
@@ -99,14 +100,17 @@ public class CdoServerConnectionString {
             this.repoName = unprocessedConnectionString;
         } else {
             this.repoName = unprocessedConnectionString.substring(0, idx);
-            if (this.repoName.replaceAll("/", "").length() == 0) {
+            if (this.repoName.replaceAll("/", "").isEmpty()) {
                 throw new IllegalArgumentException("The connection string contains no repository details.");
             }
             repoResourcePathString = unprocessedConnectionString.substring(idx, unprocessedConnectionString.length());
         }
 
-        credential = new CdoCredentials(userName, password, "");
-
+        if (userName == null) {
+            credential = CdoCredentials.empty();
+        } else {
+            credential = new CdoCredentials(userName, password, "");
+        }
     }
 
     private int countOccurrences(final String haystack, final String needle) {
@@ -118,25 +122,16 @@ public class CdoServerConnectionString {
     }
 
     private String urldecode(final String input, final boolean password) {
-        try {
-            return URLDecoder.decode(input, UTF_8);
-        } catch (UnsupportedEncodingException e) {
-            if (password) {
-                throw new IllegalArgumentException("The connection string contained unsupported characters in the password.");
-            } else {
-                throw new IllegalArgumentException(format("The connection string contained unsupported characters: '%s'."
-                        + "Decoding produced the following error: %s", input, e.getMessage()));
-            }
-        }
+        return URLDecoder.decode(input, StandardCharsets.UTF_8);
     }
 
     private List<String> parseHosts(final List<String> rawHosts) {
-        if (rawHosts.size() == 0) {
+        if (rawHosts.isEmpty()) {
             throw new IllegalArgumentException("The connection string must contain at least one host");
         }
-        List<String> hosts = new ArrayList<String>();
+        List<String> hosts = new ArrayList<>();
         for (String host : rawHosts) {
-            if (host.length() == 0) {
+            if (host.isEmpty()) {
                 throw new IllegalArgumentException(format("The connection string contains an empty host '%s'. ", rawHosts));
             } else if (host.endsWith(".sock")) {
                 host = urldecode(host);
@@ -194,11 +189,11 @@ public class CdoServerConnectionString {
     }
 
     public String getUsername() {
-        return credential != null ? credential.getUserName() : null;
+        return credential.getUserName();
     }
 
     public char[] getPassword() {
-        return credential != null ? credential.getPassword() : null;
+        return credential.getPassword();
     }
 
     public String getServer() {

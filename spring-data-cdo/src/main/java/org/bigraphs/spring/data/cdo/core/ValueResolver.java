@@ -9,5 +9,5 @@ import java.lang.annotation.Annotation;
  */
 public interface ValueResolver {
 
-    Object getInternalValue(PersistentEntity owner, Object source, Class<? extends Annotation> annotation);
+    Object getInternalValue(PersistentEntity<?,?> owner, Object source, Class<? extends Annotation> annotation);
 }

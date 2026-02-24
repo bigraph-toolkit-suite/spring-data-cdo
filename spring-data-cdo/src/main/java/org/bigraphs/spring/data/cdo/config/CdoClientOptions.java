@@ -10,7 +10,7 @@ public class CdoClientOptions {
 
     private CdoServerAddress addr;
 
-    private CdoCredentials cdoCredentials;
+    private CdoCredentials cdoCredentials = CdoCredentials.empty();
 
     public CdoClientOptions() {
         this("0.0.0.0");
@@ -20,8 +20,8 @@ public class CdoClientOptions {
         addr = new CdoServerAddress(CdoServerAddress.builder().setDescription(server));
     }
 
-    public static CdoClientOptions.Builder builder() {
-        return new CdoClientOptions.Builder();
+    public static Builder builder() {
+        return new Builder();
     }
 
     public CdoServerAddress getAddr() {
@@ -35,7 +35,7 @@ public class CdoClientOptions {
     public static class Builder {
         private String description = "localhost";
         private CdoServerAddress addr;
-        private CdoCredentials cdoCredentials;
+        private CdoCredentials cdoCredentials = CdoCredentials.empty();
 
         public Builder() {
         }

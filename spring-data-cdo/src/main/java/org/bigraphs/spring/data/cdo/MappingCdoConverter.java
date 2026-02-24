@@ -46,12 +46,12 @@ import java.util.*;
  */
 public class MappingCdoConverter implements CdoConverter, ApplicationContextAware, InitializingBean {
 
-    private static final Collection<Class> DYNAMIC_ECORE_CDO_CLASSES;
-    private static final Collection<Class> CDO_LEGACY_CLASSES;
+    private static final Collection<Class<?>> DYNAMIC_ECORE_CDO_CLASSES;
+    private static final Collection<Class<?>> CDO_LEGACY_CLASSES;
 
     static {
 
-        Set<Class> dynamicClasses = new HashSet<>();
+        Set<Class<?>> dynamicClasses = new HashSet<>();
         dynamicClasses.add(DynamicCDOObjectImpl.class);
         dynamicClasses.add(DynamicEObjectImpl.class);
         dynamicClasses.add(InternalEObject.class);
@@ -59,7 +59,7 @@ public class MappingCdoConverter implements CdoConverter, ApplicationContextAwar
         dynamicClasses.add(BasicEObjectImpl.class);
         dynamicClasses.add(CDOObjectImpl.class);
         dynamicClasses.add(EObjectImpl.class);
-        Set<Class> cdoLegacyClasses = new HashSet<>();
+        Set<Class<?>> cdoLegacyClasses = new HashSet<>();
         cdoLegacyClasses.add(CDOLegacyWrapper.class);
         cdoLegacyClasses.add(CDOLegacyAdapter.class);
 
@@ -102,16 +102,9 @@ public class MappingCdoConverter implements CdoConverter, ApplicationContextAwar
 
 
     @Override
-    public void write(@NonNull Object obj, EObject ePackage) {
+    public void write(Object obj, EObject ePackage) {
         Class<?> entityType = ClassUtils.getUserClass(obj.getClass());
         TypeInformation<?> type = ClassTypeInformation.from(entityType);
-        System.out.println(type);
-        System.out.println(entityType);
-
-        //TODO Use conversion service
-        //check if the entity needs an additional type such as _class as for json documents needed, for example
-        //here is place to add some missing information
-
     }
 
     @Override
@@ -157,14 +150,12 @@ public class MappingCdoConverter implements CdoConverter, ApplicationContextAwar
 
     }
 
-
-    //TODO
+    @Nullable
     @Override
-    public Object getInternalValue(PersistentEntity owner, Object source, Class<? extends Annotation> annotation) {
+    public Object getInternalValue(PersistentEntity<?, ?> owner, Object source, Class<? extends Annotation> annotation) {
         //use correct resolver class for specific annotation
         if (annotation.equals(EObjectModel.class)) {
-            EObject ePackage = ePackageResolver.resolveEPackageField((CdoPersistentEntity) owner, source, this);
-            return ePackage;
+            return ePackageResolver.resolveEPackageField((CdoPersistentEntity<?>) owner, source, this);
         }
         return null;
     }
@@ -174,8 +165,7 @@ public class MappingCdoConverter implements CdoConverter, ApplicationContextAwar
         if (methodResolveCache.containsKey(type)) {
             return methodResolveCache.get(type);
         }
-        //TODO eventuell einfacher mit: mappingContext.getPersistentEntity(type).getPropertyAccessor()
-        //  benötigt nur noch bean und name des feldes
+
         methodResolveCache.put(type, null);
         ReflectionUtils.doWithMethods(type, method -> methodResolveCache.put(type, method),
                 method -> ClassUtils.isAssignable(org.eclipse.emf.ecore.EObject.class, method.getReturnType())

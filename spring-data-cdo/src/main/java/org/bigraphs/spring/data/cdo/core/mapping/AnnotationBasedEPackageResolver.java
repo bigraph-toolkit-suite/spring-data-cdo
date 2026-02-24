@@ -30,7 +30,7 @@ public class AnnotationBasedEPackageResolver implements EPackageResolver {
         TypeInformation<?> typeInformation = owner.getTypeInformation();
         Class<?> type = typeInformation.getType();
 
-        PersistentProperty persistentProperty = owner.getPersistentProperty(EObjectModel.class);
+        PersistentProperty<?> persistentProperty = owner.getPersistentProperty(EObjectModel.class);
         if (Objects.nonNull(persistentProperty)) {
             return (org.eclipse.emf.ecore.EObject) owner.getPropertyAccessor(source).getProperty(persistentProperty);
         }

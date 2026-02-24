@@ -5,6 +5,7 @@ import org.bigraphs.spring.data.cdo.core.listener.filter.FilterCriteria;
 import org.eclipse.emf.cdo.common.revision.CDOIDAndVersion;
 import org.eclipse.emf.cdo.common.revision.CDORevisionKey;
 import org.eclipse.emf.cdo.session.CDOSessionInvalidationEvent;
+import org.eclipse.emf.cdo.util.ObjectNotFoundException;
 import org.eclipse.net4j.util.event.IEvent;
 import org.eclipse.net4j.util.event.IListener;
 
@@ -39,7 +40,6 @@ final public class DefaultCdoSessionListener implements IListener {
 
     @Override
     public void notifyEvent(IEvent event) {
-//        System.out.println("Event received: " + event);
         if (isApplicable(event)) {
             long timeStamp = System.currentTimeMillis();
             if (timeStamp == NO_TIME_STAMP) {
@@ -49,7 +49,7 @@ final public class DefaultCdoSessionListener implements IListener {
             synchronized (this) {
                 events.put(event, timeStamp);
                 if (filter.getNotifyThreshold() == -1) {
-                    if (actions != null && actions.size() > 0) {
+                    if (actions != null && !actions.isEmpty()) {
                         dispatchActionDelegate(actions, event);
                     }
                 } else {
@@ -93,29 +93,38 @@ final public class DefaultCdoSessionListener implements IListener {
                     event instanceof CDOSessionInvalidationEvent) {
                 CDOSessionInvalidationEvent invalidationEvent = (CDOSessionInvalidationEvent) event;
                 List<CDORevisionKey> changedObjects = invalidationEvent.getChangedObjects();
-                if (changedObjects.size() > 0) {
+                if (!changedObjects.isEmpty()) {
                     Set<String> repoPaths = new HashSet<>();
                     HashMap<String, Object> props = new HashMap<>();
                     for (CDORevisionKey eachNewObject : changedObjects) {
-                        String path = invalidationEvent.getSource().getViews(invalidationEvent.getBranch())[0].getObject(eachNewObject.getID()).cdoResource().getPath();
-                        repoPaths.add(path);
+                        for (int i = 0; i < invalidationEvent.getSource().getViews(invalidationEvent.getBranch()).length; i++) {
+                            try {
+                                String path = invalidationEvent.getSource().getViews(invalidationEvent.getBranch())[i].getObject(eachNewObject.getID()).cdoResource().getPath();
+                                repoPaths.add(path);
+                            } catch (ObjectNotFoundException ignored) {
+                            }
+                        }
                     }
                     if (repoPaths.size() == 1) {
                         props.put(FilterCriteria.Key.REPOSITORY_PATH, repoPaths.stream().findFirst().get());
                     }
                     ((CdoChangedObjectsActionDelegate) delegate).perform(changedObjects, props);
                 }
-//                ((CdoChangedObjectsActionDelegate) delegate).perform(changedObjects);
             } else if (delegate instanceof CdoNewObjectsActionDelegate &&
                     event instanceof CDOSessionInvalidationEvent) {
                 CDOSessionInvalidationEvent invalidationEvent = (CDOSessionInvalidationEvent) event;
                 List<CDOIDAndVersion> newObjects = invalidationEvent.getNewObjects();
-                if (newObjects.size() > 0) {
+                if (!newObjects.isEmpty()) {
                     Set<String> repoPaths = new HashSet<>();
                     HashMap<String, Object> props = new HashMap<>();
                     for (CDOIDAndVersion eachNewObject : newObjects) {
-                        String path = invalidationEvent.getSource().getViews(invalidationEvent.getBranch())[0].getObject(eachNewObject.getID()).cdoResource().getPath();
-                        repoPaths.add(path);
+                        for (int i = 0; i < invalidationEvent.getSource().getViews(invalidationEvent.getBranch()).length; i++) {
+                            try {
+                                String path = invalidationEvent.getSource().getViews(invalidationEvent.getBranch())[i].getObject(eachNewObject.getID()).cdoResource().getPath();
+                                repoPaths.add(path);
+                            } catch (ObjectNotFoundException ignored) {
+                            }
+                        }
                     }
                     if (repoPaths.size() == 1) {
                         props.put(FilterCriteria.Key.REPOSITORY_PATH, repoPaths.stream().findFirst().get());

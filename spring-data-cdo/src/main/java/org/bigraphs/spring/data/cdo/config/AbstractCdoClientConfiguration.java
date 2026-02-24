@@ -5,7 +5,6 @@ import org.bigraphs.spring.data.cdo.CdoDbFactory;
 import org.bigraphs.spring.data.cdo.SimpleCdoDbFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
 import java.util.Collection;
@@ -21,14 +20,11 @@ public abstract class AbstractCdoClientConfiguration extends CdoConfigurationSup
 
     public abstract CdoClient cdoClient();
 
-    //TODO cdoTemplate() erlaubt queries (müssen erstmal erstellt werden)
-
     /**
      * Return the name of the database to connect to.
      *
      * @return the repository name; must not be {@literal null}.
      */
-    @NonNull
     protected abstract String getRepositoryName();
 
     @Bean
@@ -42,7 +38,7 @@ public abstract class AbstractCdoClientConfiguration extends CdoConfigurationSup
      * {@code com.acme.AppConfig} extending {@link } the base package will be considered
      * {@code com.acme} unless the method is overridden to implement alternate behavior.
      *
-     * @return the base packages to scan for mapped {@link } classes or an empty collection to not enable scanning
+     * @return the base packages to scan for mapped classes or an empty collection to not enable scanning
      * for entities.
      * @since 1.10
      */

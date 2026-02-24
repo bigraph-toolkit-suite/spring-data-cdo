@@ -32,7 +32,6 @@ public class CdoRepositoriesRegistrarIntegrationTests {
     @BeforeClass
     public static void beforeClass() throws Exception {
         BookstoreDomainModelPackageImpl.init();
-//        EPackage.Registry.INSTANCE.put("http://www.example.org/bookstoreDomainModel", BookstoreDomainModelPackage.eINSTANCE);
     }
 
     @Configuration

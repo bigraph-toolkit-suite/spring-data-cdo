@@ -41,12 +41,6 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-core</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>commons-logging</groupId>
-                    <artifactId>commons-logging</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
@@ -57,18 +51,6 @@
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-commons</artifactId>
             <version>${spring.data.commons.version}</version>
-        </dependency>
-        <!-- Logging -->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>2.0.9</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-nop</artifactId>
-            <version>2.0.7</version>
-            <scope>provided</scope>
         </dependency>
         <!-- ******************************************************** -->
         <!-- Eclipse Dependencies available at the Central Repository -->
@@ -130,7 +112,6 @@
         <!-- P2 Repository Dependencies -->
         <!-- ************************** -->
         <!-- Eclipse CDO -->
-        <!-- -->
         <dependency>
             <groupId>org.eclipse.emf.cdo</groupId>
             <artifactId>org.eclipse.emf.cdo.common</artifactId>
@@ -207,14 +188,8 @@
         <dependency>
             <groupId>com.google.inject</groupId>
             <artifactId>guice</artifactId>
-            <version>4.2.2</version>
+            <version>7.0.0</version>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.projectlombok</groupId>-->
-<!--            <artifactId>lombok</artifactId>-->
-<!--            <version>1.18.42</version>-->
-<!--            <scope>compile</scope>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>javax.annotation</groupId>
             <artifactId>jsr250-api</artifactId>
@@ -224,12 +199,12 @@
         <dependency>
             <groupId>org.openjdk.jmh</groupId>
             <artifactId>jmh-core</artifactId>
-            <version>1.19</version>
+            <version>1.37</version>
         </dependency>
         <dependency>
             <groupId>org.openjdk.jmh</groupId>
             <artifactId>jmh-generator-annprocess</artifactId>
-            <version>1.19</version>
+            <version>1.37</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -239,7 +214,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.9</version>
+            <version>3.20.0</version>
         </dependency>
         <!-- ************   -->
         <!-- Deployment     -->
@@ -247,15 +222,29 @@
         <dependency>
             <groupId>org.sonatype.central</groupId>
             <artifactId>central-publishing-maven-plugin</artifactId>
-            <version>0.8.0</version>
+            <version>0.9.0</version>
         </dependency>
         <!-- ************   -->
-        <!-- Test           -->
+        <!-- Testing        -->
         <!-- ************   -->
         <dependency>
             <groupId>org.bigraphs.framework</groupId>
             <artifactId>bigraph-core</artifactId>
-            <version>2.0.1</version>
+            <version>2.4.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.tudresden.inf.st.ecore.models</groupId>
+            <artifactId>bookstore-api</artifactId>
+            <version>1.0.1</version>
+            <type>jar</type>
+            <scope>test</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.github.javafaker</groupId>
+            <artifactId>javafaker</artifactId>
+            <version>1.0.2</version>
             <scope>test</scope>
         </dependency>
         <!-- CDI -->
@@ -294,12 +283,6 @@
             <version>1.1</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-test</artifactId>
-            <version>2.1.7.RELEASE</version>
-            <scope>test</scope>
-        </dependency>
         <!-- Needed by JUnit -->
         <dependency>
             <groupId>org.hamcrest</groupId>
@@ -317,21 +300,6 @@
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
             <version>${junit-jupiter.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>de.tudresden.inf.st.ecore.models</groupId>
-            <artifactId>bookstore-api</artifactId>
-            <version>1.0.1</version>
-            <type>jar</type>
-            <scope>test</scope>
-            <optional>true</optional>
-        </dependency>
-        <!-- This dependency is used just to generate some fake data (person, addresses, etc.)-->
-        <dependency>
-            <groupId>com.github.javafaker</groupId>
-            <artifactId>javafaker</artifactId>
-            <version>1.0.2</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

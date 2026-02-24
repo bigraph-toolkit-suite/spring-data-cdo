@@ -74,35 +74,24 @@ public class BasicCdoPersistentProperty extends AnnotationBasedPersistentPropert
         return isAnnotationPresent(EObjectModel.class);
     }
 
-    //    /**
-//     * Returns the key to be used to store the value of the property inside a CDO instance.
-//     *
-//     * @return
-//     */
     public String getFieldName() {
-//
         if (isIdProperty()) {
-//
             if (getOwner().getIdProperty() == null) {
                 return ID_FIELD_NAME;
             }
-//
+
             if (getOwner().isIdProperty(this)) {
                 return ID_FIELD_NAME;
             }
         }
-//
-//        if (hasExplicitFieldName()) {
-//            return getAnnotatedFieldName();
-//        }
-//
+
         String fieldName = fieldNamingStrategy.getFieldName(this);
-//
+
         if (!StringUtils.hasText(fieldName)) {
             throw new MappingException(String.format("Invalid (null or empty) field name returned for property %s by %s!",
                     this, fieldNamingStrategy.getClass()));
         }
-//
+
         return fieldName;
     }
 
@@ -125,7 +114,6 @@ public class BasicCdoPersistentProperty extends AnnotationBasedPersistentPropert
 
     @Override
     public EObjectModel getEPackageField() {
-        //TODO use resolver
         return findAnnotation(EObjectModel.class);
     }
 

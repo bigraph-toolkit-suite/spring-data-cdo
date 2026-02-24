@@ -97,8 +97,8 @@ public class CDOStandaloneServer extends OSGiApplication {
 
     public static final String ID = OM.BUNDLE_ID + ".app";
     private String repositoryName = null;
-    private IRepository[] repositories;
-    private IAcceptor[] acceptors;
+    private IRepository[] repositories = null;
+    private IAcceptor[] acceptors = null;
     private IConnector connector = null;
     private CDONet4jSession session = null;
     private IManagedContainer container = null;
@@ -234,10 +234,8 @@ public class CDOStandaloneServer extends OSGiApplication {
             CDONet4jUtil.prepareContainer(container);
             CDONet4jServerUtil.prepareContainer(container);
             TCPUtil.prepareContainer(container);
-//            HTTPUtil.prepareContainer(container);
             container.registerFactory(oclFactory);
 
-//            container.activate();
             // Initialize Acceptor
             if (acceptors == null) {
                 IAcceptor acceptor = createAcceptor(container);
@@ -274,8 +272,7 @@ public class CDOStandaloneServer extends OSGiApplication {
         props.put(Props.SUPPORTING_BRANCHES, "true");
 //		props.put(Props.VERIFYING_REVISIONS, "false");
 
-        IRepository repo = CDOServerUtil.createRepository(repositoryName, store, props);
-        return repo;
+        return CDOServerUtil.createRepository(repositoryName, store, props);
     }
 
     private IStore createMemStore() {
