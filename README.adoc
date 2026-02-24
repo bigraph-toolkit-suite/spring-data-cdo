@@ -1,3 +1,6 @@
+image:https://img.shields.io/badge/License-Apache--2.0-blue.svg[License: Apache 2.0,link=https://opensource.org/licenses/Apache-2.0]
+image:https://img.shields.io/maven-central/v/org.bigraphs.springframework.data/spring-data-cdo[Maven Central,link=https://central.sonatype.com/artifact/org.bigraphs.springframework.data/spring-data-cdo]
+
 image::./src/main/asciidoc/images/spring-cdo-logo-white-background.png[width=50%,scalewidth=6cm]
 
 '''
